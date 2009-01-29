@@ -22,13 +22,22 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * 逐次読み出しのみをサポートするストリームフィルタ．
+ * このフィルタを通した入力ストリームには逐次アクセスしかできなくなる．
+ * resetメソッドを使用した場合，IOExceptionが投げられる．
+ *
  * @author KAWAMOTO Junpei
  *
  */
 public class SequentialInputStream extends FilterInputStream{
 
+	//====================================================================
+	//  コンストラクタ
+	//====================================================================
 	/**
-	 * @param in
+	 * 入力ストリームinをフィルタリングするSequentialInputStreamを作成する．
+	 *
+	 * @param in フィルタリング対象の入力ストリーム
 	 */
 	protected SequentialInputStream(InputStream in) {
 
@@ -36,6 +45,9 @@ public class SequentialInputStream extends FilterInputStream{
 
 	}
 
+	//====================================================================
+	//  public メソッド
+	//====================================================================
 	/* (non-Javadoc)
 	 * @see java.io.FilterInputStream#markSupported()
 	 */

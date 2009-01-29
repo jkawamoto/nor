@@ -22,7 +22,9 @@ import java.io.InputStream;
 
 /**
  * 指定されたサイズで読み込みを終了するストリームフィルタ．
- * このストリームは、指定されたサイズだけ入力ストリームから読み込みます。
+ * このフィルタは，最大で指定サイズ読み込むことができます．
+ * もちろん，ストリームに含まれるデータが指定サイズよりも小さい場合は，
+ * すべてのデータが読み込まれます．
  *
  * @author KAWAMOTO Junpei
  *
@@ -34,10 +36,13 @@ public class LimitedInputStream extends SequentialInputStream{
 	 */
 	private int _remains;
 
+	//====================================================================
+	//  コンストラクタ
+	//====================================================================
 	/**
-	 * 限定入力ストリームを作成する．
+	 * 入力ストリームinからsizeだけ読み込むLimitedInputStreamを作成する．
 	 *
-	 * @param in 入力元のストリーム
+	 * @param in フィルタリング対象の入力ストリーム
 	 * @param size 読み込むサイズ
 	 */
 	public LimitedInputStream(final InputStream in, final int size){
@@ -47,6 +52,9 @@ public class LimitedInputStream extends SequentialInputStream{
 
 	}
 
+	//====================================================================
+	//  public メソッド
+	//====================================================================
 	/* (non-Javadoc)
 	 * @see java.io.FilterInputStream#read()
 	 */
@@ -124,6 +132,12 @@ public class LimitedInputStream extends SequentialInputStream{
 
 	}
 
+	/**
+	 * 残り読み込み可能サイズの取得．
+	 * ストリームに含まれるデータが残り読み取り可能サイズよりも小さいこともある．
+	 *
+	 * @return 残り読み取り可能サイズ
+	 */
 	public int remains(){
 
 		return this._remains;

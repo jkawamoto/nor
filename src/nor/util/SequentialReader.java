@@ -22,17 +22,32 @@ import java.io.IOException;
 import java.io.Reader;
 
 /**
+ * 逐次読み出しのみをサポートするフィルタ．
+ * このフィルタを通したリーダには逐次アクセスしかできなくなる．
+ * mark, resetメソッドを使用した場合，IOExceptionが投げられる．
+ *
  * @author KAWAMOTO Junpei
  *
  */
 public class SequentialReader extends FilterReader{
 
+	//====================================================================
+	//  コンストラクタ
+	//====================================================================
+	/**
+	 * ストリームリーダinをフィルタリングするSequentialReaderを作成する．
+	 *
+	 * @param in フィルタリング対象のストリームリーダ
+	 */
 	public SequentialReader(final Reader in){
 
 		super(in);
 
 	}
 
+	//====================================================================
+	//  public メソッド
+	//====================================================================
 	/* (non-Javadoc)
 	 * @see java.io.FilterReader#mark(int)
 	 */

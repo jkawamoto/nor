@@ -22,13 +22,28 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
+ * 書き込み可能サイズを指定するストリームフィルタ．
+ * 設定されたサイズ以上の書き込みを行うとIOExceptionが投げられる．
+ *
  * @author KAWAMOTO Junpei
  *
  */
 public class LimitedOutputStream extends FilterOutputStream{
 
+	/**
+	 * 残り書き込み可能サイズ
+	 */
 	private int _remains;
 
+	//====================================================================
+	//  コンストラクタ
+	//====================================================================
+	/**
+	 * 出力ストリームoutをフィルタリングしsizeだけの書き込みを許可するLimitedOutputStreamを作成する．
+	 *
+	 * @param out フィルタリング対象の出力ストリーム
+	 * @param size 書き込み可能サイズ
+	 */
 	public LimitedOutputStream(final OutputStream out, final int size) {
 
 		super(out);
@@ -36,8 +51,9 @@ public class LimitedOutputStream extends FilterOutputStream{
 
 	}
 
-
-
+	//====================================================================
+	//  public メソッド
+	//====================================================================
 	/* (non-Javadoc)
 	 * @see java.io.FilterOutputStream#write(byte[], int, int)
 	 */
@@ -54,8 +70,6 @@ public class LimitedOutputStream extends FilterOutputStream{
 		this._remains -= len;
 
 	}
-
-
 
 	/* (non-Javadoc)
 	 * @see java.io.FilterOutputStream#write(int)
@@ -75,7 +89,11 @@ public class LimitedOutputStream extends FilterOutputStream{
 
 	}
 
-
+	/**
+	 * 残り書き込み可能サイズを取得する．
+	 *
+	 * @return 残り書き込み可能サイズ
+	 */
 	public int remains(){
 
 		return this._remains;

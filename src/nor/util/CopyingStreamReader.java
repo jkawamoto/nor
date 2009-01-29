@@ -22,19 +22,35 @@ import java.io.Reader;
 import java.nio.CharBuffer;
 
 /**
+ * 入力と同時に複製を作成するフィルタ．
+ *
  * @author KAWAMOTO Junpei
  *
  */
 public class CopyingStreamReader extends SequentialReader{
 
+	/**
+	 * コピー
+	 */
 	private final StringBuilder _copy = new StringBuilder();
 
+	//====================================================================
+	//  コンストラクタ
+	//====================================================================
+	/**
+	 * リーダinをフィルタリングするCopyingStreamReaderを作成する．
+	 *
+	 * @param in フィルタリング対象のリーダ
+	 */
 	public CopyingStreamReader(final Reader in){
 
 		super(in);
 
 	}
 
+	//====================================================================
+	//  public メソッド
+	//====================================================================
 	/* (non-Javadoc)
 	 * @see java.io.FilterReader#read()
 	 */
@@ -84,6 +100,19 @@ public class CopyingStreamReader extends SequentialReader{
 		this._copy.append(target);
 
 		return ret;
+
+	}
+
+	/**
+	 * 作成した複製の取得する．
+	 * 読み込みが終了していない場合は，今まで読み込まれた文字列のコピーを返す．
+	 * 返されるコピーは深いコピーである．
+	 *
+	 * @return CopyingStreamReaderに読み込まれた文字列のコピー
+	 */
+	public String copy(){
+
+		return this._copy.toString();
 
 	}
 
