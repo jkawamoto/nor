@@ -24,24 +24,44 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
+ * チャンク形式で書き出すストリームフィルタ．
+ * バッファサイズに達するか，flushが呼ばれるごとに送信する．
+ * トレイラを送信するために，出力が終了した場合はcloseかwriteEOFを必ず呼ぶこと．
+ *
  * @author KAWAMOTO Junpei
  *
  */
 public class ChunkedOutputStream extends FilterOutputStream{
 
+	/**
+	 * デフォルトバッファサイズ
+	 */
 	public static final int DefaultBufferSize = 4096;
 
-	// バッファ
+	/**
+	 *  バッファ
+	 */
 	private final byte[] _buffer;
-	private int _counter;
-
-	// トレイラ
-	private final Map<String, String> _trailer = new HashMap<String, String>();
 
 	/**
-	 * 渡されたストリームに書き出すチャンクフィルタを作成する.
+	 * 現在のバッファへの書き込みサイズ
+	 */
+	private int _counter;
+
+	/**
+	 * トレイラ
+	 */
+	private final Map<String, String> _trailer = new HashMap<String, String>();
+
+	//====================================================================
+	//  コンストラクタ
+	//====================================================================
+	/**
+	 * デフォルトのバッファサイズごとに出力ストリームoutへチャンク形式で書き出す
+	 * ChunkedOutputStreamを作成する．
 	 *
 	 * @param out 書き出し先のストリーム
 	 */
@@ -52,8 +72,11 @@ public class ChunkedOutputStream extends FilterOutputStream{
 	}
 
 	/**
-	 * @param out
-	 * @param buffer_size
+	 * サイズbuffer_sizeごとに出力ストリームoutへチャンク形式で書き出す
+	 * ChunkedOutputStreamを作成する．
+	 *
+	 * @param out 書き出し先のストリーム
+	 * @param buffer_size 基本書き込みサイズ
 	 */
 	public ChunkedOutputStream(final OutputStream out, final int buffer_size){
 
@@ -63,6 +86,9 @@ public class ChunkedOutputStream extends FilterOutputStream{
 
 	}
 
+	//====================================================================
+	//  public メソッド
+	//====================================================================
 	/* (非 Javadoc)
 	 * @see java.io.FilterOutputStream#write(int)
 	 */
@@ -144,9 +170,9 @@ public class ChunkedOutputStream extends FilterOutputStream{
 
 	/**
 	 * EOFを書き出す.
-	 * 書き出すデータが無くなった場合，必ずこのメソッドを呼んでください.
+	 * トレイラを送信するために，書き出すデータが無くなった場合このメソッドかcloseを必ず呼ぶ．
 	 *
-	 * @throws IOException ストリーム出力中にエラーが発生した場合．
+	 * @throws IOException ストリーム出力中にエラーが発生した場合
 	 */
 	public void writeEOF() throws IOException{
 
@@ -168,24 +194,59 @@ public class ChunkedOutputStream extends FilterOutputStream{
 
 	}
 
+	/**
+	 * keyに対応するトレイラの値を取得する．
+	 *
+	 * @param key トレイラのキー
+	 * @return keyに関連付けられている値
+	 */
 	public String getTrailer(final String key){
 
 		return this._trailer.get(key);
 
 	}
 
+	/**
+	 * keyに対応するトレイラの値を設定する．
+	 * keyに対して既に値が設定されている場合，古い値は上書きされます．
+	 *
+	 * @param key トレイラのキー
+	 * @param value キーに関連付ける値
+	 */
 	public void setTrailer(final String key, final String value){
 
 		this._trailer.put(key.toLowerCase(), value);
 
 	}
 
+	/**
+	 * トレイラにkeyが含まれているか調べる．
+	 *
+	 * @param key トレイラに含まれているか調べるキー
+	 * @return 含まれている場合 true
+	 */
 	public boolean containsTrailer(final String key){
 
 		return this._trailer.containsKey(key);
 
 	}
 
+	/**
+	 * トレイラに含まれるキーの集合を取得する．
+	 *
+	 * @return トレイラに含まれるキー集合
+	 */
+	public Set<String> keySet(){
+
+		return this._trailer.keySet();
+
+	}
+
+	/**
+	 * トレイラからキーと対応付けられている値を削除する．
+	 *
+	 * @param key 削除するキー
+	 */
 	public void removeTrailer(final String key){
 
 		this._trailer.remove(key);

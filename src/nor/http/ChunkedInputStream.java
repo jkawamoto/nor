@@ -29,6 +29,8 @@ import java.util.Map;
 import nor.util.SequentialInputStream;
 
 /**
+ * チャンク形式を読み込むストリームフィルタ．
+ *
  * @author KAWAMOTO Junpei
  *
  */
@@ -65,12 +67,15 @@ public class ChunkedInputStream extends SequentialInputStream{
 	private boolean _isEOF = false;
 
 	/**
-	 *  トレイラも考慮する
+	 *  トレイラ
 	 */
 	private final Map<String, String> _trailers = new HashMap<String, String>();
 
+	//====================================================================
+	//  コンストラクタ
+	//====================================================================
 	/**
-	 * チャンク形式をデコードするストリームを作成する.
+	 * チャンク形式をデコードしながら読み込むChunkedInputStreamを作成する.
 	 *
 	 * @param in 読み出し元のストリーム
 	 */
@@ -80,6 +85,9 @@ public class ChunkedInputStream extends SequentialInputStream{
 
 	}
 
+	//====================================================================
+	//  public メソッド
+	//====================================================================
 	/* (非 Javadoc)
 	 * @see java.io.InputStream#read()
 	 */
@@ -110,6 +118,9 @@ public class ChunkedInputStream extends SequentialInputStream{
 
 	}
 
+	/* (非 Javadoc)
+	 * @see java.io.FilterInputStream#read(byte[], int, int)
+	 */
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
 
@@ -220,9 +231,9 @@ public class ChunkedInputStream extends SequentialInputStream{
 	}
 
 	/**
-	 * ストリームから読み出した合計サイズ.
+	 * ストリームから読み出した合計サイズを取得する．
 	 *
-	 * @return 読み出した合計サイズ．
+	 * @return 読み出した合計サイズ
 	 */
 	public int size(){
 
@@ -231,7 +242,7 @@ public class ChunkedInputStream extends SequentialInputStream{
 	}
 
 	/**
-	 * トレイラを返す.
+	 * トレイラの取得．
 	 * チャンク形式ストリームに付加されるトレイラを返す.
 	 *
 	 * @return トレイラを格納したマップ
@@ -242,9 +253,14 @@ public class ChunkedInputStream extends SequentialInputStream{
 
 	}
 
+	//====================================================================
+	//  private メソッド
+	//====================================================================
 	/**
-	 * @return
-	 * @throws IOException
+	 * 現在のチャンクからデータを読み出す．
+	 *
+	 * @return 読み込むデータが残っていたら true
+	 * @throws IOException ストリームからの読み込みにエラーが発生した場合
 	 */
 	private boolean reload() throws IOException{
 

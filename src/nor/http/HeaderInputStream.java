@@ -20,15 +20,10 @@ package nor.http;
 import java.io.IOException;
 import java.io.InputStream;
 
-/*
- * CR LF CR LFか LF LFがきたら終了
- *
- * Stateパターンを作る＞最終目標
- *
- */
+import nor.util.CopyingInputStream;
 
 /**
- * ヘッダのみを読み込むストリーム．
+ * ヘッダのみを読み込む入力ストリームフィルタ．
  * ヘッダとボディは空行により分けられている．
  * このストリームは空行まで読み込むとEOFを返し，それ以降の読み込みを行わない．
  *
@@ -37,27 +32,41 @@ import java.io.InputStream;
  */
 class HeaderInputStream extends InputStream{
 
-	private static final int LF = 0x0A;
-	private static final int CR = 0x0D;
+	/**
+	 * 入力元ストリーム
+	 */
+	private final CopyingInputStream _in;
 
-	private final InputStream _in;
-
-	/** 状態変数
-	 *  0		通常
-	 *  1		1回目のCR
-	 *  2		1回目のLF
-	 *  3		2回目のCR
-	 *  4		2回目のLF
-	 *  ただし、いきなり改行がくる可能性もある（ヘッダが空の場合）従って初期状態は2から始まる．
+	/**
+	 * 状態変数．
+	 *  CR LF CR LF か LF LFがきたら読み込みを終了する．
+	 *  	値		状態
+	 *  	0		通常
+	 *  	1		1回目のCR
+	 *  	2		1回目のLF (初期状態)
+	 *  	3		2回目のCR
+	 *  	4		2回目のLF
+	 *  ヘッダが空の場合，いきなりCR LFが来る．そのため，初期状態は2から始まる．
 	 */
 	private int _state = 2;
 
+	//====================================================================
+	//  コンストラクタ
+	//====================================================================
+	/**
+	 * 入力ストリームinからヘッダ部分のみを読み込むHeaderInputStreamを作成する．
+	 *
+	 * @param in 入力対象のストリーム
+	 */
 	public HeaderInputStream(final InputStream in){
 
-		this._in = in;
+		this._in = new CopyingInputStream(in);
 
 	}
 
+	//====================================================================
+	//  public メソッド
+	//====================================================================
 	/* (non-Javadoc)
 	 * @see java.io.InputStream#read()
 	 */
@@ -68,7 +77,7 @@ class HeaderInputStream extends InputStream{
 		if(this._state != 4){
 
 			ret = this._in.read();
-			if(ret == CR){
+			if(ret == Chars.CR){
 
 				switch(this._state){
 				case 0:
@@ -92,7 +101,7 @@ class HeaderInputStream extends InputStream{
 
 				}
 
-			}else if(ret == LF){
+			}else if(ret == Chars.LF){
 
 				switch(this._state){
 				case 0:
@@ -128,17 +137,56 @@ class HeaderInputStream extends InputStream{
 
 	}
 
+	/* (非 Javadoc)
+	 * @see java.io.InputStream#markSupported()
+	 */
+	@Override
+	public boolean markSupported() {
+
+		return false;
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.io.InputStream#skip(long)
+	 */
+	@Override
+	public long skip(long n) throws IOException {
+
+		long i = 0;
+		for(; i != n; ++i){
+
+			if(this.read() == -1){
+
+				break;
+
+			}
+
+		}
+
+		return i;
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString(){
+
+		return new String(this._in.copy());
+
+	}
+
 	/**
-	 * 状態をクリアします．
+	 * 状態をクリアする．
 	 *
 	 */
 	public void clearState(){
 
-		this._state = 0;
+		this._state = 2;
 
 	}
 
-
 }
-
 
