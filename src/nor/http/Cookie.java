@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Cookieヘッダフィールドを表すクラス．
+ * Cookieヘッダフィールドをラップするクラス．
  *
  * @author KAWAMOTO Junpei
  */

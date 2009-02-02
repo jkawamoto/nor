@@ -35,6 +35,12 @@ import java.io.OutputStreamWriter;
 public abstract class Message {
 
 	/**
+	 * 送受信用バッファサイズ
+	 */
+	static final int BufferSize = 1024 * 24;
+
+
+	/**
 	 * メッセージヘッダ
 	 */
 	private final Header _header;
@@ -157,7 +163,7 @@ public abstract class Message {
 		boolean header = false;
 		if(body != null){
 
-			final byte[] buffer = new byte[1024*24];
+			final byte[] buffer = new byte[BufferSize];
 			int n = -1;
 
 			if((n = body.read(buffer)) != -1){

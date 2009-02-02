@@ -33,7 +33,7 @@ public abstract class Body {
 	protected final Message parent;
 
 	/**
-	 * メッセージボディがの入力ストリーム
+	 * メッセージボディの入力ストリーム
 	 */
 	protected InputStream in;
 

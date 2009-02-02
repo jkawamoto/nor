@@ -37,8 +37,6 @@ import nor.util.LimitedInputStream;
  */
 public class BinaryBody extends Body{
 
-	public static final int BufferSize = 1024 * 24;
-
 	//============================================================================
 	//  コンストラクタ
 	//============================================================================
@@ -153,7 +151,7 @@ public class BinaryBody extends Body{
 
 			try{
 
-				final byte[] buffer = new byte[BufferSize];
+				final byte[] buffer = new byte[Message.BufferSize];
 				int i = 0;
 				while((i = this.in.read(buffer, 0, buffer.length)) != -1){
 
@@ -178,7 +176,6 @@ public class BinaryBody extends Body{
 		 */
 		public void close() throws IOException{
 
-			this.pass();
 			this.in.close();
 			this.out.close();
 
