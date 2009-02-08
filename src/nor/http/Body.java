@@ -37,6 +37,11 @@ public abstract class Body {
 	 */
 	protected InputStream in;
 
+	/**
+	 * ボディタイプを表すヘッダ項目名
+	 */
+	private static final String BodyTypeHeader = "x-nor-bodytype";
+
 	//====================================================================
 	//  コンストラクタ
 	//====================================================================
@@ -52,6 +57,8 @@ public abstract class Body {
 
 		this.parent = parent;
 		this.in = in;
+
+		this.parent.getHeader().set(BodyTypeHeader, this.getClass().getSimpleName());
 
 	}
 
