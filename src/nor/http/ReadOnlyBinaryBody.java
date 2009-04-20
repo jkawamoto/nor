@@ -15,16 +15,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server.proxyserver;
-
-import nor.http.TextBody;
+package nor.http;
 
 /**
  * @author KAWAMOTO Junpei
  *
  */
-public abstract class TextResponseFilter extends ResponseFilter<TextBody.Streams>{
+public class ReadOnlyBinaryBody {
 
 }
-
-

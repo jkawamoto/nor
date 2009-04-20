@@ -25,10 +25,5 @@ import nor.http.BinaryBody;
  */
 public abstract class BinaryResponseFilter extends ResponseFilter<BinaryBody.Streams>{
 
-	public BinaryResponseFilter(final String url){
-
-		super(url);
-
-	}
 
 }

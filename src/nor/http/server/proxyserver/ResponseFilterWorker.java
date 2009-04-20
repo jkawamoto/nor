@@ -48,7 +48,9 @@ class ResponseFilterWorker<Streams extends Closeable, Filter extends ResponseFil
 
 		this._filter.update(this._request, this._header, this._streams);
 		try {
+
 			this._streams.close();
+
 		} catch (IOException e) {
 			// TODO 自動生成された catch ブロック
 			e.printStackTrace();

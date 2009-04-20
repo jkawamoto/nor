@@ -152,30 +152,35 @@ public class Response extends Message{
 	@Override
 	protected Body readBody(final InputStream input) throws IOException {
 
+		return director.build(this, input);
+
 		// ボディの読み取り
 		//if("HEAD".equalsIgnoreCase(this.getRequest().getMethod()) || (100 <= this._code && this._code < 200) || this._code == 204 || this._code == 304){
-		if((100 <= this._code && this._code < 200) || this._code == 204 || this._code == 304){
-
-			// メッセージボディなし
-			return new EmptyBody(this);
-
-		}else{
-
-			// メッセージボディあり
-			final String type = this.getHeader().getContentType().getMIMEType();
-			final String subtype = this.getHeader().getContentType().getMIMESubtype();
-			if("text".equalsIgnoreCase(type) || "xhtml+xml".equalsIgnoreCase(subtype)){
-
-				return new TextBody(this, input);
-
-			}else{
-
-				final BinaryBody body = new BinaryBody(this, input);
-				return body;
-
-			}
-
-		}
+//		if((100 <= this._code && this._code < 200) || this._code == 204 || this._code == 304){
+//
+//			// メッセージボディなし
+//			return new EmptyBody(this);
+//
+//		}else{
+//
+//			// TODO: コンテントタイプからボディを決定する．
+//			// TODO: リードオンリーボディを用意。フィルタに送るのはコピーでフィルタリング前に転送を完了させておく．
+//
+//			// メッセージボディあり
+//			final String type = this.getHeader().getContentType().getMIMEType();
+//			final String subtype = this.getHeader().getContentType().getMIMESubtype();
+//			if("text".equalsIgnoreCase(type) || "xhtml+xml".equalsIgnoreCase(subtype)){
+//
+//				return new TextBody(this, input);
+//
+//			}else{
+//
+//				final BinaryBody body = new BinaryBody(this, input);
+//				return body;
+//
+//			}
+//
+//		}
 
 	}
 

@@ -55,6 +55,11 @@ public abstract class Message {
 	 */
 	private String _version;
 
+	/**
+	 *
+	 */
+	protected static final BodyDirector director = new BodyDirector();
+
 	//====================================================================
 	//	コンストラクタ
 	//====================================================================

@@ -450,21 +450,16 @@ public class ProxyRequestHandler implements RequestHandler{
 
 	private void filtering(final Request request, final Header header, final TextBody body){
 
-		final String url = request.getPath();
 		for(final TextResponseFilter filter : this._textResponseFilters){
 
-			if(filter.isFiltering(url)){
+			try {
 
-				try {
+				final Runnable woker = new ResponseFilterWorker<TextBody.Streams, TextResponseFilter>(filter, request, header, body.getStreams());
+				this._pool.execute(woker);
 
-					final Runnable woker = new ResponseFilterWorker<TextBody.Streams, TextResponseFilter>(filter, request, header, body.getStreams());
-					this._pool.execute(woker);
-
-				} catch (IOException e) {
-					// TODO 自動生成された catch ブロック
-					e.printStackTrace();
-				}
-
+			} catch (IOException e) {
+				// TODO 自動生成された catch ブロック
+				e.printStackTrace();
 			}
 
 		}
@@ -473,21 +468,16 @@ public class ProxyRequestHandler implements RequestHandler{
 
 	private void filtering(final Request request, final Header header, final BinaryBody body){
 
-		final String url = request.getPath();
 		for(final BinaryResponseFilter filter : this._binaryResponseFilters){
 
-			if(filter.isFiltering(url)){
+			try {
 
-				try {
+				final Runnable woker = new ResponseFilterWorker<BinaryBody.Streams, BinaryResponseFilter>(filter, request, header, body.getStreams());
+				this._pool.execute(woker);
 
-					final Runnable woker = new ResponseFilterWorker<BinaryBody.Streams, BinaryResponseFilter>(filter, request, header, body.getStreams());
-					this._pool.execute(woker);
-
-				} catch (IOException e) {
-					// TODO 自動生成された catch ブロック
-					e.printStackTrace();
-				}
-
+			} catch (IOException e) {
+				// TODO 自動生成された catch ブロック
+				e.printStackTrace();
 			}
 
 		}

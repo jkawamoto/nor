@@ -33,7 +33,9 @@ public class Nor {
 	 */
 	public static void main(String[] args) {
 
-		final HttpServer server = new HttpServer(9080, new ProxyRequestHandler("Nor", "1.1"), 10);
+		final ProxyRequestHandler h = new ProxyRequestHandler("Nor", "1.1");
+
+		final HttpServer server = new HttpServer(9080, h, 10);
 
 		try {
 
