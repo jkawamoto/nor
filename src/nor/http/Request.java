@@ -70,7 +70,7 @@ public class Request extends Message{
 		super(input);
 
 		// 読み込んだリクエストに関する情報を出力
-		LOGGER.info(this.toString());
+		LOGGER.fine(this.toString());
 
 	}
 
@@ -89,7 +89,7 @@ public class Request extends Message{
 		this._path = prefix + this._path;
 
 		// 読み込んだリクエストに関する情報を出力
-		LOGGER.info(this.toString());
+		LOGGER.fine(this.toString());
 
 	}
 
@@ -156,6 +156,12 @@ public class Request extends Message{
 
 	}
 
+	public String toOnelineString(){
+
+		return "Request[" + this.getHeadLine() + "]";
+
+	}
+
 	//====================================================================
 	//	protected メソッド
 	//====================================================================
@@ -184,7 +190,7 @@ public class Request extends Message{
 	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#readBody(java.io.InputStream)
 	 */
 	@Override
-	protected Body readBody(final InputStream input) throws IOException{
+	protected Body2 readBody(final InputStream input) throws IOException{
 
 		// ボディがあれば読み取る
 
@@ -201,22 +207,34 @@ public class Request extends Message{
 		// LINK, UNLINK
 
 		// TODO: Length Requierdに対処する＞新しいボディクラス
-		if("POST".equals(this.getMethod())){
+//		if("POST".equals(this.getMethod())){
+//
+//			if("text".equalsIgnoreCase(this.getHeader().getContentType().getMIMEType()) || "xhtml+xml".equalsIgnoreCase(this.getHeader().getContentType().getMIMESubtype())){
+//
+//				return new TextBody(this, input);
+//
+//
+//			}else{
+//
+//				return new TextBody(this, input);
+//
+//			}
+//
+//		}
+//
+//		return new EmptyBody(this);
 
-			if("text".equalsIgnoreCase(this.getHeader().getContentType().getMIMEType()) || "xhtml+xml".equalsIgnoreCase(this.getHeader().getContentType().getMIMESubtype())){
+		if("GET".equals(this.getMethod())){
 
-				return new TextBody(this, input);
+			if(!this.getHeader().containsKey(HeaderName.ContentLength)){
 
-
-			}else{
-
-				return new TextBody(this, input);
+				this.getHeader().set(HeaderName.ContentLength, "0");
 
 			}
 
 		}
 
-		return new EmptyBody(this);
+		return new Body2(this, input);
 
 	}
 

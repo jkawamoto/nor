@@ -19,11 +19,14 @@ package nor.http;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+
+import nor.http.streams.HeaderInputStream;
 
 /**
  * HTTPメッセージを表す抽象クラス．
@@ -48,7 +51,7 @@ public abstract class Message {
 	/**
 	 * メッセージボディ
 	 */
-	private final Body _body;
+	private final Body2 _body;
 
 	/**
 	 * HTTP-Version
@@ -117,7 +120,7 @@ public abstract class Message {
 	 *
 	 * @return このメッセージにおけるボディ
 	 */
-	public Body getBody(){
+	public Body2 getBody(){
 
 		return this._body;
 
@@ -145,6 +148,12 @@ public abstract class Message {
 
 	}
 
+	public boolean isClosing(){
+
+		return this._header.containsValue(HeaderName.Connection, "close");
+
+	}
+
 
 	/**
 	 * メッセージを出力ストリームへ書き出す．
@@ -155,49 +164,55 @@ public abstract class Message {
 	public void writeMessage(final OutputStream output) throws IOException{
 		assert output != null;
 
-		final InputStream body = this._body.getInputStream();
-
-		OutputStream out = output;
-		if(this.getHeader().containsValue(HeaderName.TransferEncoding, "chunked")){
-
-			out = new ChunkedOutputStream(output);
-
-		}
-
-		// TODO: Length-requiredの場合はここで全データを受信する．
-		boolean header = false;
-		if(body != null){
-
-			final byte[] buffer = new byte[BufferSize];
-			int n = -1;
-
-			if((n = body.read(buffer)) != -1){
-
-				this.writeHeader(output);
-				header = true;
-
-				out.write(buffer, 0, n);
-
-				while((n = body.read(buffer)) != -1){
-
-					// ボディの書き出し
-					out.write(buffer, 0, n);
-
-				}
-
-			}
-
-			body.close();
-
-		}
-		if(!header){
-
-			this.writeHeader(output);
-			header = true;
-
-		}
+		final OutputStream out = new MessageOutputStream(output, this);
+		this._body.writeBody(out);
 
 		out.close();
+
+
+//		final InputStream body = this._body.getInputStream();
+//
+//		OutputStream out = output;
+//		if(this.getHeader().containsValue(HeaderName.TransferEncoding, "chunked")){
+//
+//			out = new ChunkedOutputStream(output);
+//
+//		}
+//
+//		// TODO: Length-requiredの場合はここで全データを受信する．
+//		boolean header = false;
+//		if(body != null){
+//
+//			final byte[] buffer = new byte[BufferSize];
+//			int n = -1;
+//
+//			if((n = body.read(buffer)) != -1){
+//
+//				this.writeHeader(output);
+//				header = true;
+//
+//				out.write(buffer, 0, n);
+//
+//				while((n = body.read(buffer)) != -1){
+//
+//					// ボディの書き出し
+//					out.write(buffer, 0, n);
+//
+//				}
+//
+//			}
+//
+//			body.close();
+//
+//		}
+//		if(!header){
+//
+//			this.writeHeader(output);
+//			header = true;
+//
+//		}
+//
+//		out.close();
 
 	}
 
@@ -279,6 +294,91 @@ public abstract class Message {
 	 * @return メッセージボディオブジェクト
 	 * @throws IOException
 	 */
-	protected abstract Body readBody(final InputStream input) throws IOException;
+	protected abstract Body2 readBody(final InputStream input) throws IOException;
+
+
+	private class MessageOutputStream extends FilterOutputStream{
+
+		private final Message _message;
+		private boolean _isHeaderWrited;
+
+		public MessageOutputStream(final OutputStream out, final Message message){
+			super(out);
+
+			this._message = message;
+			this._isHeaderWrited = false;
+
+		}
+
+		@Override
+		public void write(byte[] b, int off, int len) throws IOException {
+
+			if(!this._isHeaderWrited){
+
+				this.writeHeader(this.out);
+				this._isHeaderWrited = true;
+
+			}
+
+			super.write(b, off, len);
+		}
+
+		@Override
+		public void close() throws IOException {
+
+			if(!this._isHeaderWrited){
+
+				this.writeHeader(this.out);
+				this._isHeaderWrited = true;
+
+			}
+
+
+			super.close();
+		}
+
+		@Override
+		public void flush() throws IOException {
+
+			if(!this._isHeaderWrited){
+
+				this.writeHeader(this.out);
+				this._isHeaderWrited = true;
+
+			}
+
+			super.flush();
+		}
+
+		//====================================================================
+		//	private メソッド
+		//====================================================================
+		/**
+		 * ヘッダの出力．
+		 *
+		 * @param output 出力先ストリーム
+		 * @throws IOException ストリームへの操作にエラーが発生した場合
+		 */
+		private void writeHeader(final OutputStream output) throws IOException{
+
+			final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output));
+
+			// ヘッドラインの書き出し
+			writer.append(this._message.getHeadLine());
+			writer.append('\r');
+			writer.append('\n');
+			writer.flush();
+
+			// ヘッダの書き出し
+			this._message.getHeader().writeHeader(writer);
+
+			// バッファのフラッシュ
+			writer.append('\r');
+			writer.append('\n');
+			writer.flush();
+
+		}
+
+	}
 
 }

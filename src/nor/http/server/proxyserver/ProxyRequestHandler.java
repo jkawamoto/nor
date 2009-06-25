@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 
 import nor.http.BadMessageException;
 import nor.http.BinaryBody;
-import nor.http.Body;
 import nor.http.Header;
 import nor.http.HeaderName;
 import nor.http.Request;
@@ -82,9 +81,8 @@ public class ProxyRequestHandler implements RequestHandler{
 	 */
 	private int _proxy_port;
 
-	private final String _name;
-	private final String _version;
-	private static final String Via = "%s %s";
+	private final String _serverName;
+	private static final String Via = "%s 1.1";
 
 	private final Requester _requester = new Requester();
 
@@ -101,10 +99,10 @@ public class ProxyRequestHandler implements RequestHandler{
 	 * コンストラクタ．
 	 * 外部プロキシを利用しない場合のコンストラクタ
 	 */
-	public ProxyRequestHandler(final String name, final String version){
+	public ProxyRequestHandler(final String serverName){
+		assert serverName != null && serverName.length() != 0;
 
-		this._name = name;
-		this._version = version;
+		this._serverName = serverName;
 
 	}
 
@@ -112,8 +110,8 @@ public class ProxyRequestHandler implements RequestHandler{
 	 * コンストラクタ．
 	 * 外部プロキシを利用する設定の場合，プロキシの準備を行う．
 	 */
-	public ProxyRequestHandler(final String name, final String version, final String extProxyHost, final int extProxyPort){
-		this(name, version);
+	public ProxyRequestHandler(final String serverName, final String extProxyHost, final int extProxyPort){
+		this(serverName);
 
 		this.setExternalProxy(extProxyHost, extProxyPort);
 
@@ -136,12 +134,12 @@ public class ProxyRequestHandler implements RequestHandler{
 
 		try{
 
-			// ヘッダーの書き換え
+			// HTTPヘッダの整理
 			this.cleanRequestHeader(request.getHeader());
 
-			if(this._proxy_host == null){
+			if(this._proxy_host == null){ // 外部プロキシを使用しない場合
 
-				// 外部プロキシを使用しない
+				// 要求パスを相対URLに書き替える *HTTP1.1の仕様上絶対パスを送信しても構わないが1.0サーバは相対パスで無ければならない*
 				final URL url = new URL(request.getPath());
 				if(url.getQuery() != null){
 
@@ -153,15 +151,10 @@ public class ProxyRequestHandler implements RequestHandler{
 
 				}
 
-				final String host = url.getHost();
-				final int port = url.getPort() != -1 ? url.getPort() : 80;
-				final InetSocketAddress addr = new InetSocketAddress(host, port);
+				response = this._requester.request(request);
 
-				response = this._requester.request(request, addr);
+			}else{ // 外部プロキシを使用する場合
 
-			}else{
-
-				// 外部プロキシを使用する
 				response = this._requester.request(request, new InetSocketAddress(this._proxy_host, this._proxy_port));
 
 			}
@@ -188,22 +181,22 @@ public class ProxyRequestHandler implements RequestHandler{
 		// TODO : フィルタリングを通さずスルーする設定も追加する
 
 		// レスポンスボディに対するフィルタリング
-		final Body body = response.getBody();
-		if(body instanceof TextBody){
-
-			this.filtering(request, response.getHeader(), (TextBody)body);
-
-		}else if(body instanceof BinaryBody){
-
-			this.filtering(request, response.getHeader(), (BinaryBody)body);
-
-		}
+//		final Body body = response.getBody();
+//		if(body instanceof TextBody){
+//
+//			this.filtering(request, response.getHeader(), (TextBody)body);
+//
+//		}else if(body instanceof BinaryBody){
+//
+//			this.filtering(request, response.getHeader(), (BinaryBody)body);
+//
+//		}
 
 		// ヘッダの整理
 		response.setVersion("1.1");
 		this.cleanResponseHeader(response);
 
-		LOGGER.info(response.toString());
+		LOGGER.fine("Created " + response);
 		return response;
 
 	}
@@ -369,7 +362,7 @@ public class ProxyRequestHandler implements RequestHandler{
 		}
 
 		// プロキシ通過スタンプ
-		header.set(HeaderName.Via, String.format(ProxyRequestHandler.Via, this._version, this._name));
+		header.set(HeaderName.Via, String.format(ProxyRequestHandler.Via, this._serverName));
 
 	}
 
@@ -442,7 +435,7 @@ public class ProxyRequestHandler implements RequestHandler{
 		}
 
 		// プロキシ通過スタンプ
-		header.set(HeaderName.Via, String.format(ProxyRequestHandler.Via, this._version, this._name));
+		header.set(HeaderName.Via, String.format(ProxyRequestHandler.Via, this._serverName));
 
 	}
 

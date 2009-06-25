@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.ExecutorService;
@@ -31,11 +32,11 @@ import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 import nor.http.BadMessageException;
-import nor.http.HeaderName;
 import nor.http.Request;
 import nor.http.Response;
 import nor.http.error.BadRequestException;
 import nor.http.error.HttpException;
+import nor.util.NoCloseOutputStream;
 
 /**
  * HTTPサーバ．
@@ -56,11 +57,6 @@ public class HttpServer implements Closeable{
 	private final RequestHandler _handler;
 
 	/**
-	 * スレッドの数
-	 */
-	private final int _threads;
-
-	/**
 	 * ポートリスニング用スレッドワーカー
 	 */
 	private ListenWorker _listener = null;
@@ -76,9 +72,10 @@ public class HttpServer implements Closeable{
 	public static final String VERSION = "1.1";
 
 	/**
-	 * リスンスレッド
+	 * HTTPリクエストを処理するスレッドプール
 	 */
-	private Thread _listen;
+	private final ExecutorService _pool;
+
 
 	/**
 	 * ロガー
@@ -95,15 +92,20 @@ public class HttpServer implements Closeable{
 	 *
 	 * @param port サーバの待ち受けポート
 	 * @param handler HTTPメッセージのハンドラ
-	 * @param threads 同時に処理するリクエストの数
+	 * @param nThreds 同時に処理するリクエストの数
 	 */
-	public HttpServer(final int port, final RequestHandler handler, final int threads){
+	public HttpServer(final int port, final RequestHandler handler, final int nThreds){
 		assert port > 0;
 		assert handler != null;
+		assert nThreds > 0;
 
 		this._port = port;
 		this._handler = handler;
-		this._threads = threads;
+
+		// リンスソケット用のスレッドを一つ追加する
+		//this._pool = Executors.newFixedThreadPool(nThreds + 1);
+		this._pool = Executors.newCachedThreadPool();
+
 
 	}
 
@@ -122,27 +124,17 @@ public class HttpServer implements Closeable{
 
 		// ソケットの作成
 		final ServerSocket socket = new ServerSocket();
-		LOGGER.info("ソケットを作成しました");
+		LOGGER.info("Created new server socket.");
 
 		socket.setReuseAddress(true);
-		socket.bind(new InetSocketAddress(this._port));
 
-		LOGGER.info("ソケットをバインドしました");
+		final SocketAddress addr = new InetSocketAddress(this._port);
+		socket.bind(addr);
+		LOGGER.info("Binded the socket to " + addr);
 
-		LOGGER.info("ソケットのリスンを開始します");
-		if(this._threads == 1){
 
-			this._listener = new ListenWorker(socket, new SingleThread());
-
-		}else{
-
-			this._listener = new ListenWorker(socket, new MultiThread(this._threads));
-
-		}
-
-		this._listen = new Thread(this._listener);
-		this._listen.setName(ListenWorker.class.getSimpleName());
-		this._listen.start();
+		this._listener = new ListenWorker(socket);
+		this._pool.execute(this._listener);
 
 	}
 
@@ -159,16 +151,8 @@ public class HttpServer implements Closeable{
 		if(this._listener != null){
 
 			this._listener.close();
-			try {
+			this._pool.shutdown();
 
-				this._listen.join();
-
-			} catch (InterruptedException e) {
-
-				// TODO 自動生成された catch ブロック
-				e.printStackTrace();
-
-			}
 
 		}
 
@@ -183,23 +167,14 @@ public class HttpServer implements Closeable{
 	private final class ListenWorker implements Runnable{
 
 		/**
-		 * Httpサーバが利用するソケット
+		 * 待ち受けソケット
 		 */
 		private final ServerSocket _serverSocket;
 
-		/**
-		 * 接続要求応答ポリシ
-		 */
-		private final ServicePolicy _policy;
-
-		/**
-		 * 指定されたポリシで動作するリスンスレッドクラスを作成する．
-		 * @param policy 接続要求応答ポリシ
-		 */
-		public ListenWorker(final ServerSocket socket, final ServicePolicy policy){
+		public ListenWorker(final ServerSocket socket){
+			assert socket != null;
 
 			this._serverSocket = socket;
-			this._policy = policy;
 
 		}
 
@@ -209,22 +184,28 @@ public class HttpServer implements Closeable{
 		@Override
 		public void run() {
 
+			// スレッド名称の変更
+			Thread.currentThread().setName(this.getClass().getSimpleName());
+
+
+			LOGGER.info("Start listening " + this._serverSocket);
 			try{
 
 				// 接続要求を待つ
 				for (Socket socket = this._serverSocket.accept(); socket != null; socket = this._serverSocket.accept()) {
 
-					this._policy.doService(socket);
+					_pool.execute(new ServiceWorker(socket));
 
 				}
 
 			}catch(SocketException e){
 
-				LOGGER.info("サーバの待ち受けが終了しました");
+				LOGGER.info("Stoped the listening " + this._serverSocket + " (caused by " + e.getLocalizedMessage() + ")");
 
 			}catch(IOException e){
 
-				LOGGER.severe(e.getLocalizedMessage());
+				LOGGER.severe("Stoped the listening " + this._serverSocket + " (caused by " + e.getLocalizedMessage() + ")");
+
 			}
 
 		}
@@ -236,6 +217,7 @@ public class HttpServer implements Closeable{
 		public void close() throws IOException{
 
 			this._serverSocket.close();
+			LOGGER.info("Closed " + this._serverSocket);
 
 		}
 
@@ -274,11 +256,13 @@ public class HttpServer implements Closeable{
 
 			try{
 
+				LOGGER.info("Respond a request from " + this._socket);
+
 				// KeepAliveの設定
 				this._socket.setKeepAlive(true);
 				this._socket.setSoTimeout(Timeout);
 
-				// ストリームの取得
+				// 入出力ストリームの取得
 				InputStream input = this._socket.getInputStream();
 				OutputStream output = this._socket.getOutputStream();
 
@@ -293,21 +277,24 @@ public class HttpServer implements Closeable{
 
 						// リクエストオブジェクト
 						request = new Request(input, prefix);
+						LOGGER.info("Receieved " + request.toOnelineString() + " from " + this._socket);
 
 						// スレッド名称の変更
 						Thread.currentThread().setName(request.toString());
 
 						// リクエストに切断要求が含まれているか
-						isKeepAlive &= !request.getHeader().containsValue(HeaderName.Connection, "close");
+						isKeepAlive &= !request.isClosing();
 
 						// リクエストの実行
 						final Response response = _handler.doRequest(request);
+						LOGGER.info("Created " + response.toOnelineString() + " of " + request.toOnelineString());
 
 						// レスポンスに切断要求が含まれているか
-						isKeepAlive &= !response.getHeader().containsValue(HeaderName.Connection, "close");
+						isKeepAlive &= !response.isClosing();
 
 						// レスポンスの書き出し
-						response.writeMessage(output);
+						response.writeMessage(new NoCloseOutputStream(output));
+						LOGGER.info("Sended " + response.toOnelineString() + " of " + request.toOnelineString());
 
 					}
 
@@ -322,12 +309,12 @@ public class HttpServer implements Closeable{
 				}catch(SocketTimeoutException e){
 
 					// 正常なフロー
-					LOGGER.fine(e.getLocalizedMessage());
+					LOGGER.info(this._socket + "  is timeout (" + e.getLocalizedMessage() + ")");
 
 				}catch(SocketException e){
 
 					// 突然切断されることもある。
-					LOGGER.info(e.getLocalizedMessage());
+					LOGGER.warning("SocketException is occured for " + this._socket + " : " + e.getLocalizedMessage());
 
 				}finally{
 
@@ -360,7 +347,7 @@ public class HttpServer implements Closeable{
 
 					} catch (IOException e) {
 
-						LOGGER.warning("ソケットのクローズエラー");
+						LOGGER.warning("Cannot close " + this._socket);
 
 					}
 
@@ -368,6 +355,8 @@ public class HttpServer implements Closeable{
 
 				// スレッドの名称を変更
 				Thread.currentThread().setName("Sleep");
+				LOGGER.info("Closed " + this._socket);
+
 
 			}
 
@@ -375,62 +364,5 @@ public class HttpServer implements Closeable{
 
 	}
 
-	/**
-	 * HttpServerクラスの振る舞いを制御するインタフェイス
-	 *
-	 * @author KAWAMOTO Junpei
-	 *
-	 */
-	private interface ServicePolicy{
-
-		public void doService(final Socket socket);
-
-	}
-
-	/**
-	 * HttpServerクラスはリクエストにシングルスレッドで答えます．
-	 *
-	 * @author KAWAMOTO Junpei
-	 *
-	 */
-	private class SingleThread implements ServicePolicy{
-
-		public void doService(final Socket socket){
-
-			// 単一スレッドでのデバッグ用
-			final Runnable worker = new ServiceWorker(socket);
-			worker.run();
-
-		}
-
-	};
-
-	/**
-	 * HttpServerクラスはリクエストにマルチスレッドで答えます．
-	 *
-	 * @author KAWAMOTO Junpei
-	 *
-	 */
-	private class MultiThread implements ServicePolicy{
-
-		private final ExecutorService _pool;
-
-		/**
-		 * マルチスレッドポリシを作成します．
-		 */
-		public MultiThread(final int n){
-
-			this._pool = Executors.newFixedThreadPool(n);
-
-		}
-
-		public void doService(final Socket socket){
-
-			// スレッドプールの利用
-			this._pool.execute(new ServiceWorker(socket));
-
-		}
-
-	};
 
 }

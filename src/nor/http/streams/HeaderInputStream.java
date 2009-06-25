@@ -15,11 +15,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http;
+package nor.http.streams;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import nor.http.Chars;
 import nor.util.CopyingInputStream;
 
 /**
@@ -30,7 +31,7 @@ import nor.util.CopyingInputStream;
  * @author KAWAMOTO Junpei
  *
  */
-class HeaderInputStream extends InputStream{
+public class HeaderInputStream extends InputStream{
 
 	/**
 	 * 入力元ストリーム

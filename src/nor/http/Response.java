@@ -121,6 +121,12 @@ public class Response extends Message{
 
 	}
 
+	public String toOnelineString(){
+
+		return "Response[" + this.getHeadLine() + "]";
+
+	}
+
 	//====================================================================
 	//	protected メソッド
 	//====================================================================
@@ -150,9 +156,10 @@ public class Response extends Message{
 	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#readBody(java.io.InputStream)
 	 */
 	@Override
-	protected Body readBody(final InputStream input) throws IOException {
+	protected Body2 readBody(final InputStream input) throws IOException {
 
-		return director.build(this, input);
+		return new Body2(this, input);
+		//return director.build(this, input);
 
 		// ボディの読み取り
 		//if("HEAD".equalsIgnoreCase(this.getRequest().getMethod()) || (100 <= this._code && this._code < 200) || this._code == 204 || this._code == 304){

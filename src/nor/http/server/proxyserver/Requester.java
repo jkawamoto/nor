@@ -21,10 +21,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.URL;
 import java.util.logging.Logger;
 
 import nor.http.BadMessageException;
+import nor.http.Header;
+import nor.http.HeaderName;
 import nor.http.Request;
 import nor.http.Response;
 import nor.util.NoCloseInputStream;
@@ -34,20 +35,27 @@ import nor.util.NoCloseOutputStream;
  * @author KAWAMOTO Junpei
  *
  */
-public class Requester {
+class Requester {
 
 	private static final Logger LOGGER = Logger.getLogger(Requester.class.getName());
 
-	private static final int Timeout = 30000;
+	private static final int Timeout = 300;
 
 	public Response request(final Request request) throws IOException{
+		assert request != null;
 
-		final URL url = new URL(request.getPath());
-		final String host = url.getHost();
-		final int port = url.getPort() != -1 ? url.getPort() : 80;
-		final InetSocketAddress addr = new InetSocketAddress(host, port);
+		final Header header = request.getHeader();
+		final String[] sp = header.get(HeaderName.Host).split(":");
 
-		return this.request(request, addr);
+		int port = 80;
+		if(sp.length > 1){
+
+			port = Integer.valueOf(sp[1]);
+
+		}
+
+		final String host = sp[0];
+		return this.request(request, new InetSocketAddress(host, port));
 
 	}
 
@@ -62,44 +70,45 @@ public class Requester {
 		Response response = null;
 
 		//リトライ回数
-		for(int i = 0; i != 2; ++i){
+//		for(int i = 0; i != 2; ++i){
 
 			try{
 
 				final OutputStream out = socket.getOutputStream();
 
 				// リクエストの送信
-				LOGGER.fine(String.format("Sending a request: [%s]", request));
+				LOGGER.fine("Sending " + request.toOnelineString());
 				request.writeMessage(new NoCloseOutputStream(out));
 
 				// レスポンスの作成
-				response = request.createResponse(new NoCloseInputStream(socket.getInputStream()));
+				//response = request.createResponse(new NoCloseInputStream(socket.getInputStream()));
+				response = request.createResponse(socket.getInputStream());
 
-				break;
+//				break;
 
 			}catch(final IOException e){
 
 				LOGGER.warning(e.getLocalizedMessage());
-
-				// ソケットの再作成
-				socket = new Socket();
-				socket.setKeepAlive(true);
-				socket.connect(address, Timeout);
+//
+//				// ソケットの再作成
+//				socket = new Socket();
+//				socket.setKeepAlive(true);
+//				socket.connect(address, Timeout);
 
 
 			}catch (final BadMessageException e) {
 
 				// ソケットがタイムアウトした可能性がある
-				// LOGGER.warning(String.format("Bad Message [%s]", request.toString()));
+				 LOGGER.warning(String.format("Bad Message [%s]", request.toString()));
 
-				// ソケットの再作成
-				socket = new Socket();
-				socket.setKeepAlive(true);
-				socket.connect(address, Timeout);
+//				// ソケットの再作成
+//				socket = new Socket();
+//				socket.setKeepAlive(true);
+//				socket.connect(address, Timeout);
 
 			}
 
-		}
+//		}
 
 
 		return response;

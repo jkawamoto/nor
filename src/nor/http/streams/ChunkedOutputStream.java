@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http;
+package nor.http.streams;
 
 import java.io.BufferedWriter;
 import java.io.FilterOutputStream;
@@ -25,6 +25,8 @@ import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import nor.http.Chars;
 
 /**
  * チャンク形式で書き出すストリームフィルタ．

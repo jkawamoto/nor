@@ -65,6 +65,7 @@ public class HttpException extends RuntimeException{
 		header.append(String.format(StatusLine, exception.code , exception.reason));
 		header.append("\n");
 		header.append("Content-Type: text/html; charset=utf-8\n");
+		header.append("Content-Length: 0");
 		header.append("Server: nor\n");
 		header.append("\n");
 

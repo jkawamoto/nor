@@ -24,7 +24,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.ho.yaml.Yaml;
+//import org.ho.yaml.Yaml;
 
 /**
  * @author KAWAMOTO Junpei
@@ -38,72 +38,72 @@ class BodyDirector {
 	@SuppressWarnings("unchecked")
 	public BodyDirector(){
 
-		try {
-
-			final Map<String, Map<String, Map<String, String>>> config = Yaml.loadType(new File("bodydirector.yaml"), (new HashMap<String, Map<String, Map<String, String>>>()).getClass());
-
-			for(final String prefix : config.keySet()){
-
-				for(final String type : config.get(prefix).keySet()){
-
-					for(final String subtype : config.get(prefix).get(type).keySet()){
-
-						this.set(prefix, type, subtype, BodyType.valueOf(config.get(prefix).get(type).get(subtype)));
-
-					}
-
-				}
-
-			}
-
-
-		} catch (FileNotFoundException e) {
-
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
-
-			// 初期設定
-			this.set("*", "*", "*", BodyType.BinaryBody);
-			this.set("*", "text", "*", BodyType.TextBody);
-			this.set("*", "*", "xhtml+xml", BodyType.TextBody);
-
-
-			try {
-				save();
-			} catch (IOException e1) {
-				// TODO 自動生成された catch ブロック
-				e1.printStackTrace();
-			}
-
-		}
+//		try {
+//
+//			final Map<String, Map<String, Map<String, String>>> config = Yaml.loadType(new File("bodydirector.yaml"), (new HashMap<String, Map<String, Map<String, String>>>()).getClass());
+//
+//			for(final String prefix : config.keySet()){
+//
+//				for(final String type : config.get(prefix).keySet()){
+//
+//					for(final String subtype : config.get(prefix).get(type).keySet()){
+//
+//						this.set(prefix, type, subtype, BodyType.valueOf(config.get(prefix).get(type).get(subtype)));
+//
+//					}
+//
+//				}
+//
+//			}
+//
+//
+//		} catch (FileNotFoundException e) {
+//
+//			// TODO 自動生成された catch ブロック
+//			e.printStackTrace();
+//
+//			// 初期設定
+//			this.set("*", "*", "*", BodyType.BinaryBody);
+//			this.set("*", "text", "*", BodyType.TextBody);
+//			this.set("*", "*", "xhtml+xml", BodyType.TextBody);
+//
+//
+//			try {
+//				save();
+//			} catch (IOException e1) {
+//				// TODO 自動生成された catch ブロック
+//				e1.printStackTrace();
+//			}
+//
+//		}
 
 	}
 
 	public void save() throws IOException{
 
-		final Map<String, Map<String, Map<String, String>>> dump = new HashMap<String, Map<String, Map<String, String>>>();
-		for(final String prefix : this._builders.keySet()){
-
-			final Map<String, Map<String, String>> entry = new HashMap<String, Map<String, String>>();
-			for(final String type : this._builders.get(prefix).keySet()){
-
-				final Map<String, String> ins = new HashMap<String, String>();
-				for(final String subtype : this._builders.get(prefix).get(type).keySet()){
-
-
-					ins.put(subtype, this._builders.get(prefix).get(type).get(subtype).name());
-
-				}
-
-				entry.put(type, ins);
-
-			}
-
-			dump.put(prefix, entry);
-
-		}
-
-		Yaml.dump(dump, new File("bodydirector.yaml"));
+//		final Map<String, Map<String, Map<String, String>>> dump = new HashMap<String, Map<String, Map<String, String>>>();
+//		for(final String prefix : this._builders.keySet()){
+//
+//			final Map<String, Map<String, String>> entry = new HashMap<String, Map<String, String>>();
+//			for(final String type : this._builders.get(prefix).keySet()){
+//
+//				final Map<String, String> ins = new HashMap<String, String>();
+//				for(final String subtype : this._builders.get(prefix).get(type).keySet()){
+//
+//
+//					ins.put(subtype, this._builders.get(prefix).get(type).get(subtype).name());
+//
+//				}
+//
+//				entry.put(type, ins);
+//
+//			}
+//
+//			dump.put(prefix, entry);
+//
+//		}
+//
+//		Yaml.dump(dump, new File("bodydirector.yaml"));
 
 
 	}
