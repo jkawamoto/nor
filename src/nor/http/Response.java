@@ -158,17 +158,20 @@ public class Response extends Message{
 	@Override
 	protected Body2 readBody(final InputStream input) throws IOException {
 
-		return new Body2(this, input);
 		//return director.build(this, input);
 
 		// ボディの読み取り
 		//if("HEAD".equalsIgnoreCase(this.getRequest().getMethod()) || (100 <= this._code && this._code < 200) || this._code == 204 || this._code == 304){
-//		if((100 <= this._code && this._code < 200) || this._code == 204 || this._code == 304){
-//
-//			// メッセージボディなし
-//			return new EmptyBody(this);
-//
-//		}else{
+		if((100 <= this._code && this._code < 200) || this._code == 204 || this._code == 304){
+
+			if(!this.getHeader().containsKey(HeaderName.ContentLength)){
+
+				this.getHeader().set(HeaderName.ContentLength, "0");
+
+			}
+		}
+
+		//else{
 //
 //			// TODO: コンテントタイプからボディを決定する．
 //			// TODO: リードオンリーボディを用意。フィルタに送るのはコピーでフィルタリング前に転送を完了させておく．
@@ -189,6 +192,7 @@ public class Response extends Message{
 //
 //		}
 
+		return new Body2(this, input);
 	}
 
 }

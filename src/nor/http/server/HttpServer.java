@@ -280,7 +280,7 @@ public class HttpServer implements Closeable{
 						LOGGER.info("Receieved " + request.toOnelineString() + " from " + this._socket);
 
 						// スレッド名称の変更
-						Thread.currentThread().setName(request.toString());
+						Thread.currentThread().setName(request.toOnelineString());
 
 						// リクエストに切断要求が含まれているか
 						isKeepAlive &= !request.isClosing();

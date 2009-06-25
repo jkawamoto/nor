@@ -25,8 +25,8 @@ import nor.http.Request;
  * @author KAWAMOTO Junpei
  *
  */
-public abstract class ResponseFilter<Streams>{
+public abstract class ResponseFilter{
 
-	public abstract void update(final Request request, final Header header, final Streams body);
+	public abstract void update(final FilterRegister register);
 
 }

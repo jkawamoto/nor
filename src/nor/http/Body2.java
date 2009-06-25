@@ -19,6 +19,8 @@ package nor.http;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,6 +35,7 @@ import java.util.zip.GZIPInputStream;
 
 import nor.http.streams.ChunkedInputStream;
 import nor.http.streams.ChunkedOutputStream;
+import nor.util.CopyingOutputStream;
 import nor.util.LimitedInputStream;
 
 /**
@@ -177,9 +180,6 @@ public class Body2 {
 
 	}
 
-
-
-
 	void writeBody(final OutputStream output) throws IOException{
 
 		OutputStream out = output;
@@ -192,34 +192,41 @@ public class Body2 {
 		if(header.containsKey(HeaderName.ContentLength)){
 
 			final int length = Integer.valueOf(header.get(HeaderName.ContentLength));
-			in = new LimitedInputStream(this._in, length);
+			in = new LimitedInputStream(in, length);
 
 		}else if(header.containsValue(HeaderName.TransferEncoding, "chunked")){
-			
+
 			in = new ChunkedInputStream(in);
-			out = new ChunkedOutputStream(out);
+			out = new ChunkedOutputStream(out, BufferSize);
 
 		}else{
 
-			out = new ChunkedOutputStream(out);
+			out = new ChunkedOutputStream(out, BufferSize);
 			header.set(HeaderName.TransferEncoding, "chunked");
+
 
 		}
 
 		// TODO: Length-requiredの場合はここで全データを受信する．
-		//in = new BufferedInputStream(in);
-		out = new BufferedOutputStream(out);
+		final CopyingOutputStream ocopy = new CopyingOutputStream(out);
 
 		final byte[] buffer = new byte[BufferSize];
 		int n = -1;
 		while((n = in.read(buffer)) != -1){
 
 			// ボディの書き出し
-			out.write(buffer, 0, n);
+			ocopy.write(buffer, 0, n);
+			ocopy.flush();
 
 		}
 
-		out.flush();
+		ocopy.flush();
+
+		// Postフィルタ用の処理
+		byte[] copy = ocopy.copy();
+		this._in = new ByteArrayInputStream(ocopy.copy());
+		header.remove(HeaderName.TransferEncoding);
+		header.set(HeaderName.ContentLength, Integer.toString(copy.length));
 
 	}
 
@@ -233,6 +240,19 @@ public class Body2 {
 
 			this.in = in;
 			this.out = out;
+
+		}
+
+		public void close(){
+
+			try{
+			in.close();
+			out.close();
+			}catch(IOException e){
+
+				e.printStackTrace();
+
+			}
 
 		}
 

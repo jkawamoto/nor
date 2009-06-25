@@ -17,6 +17,9 @@
  */
 package nor.http.server.proxyserver;
 
+import java.io.Closeable;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URL;
@@ -35,6 +38,7 @@ import nor.http.HeaderName;
 import nor.http.Request;
 import nor.http.Response;
 import nor.http.TextBody;
+import nor.http.Body2.IOStreams;
 import nor.http.error.BadRequestException;
 import nor.http.error.HttpException;
 import nor.http.error.InternalServerErrorException;
@@ -57,14 +61,9 @@ public class ProxyRequestHandler implements RequestHandler{
 	private final Subject<Request, RequestFilter> _requestFilters = BasicSubject.create();
 
 	/**
-	 * テキストレスポンスに対するフィルタ
-	 */
-	private final List<TextResponseFilter> _textResponseFilters = new ArrayList<TextResponseFilter>();
-
-	/**
 	 * バイナリレスポンスに対するフィルタ
 	 */
-	private final List<BinaryResponseFilter> _binaryResponseFilters = new ArrayList<BinaryResponseFilter>();
+	private final List<ResponseFilter> _responseFilters = new ArrayList<ResponseFilter>();
 
 	/**
 	 * スレッドプール
@@ -178,19 +177,10 @@ public class ProxyRequestHandler implements RequestHandler{
 			response = HttpException.CreateResponse(request, new RequestTimeoutException());
 
 		}
-		// TODO : フィルタリングを通さずスルーする設定も追加する
 
+		// TODO : フィルタリングを通さずスルーする設定も追加する
 		// レスポンスボディに対するフィルタリング
-//		final Body body = response.getBody();
-//		if(body instanceof TextBody){
-//
-//			this.filtering(request, response.getHeader(), (TextBody)body);
-//
-//		}else if(body instanceof BinaryBody){
-//
-//			this.filtering(request, response.getHeader(), (BinaryBody)body);
-//
-//		}
+		this.filtering(response);
 
 		// ヘッダの整理
 		response.setVersion("1.1");
@@ -265,40 +255,20 @@ public class ProxyRequestHandler implements RequestHandler{
 	/**
 	 * @param observer
 	 */
-	public void attach(TextResponseFilter observer) {
+	public void attach(ResponseFilter observer) {
 		assert observer != null;
 
-		this._textResponseFilters.add(observer);
+		this._responseFilters.add(observer);
 
 	}
 
 	/**
 	 * @param observer
 	 */
-	public void detach(TextResponseFilter observer) {
+	public void detach(ResponseFilter observer) {
 		assert observer != null;
 
-		this._textResponseFilters.remove(observer);
-
-	}
-
-	/**
-	 * @param observer
-	 */
-	public void attach(BinaryResponseFilter observer) {
-		assert observer != null;
-
-		this._binaryResponseFilters.add(observer);
-
-	}
-
-	/**
-	 * @param observer
-	 */
-	public void detach(BinaryResponseFilter observer) {
-		assert observer != null;
-
-		this._binaryResponseFilters.remove(observer);
+		this._responseFilters.remove(observer);
 
 	}
 
@@ -441,37 +411,13 @@ public class ProxyRequestHandler implements RequestHandler{
 
 
 
-	private void filtering(final Request request, final Header header, final TextBody body){
+	private void filtering(final Response response){
 
-		for(final TextResponseFilter filter : this._textResponseFilters){
+		// preフィルタのスレッドはこの時点で起動してしまう．
+		final FilterRegister register = new FilterRegister(response);
+		for(final ResponseFilter filter : this._responseFilters){
 
-			try {
-
-				final Runnable woker = new ResponseFilterWorker<TextBody.Streams, TextResponseFilter>(filter, request, header, body.getStreams());
-				this._pool.execute(woker);
-
-			} catch (IOException e) {
-				// TODO 自動生成された catch ブロック
-				e.printStackTrace();
-			}
-
-		}
-
-	}
-
-	private void filtering(final Request request, final Header header, final BinaryBody body){
-
-		for(final BinaryResponseFilter filter : this._binaryResponseFilters){
-
-			try {
-
-				final Runnable woker = new ResponseFilterWorker<BinaryBody.Streams, BinaryResponseFilter>(filter, request, header, body.getStreams());
-				this._pool.execute(woker);
-
-			} catch (IOException e) {
-				// TODO 自動生成された catch ブロック
-				e.printStackTrace();
-			}
+			filter.update(register);
 
 		}
 
