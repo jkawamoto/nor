@@ -20,13 +20,9 @@ package nor.http;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.zip.DeflaterInputStream;
 import java.util.zip.GZIPInputStream;
 
@@ -54,6 +50,7 @@ public class Body2 {
 	protected InputStream _in;
 
 	private static int BufferSize = 10240;
+
 
 	//====================================================================
 	//  コンストラクタ
@@ -134,51 +131,6 @@ public class Body2 {
 
 	}
 
-
-
-	public ReaderWriter getReaderWriter() throws IOException{
-
-		final IOStreams s = this.getIOStreams();
-
-		// 一度手抜きで作成してみる
-
-		// 文字コードの取得
-		final Header header = this._parent.getHeader();
-		final String charset = header.getContentType() != null ? header.getContentType().getCharset() : null;
-
-		if(charset != null){
-
-			return new ReaderWriter(new InputStreamReader(s.in, charset), new OutputStreamWriter(s.out, charset));
-
-		}else{
-
-			if(header.getContentType() != null){
-
-				header.getContentType().setCharset("utf-8");
-
-			}
-
-			return new ReaderWriter(new InputStreamReader(s.in), new OutputStreamWriter(s.out, "utf-8"));
-
-		}
-
-		// ストリームリーダが無ければ作成する
-//		if(this._reader == null){
-//
-//			this._reader = new DetectingInputStreamReader(this.parent.getHeader(), this.in);
-//			this.in = null;
-//
-//		}
-//
-//		final Reader reader = this._reader;
-//		final PipedWriter writer = new PipedWriter();
-//		this._reader = new PipedReader(writer);
-//
-//		return new Streams(reader, writer);
-
-
-	}
-
 	void writeBody(final OutputStream output) throws IOException{
 
 		OutputStream out = output;
@@ -218,7 +170,6 @@ public class Body2 {
 			ocopy.flush();
 
 		}
-
 		ocopy.flush();
 
 		// Postフィルタ用の処理
@@ -242,30 +193,10 @@ public class Body2 {
 
 		}
 
-		public void close(){
+		public void close() throws IOException{
 
-			try{
 			in.close();
 			out.close();
-			}catch(IOException e){
-
-				e.printStackTrace();
-
-			}
-
-		}
-
-	}
-
-	public class ReaderWriter{
-
-		public final Reader reader;
-		public final Writer writer;
-
-		private ReaderWriter(final Reader reader, final Writer writer){
-
-			this.reader = reader;
-			this.writer = writer;
 
 		}
 

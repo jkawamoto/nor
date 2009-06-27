@@ -20,6 +20,7 @@ package nor.http.server.proxyserver;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import nor.http.Header;
 import nor.http.Request;
@@ -43,6 +44,11 @@ public interface ResponseFilter extends Observer<ResponseFilter.ResponseInfo>{
 
 		private final List<TransferListener> _postFilters = new ArrayList<TransferListener>();
 
+		/**
+		 * ロガー
+		 */
+		private static final Logger LOGGER = Logger.getLogger(ResponseInfo.class.getName());
+
 		ResponseInfo(final Response response){
 
 			this._response = response;
@@ -60,11 +66,16 @@ public interface ResponseFilter extends Observer<ResponseFilter.ResponseInfo>{
 					@Override
 					public void run() {
 
-
 						listener.update(s);
+						try {
 
-						s.close();
+							s.close();
 
+						}catch(final IOException e){
+
+							LOGGER.warning("Cannot close " + this + " (caused by " + e.getLocalizedMessage() + ")");
+
+						}
 
 					}
 

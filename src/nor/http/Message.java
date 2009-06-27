@@ -236,31 +236,31 @@ public abstract class Message {
 	//====================================================================
 	//	private メソッド
 	//====================================================================
-	/**
-	 * ヘッダの出力．
-	 *
-	 * @param output 出力先ストリーム
-	 * @throws IOException ストリームへの操作にエラーが発生した場合
-	 */
-	private void writeHeader(final OutputStream output) throws IOException{
-
-		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output));
-
-		// ヘッドラインの書き出し
-		writer.append(this.getHeadLine());
-		writer.append('\r');
-		writer.append('\n');
-		writer.flush();
-
-		// ヘッダの書き出し
-		this._header.writeHeader(writer);
-
-		// バッファのフラッシュ
-		writer.append('\r');
-		writer.append('\n');
-		writer.flush();
-
-	}
+//	/**
+//	 * ヘッダの出力．
+//	 *
+//	 * @param output 出力先ストリーム
+//	 * @throws IOException ストリームへの操作にエラーが発生した場合
+//	 */
+//	private void writeHeader(final OutputStream output) throws IOException{
+//
+//		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output));
+//
+//		// ヘッドラインの書き出し
+//		writer.append(this.getHeadLine());
+//		writer.append('\r');
+//		writer.append('\n');
+//		writer.flush();
+//
+//		// ヘッダの書き出し
+//		this._header.writeHeader(writer);
+//
+//		// バッファのフラッシュ
+//		writer.append('\r');
+//		writer.append('\n');
+//		writer.flush();
+//
+//	}
 
 	//====================================================================
 	//	abstract メソッド

@@ -18,6 +18,7 @@
 package nor.http.server.proxyserver;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import nor.http.Header;
 import nor.http.Request;
@@ -46,6 +47,11 @@ public interface RequestFilter extends Observer<RequestFilter.RequestInfo>{
 
 		private final Request _request;
 
+		/**
+		 * ロガー
+		 */
+		private static final Logger LOGGER = Logger.getLogger(RequestInfo.class.getName());
+
 		RequestInfo(final Request request){
 
 			this._request = request;
@@ -63,11 +69,15 @@ public interface RequestFilter extends Observer<RequestFilter.RequestInfo>{
 					@Override
 					public void run() {
 
-
 						listener.update(s);
+						try {
 
-						s.close();
+							s.close();
 
+						} catch (IOException e) {
+							LOGGER.warning("Cannot close " + this + " (caused by " + e.getLocalizedMessage() + ")");
+
+						}
 
 					}
 

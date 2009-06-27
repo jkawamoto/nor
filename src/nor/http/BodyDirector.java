@@ -17,8 +17,6 @@
  */
 package nor.http;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -35,7 +33,6 @@ class BodyDirector {
 	// urlprefix->type->subtype->builder
 	private Map<String, Map<String, Map<String, BodyType>>> _builders = new HashMap<String, Map<String, Map<String, BodyType>>>();
 
-	@SuppressWarnings("unchecked")
 	public BodyDirector(){
 
 //		try {
