@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import nor.util.LimitedInputStream;
+
 /**
  * HTTPレスポンスを表すクラス．
  * このクラスのインスタンス一つが，一つのHTTPレスポンスに対応している．
@@ -160,8 +162,14 @@ public class Response extends Message{
 
 		//return director.build(this, input);
 
+		InputStream in = input;
+
 		// ボディの読み取り
-		//if("HEAD".equalsIgnoreCase(this.getRequest().getMethod()) || (100 <= this._code && this._code < 200) || this._code == 204 || this._code == 304){
+//		if(this.){
+//
+//			in = new LimitedInputStream(in, 0);
+//
+//		}
 		if((100 <= this._code && this._code < 200) || this._code == 204 || this._code == 304){
 
 			if(!this.getHeader().containsKey(HeaderName.ContentLength)){
@@ -169,6 +177,7 @@ public class Response extends Message{
 				this.getHeader().set(HeaderName.ContentLength, "0");
 
 			}
+
 		}
 
 		//else{
@@ -192,7 +201,7 @@ public class Response extends Message{
 //
 //		}
 
-		return new Body2(this, input);
+		return new Body2(this, in);
 	}
 
 }

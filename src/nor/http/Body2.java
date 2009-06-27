@@ -17,7 +17,6 @@
  */
 package nor.http;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,7 +27,6 @@ import java.util.zip.GZIPInputStream;
 
 import nor.http.streams.ChunkedInputStream;
 import nor.http.streams.ChunkedOutputStream;
-import nor.util.CopyingOutputStream;
 import nor.util.LimitedInputStream;
 
 /**
@@ -159,24 +157,17 @@ public class Body2 {
 		}
 
 		// TODO: Length-requiredの場合はここで全データを受信する．
-		final CopyingOutputStream ocopy = new CopyingOutputStream(out);
 
 		final byte[] buffer = new byte[BufferSize];
 		int n = -1;
 		while((n = in.read(buffer)) != -1){
 
 			// ボディの書き出し
-			ocopy.write(buffer, 0, n);
-			ocopy.flush();
+			out.write(buffer, 0, n);
+			out.flush();
 
 		}
-		ocopy.flush();
-
-		// Postフィルタ用の処理
-		byte[] copy = ocopy.copy();
-		this._in = new ByteArrayInputStream(ocopy.copy());
-		header.remove(HeaderName.TransferEncoding);
-		header.set(HeaderName.ContentLength, Integer.toString(copy.length));
+		out.flush();
 
 	}
 

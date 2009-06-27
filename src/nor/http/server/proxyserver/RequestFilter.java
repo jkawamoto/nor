@@ -69,13 +69,14 @@ public interface RequestFilter extends Observer<RequestFilter.RequestInfo>{
 					@Override
 					public void run() {
 
-						listener.update(s);
+						listener.update(s.in, s.out);
 						try {
 
 							s.close();
 
 						} catch (IOException e) {
-							LOGGER.warning("Cannot close " + this + " (caused by " + e.getLocalizedMessage() + ")");
+
+							LOGGER.warning("Cannot close " + this + " caused by " + e.getLocalizedMessage());
 
 						}
 
@@ -86,8 +87,7 @@ public interface RequestFilter extends Observer<RequestFilter.RequestInfo>{
 
 			} catch (IOException e) {
 
-				// TODO 自動生成された catch ブロック
-				e.printStackTrace();
+				LOGGER.severe("Cannot get IOStreams caused by " + e.getLocalizedMessage());
 
 			}
 

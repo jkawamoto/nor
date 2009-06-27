@@ -17,6 +17,8 @@
  */
 package nor.http.server.proxyserver;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -28,9 +30,11 @@ import nor.http.Header;
 import nor.http.HeaderName;
 import nor.http.Request;
 import nor.http.Response;
+import nor.http.Body2.IOStreams;
 import nor.http.error.BadRequestException;
 import nor.http.error.HttpException;
 import nor.http.server.RequestHandler;
+import nor.util.CopyingOutputStream;
 import nor.util.observer.BasicSubject;
 import nor.util.observer.Subject;
 
@@ -67,6 +71,8 @@ public class ProxyRequestHandler implements RequestHandler{
 	private static final String Via = "%s 1.1";
 
 	private final Requester _requester = new Requester();
+
+	private final int BufferSize = 10240;
 
 	/**
 	 * ロガー
@@ -393,6 +399,59 @@ public class ProxyRequestHandler implements RequestHandler{
 
 		final ResponseFilter.ResponseInfo info = new ResponseFilter.ResponseInfo(response);
 		this._responseFilters.notify(info);
+
+		if(info.getPostTransferListeners().size() != 0){
+
+			// Postフィルタ
+			try{
+
+				final IOStreams s = response.getBody().getIOStreams();
+				final Thread th = new Thread(new Runnable(){
+
+					@Override
+					public void run() {
+
+						final CopyingOutputStream out = new CopyingOutputStream(s.out);
+
+						try{
+
+							final byte[] buffer = new byte[BufferSize];
+							int n = -1;
+							while((n = s.in.read(buffer)) != -1){
+
+								// ボディの書き出し
+								out.write(buffer, 0, n);
+								out.flush();
+
+							}
+							out.flush();
+
+						}catch(IOException e){
+
+							e.printStackTrace();
+
+						}
+
+						// フィルタの実行
+						final byte[] copy = out.copy();
+						for(final TransferredListener l : info.getPostTransferListeners()){
+
+							l.update(new ByteArrayInputStream(copy), copy.length);
+
+						}
+
+					}
+
+				});
+				th.start();
+
+			}catch(IOException e){
+
+				e.printStackTrace();
+
+			}
+
+		}
 
 	}
 

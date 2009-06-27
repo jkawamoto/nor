@@ -42,7 +42,7 @@ public interface ResponseFilter extends Observer<ResponseFilter.ResponseInfo>{
 
 		private final Response _response;
 
-		private final List<TransferListener> _postFilters = new ArrayList<TransferListener>();
+		private final List<TransferredListener> _postFilters = new ArrayList<TransferredListener>();
 
 		/**
 		 * ロガー
@@ -66,7 +66,7 @@ public interface ResponseFilter extends Observer<ResponseFilter.ResponseInfo>{
 					@Override
 					public void run() {
 
-						listener.update(s);
+						listener.update(s.in, s.out);
 						try {
 
 							s.close();
@@ -84,14 +84,13 @@ public interface ResponseFilter extends Observer<ResponseFilter.ResponseInfo>{
 
 			} catch (IOException e) {
 
-				// TODO 自動生成された catch ブロック
-				e.printStackTrace();
+				LOGGER.severe("Cannot get IOStreams caused by " + e.getLocalizedMessage());
 
 			}
 
 		}
 
-		public void addPostTransferListener(final TransferListener listener){
+		public void addPostTransferListener(final TransferredListener listener){
 			assert listener != null;
 
 			this._postFilters.add(listener);
@@ -113,6 +112,12 @@ public interface ResponseFilter extends Observer<ResponseFilter.ResponseInfo>{
 		public Header getHeader(){
 
 			return this._response.getHeader();
+
+		}
+
+		List<TransferredListener> getPostTransferListeners(){
+
+			return this._postFilters;
 
 		}
 

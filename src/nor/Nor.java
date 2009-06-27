@@ -20,6 +20,8 @@ package nor;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import nor.http.Body2.IOStreams;
 import nor.http.server.HttpServer;
@@ -52,16 +54,16 @@ public class Nor {
 					info.addPreTransferListener(new TransferListener(){
 
 						@Override
-						public void update(IOStreams streams) {
+						public void update(InputStream in, OutputStream out) {
 
 							int n = 0;
 							byte[] buffer = new byte[10240];
 							try {
 
-								while((n = streams.in.read(buffer)) != -1){
+								while((n = in.read(buffer)) != -1){
 
 									file.write(buffer, 0, n);
-									streams.out.write(buffer, 0 , n);
+									out.write(buffer, 0 , n);
 
 								}
 

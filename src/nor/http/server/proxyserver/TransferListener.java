@@ -1,9 +1,10 @@
 package nor.http.server.proxyserver;
 
-import nor.http.Body2.IOStreams;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public interface TransferListener{
 
-	public void update(final IOStreams streams);
+	public void update(final InputStream input, final OutputStream output);
 
 }
