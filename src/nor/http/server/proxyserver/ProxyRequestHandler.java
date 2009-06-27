@@ -17,32 +17,21 @@
  */
 package nor.http.server.proxyserver;
 
-import java.io.Closeable;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import nor.http.BadMessageException;
-import nor.http.BinaryBody;
 import nor.http.Header;
 import nor.http.HeaderName;
 import nor.http.Request;
 import nor.http.Response;
-import nor.http.TextBody;
-import nor.http.Body2.IOStreams;
 import nor.http.error.BadRequestException;
 import nor.http.error.HttpException;
-import nor.http.error.InternalServerErrorException;
-import nor.http.error.RequestTimeoutException;
 import nor.http.server.RequestHandler;
 import nor.util.observer.BasicSubject;
 import nor.util.observer.Subject;
@@ -64,11 +53,6 @@ public class ProxyRequestHandler implements RequestHandler{
 	 * バイナリレスポンスに対するフィルタ
 	 */
 	private final List<ResponseFilter> _responseFilters = new ArrayList<ResponseFilter>();
-
-	/**
-	 * スレッドプール
-	 */
-	private final ExecutorService _pool = Executors.newFixedThreadPool(20);
 
 	/**
 	 * 外部プロキシのホスト
@@ -131,14 +115,16 @@ public class ProxyRequestHandler implements RequestHandler{
 		// リクエストに対するフィルタを実行
 		this._requestFilters.notify(request);
 
-		try{
 
-			// HTTPヘッダの整理
-			this.cleanRequestHeader(request.getHeader());
+		// HTTPヘッダの整理
+		this.cleanRequestHeader(request.getHeader());
 
-			if(this._proxy_host == null){ // 外部プロキシを使用しない場合
+		if(this._proxy_host == null){ // 外部プロキシを使用しない場合
 
-				// 要求パスを相対URLに書き替える *HTTP1.1の仕様上絶対パスを送信しても構わないが1.0サーバは相対パスで無ければならない*
+			try{
+
+				// 要求パスを相対URLに書き替える
+				// HTTP1.1の仕様上絶対パスを送信しても構わないが，相対パスしか認識できないサーバが存在する
 				final URL url = new URL(request.getPath());
 				if(url.getQuery() != null){
 
@@ -152,29 +138,18 @@ public class ProxyRequestHandler implements RequestHandler{
 
 				response = this._requester.request(request);
 
-			}else{ // 外部プロキシを使用する場合
+			} catch (final MalformedURLException e) { // URLの解析エラー
 
-				response = this._requester.request(request, new InetSocketAddress(this._proxy_host, this._proxy_port));
+				LOGGER.warning("Wrong request path (" + request.getPath() + ")");
+
+				final HttpException err = new BadRequestException();
+				response = err.createResponse(request);
 
 			}
 
-		} catch (final IOException e) {
+		}else{ // 外部プロキシを使用する場合
 
-			LOGGER.warning(String.format("IOException [%s]", e.getLocalizedMessage()));
-			response = HttpException.CreateResponse(request, new InternalServerErrorException());
-
-			e.printStackTrace();
-
-		} catch (final BadMessageException e) {
-
-			LOGGER.warning(String.format("Bad Request [%s]", e.getLocalizedMessage()));
-			response = HttpException.CreateResponse(request, new BadRequestException());
-
-		}
-		if(response == null){
-
-			LOGGER.warning(String.format("Timeout"));
-			response = HttpException.CreateResponse(request, new RequestTimeoutException());
+			response = this._requester.request(request, new InetSocketAddress(this._proxy_host, this._proxy_port));
 
 		}
 
@@ -409,15 +384,13 @@ public class ProxyRequestHandler implements RequestHandler{
 
 	}
 
-
-
 	private void filtering(final Response response){
 
 		// preフィルタのスレッドはこの時点で起動してしまう．
-		final FilterRegister register = new FilterRegister(response);
+		final ResponseFilter.ResponseInfo info = new ResponseFilter.ResponseInfo(response);
 		for(final ResponseFilter filter : this._responseFilters){
 
-			filter.update(register);
+			filter.update(info);
 
 		}
 

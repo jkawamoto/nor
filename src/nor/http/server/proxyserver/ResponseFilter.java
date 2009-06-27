@@ -17,16 +17,93 @@
  */
 package nor.http.server.proxyserver;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import nor.http.Header;
 import nor.http.Request;
-
+import nor.http.Response;
+import nor.http.Body2.IOStreams;
 
 /**
  * @author KAWAMOTO Junpei
  *
  */
-public abstract class ResponseFilter{
+public interface ResponseFilter{
 
-	public abstract void update(final FilterRegister register);
+	public void update(final ResponseInfo register);
+
+
+	public class ResponseInfo {
+
+		private final Response _response;
+
+		private final List<TransferListener> _postFilters = new ArrayList<TransferListener>();
+
+		ResponseInfo(final Response response){
+
+			this._response = response;
+
+		}
+
+		public void addPreTransferListener(final TransferListener listener){
+			assert listener != null;
+
+			try {
+
+				final IOStreams s = _response.getBody().getIOStreams();
+				final Thread th = new Thread(new Runnable(){
+
+					@Override
+					public void run() {
+
+
+						listener.update(s);
+
+						s.close();
+
+
+					}
+
+				});
+				th.start();
+
+			} catch (IOException e) {
+
+				// TODO 自動生成された catch ブロック
+				e.printStackTrace();
+
+			}
+
+		}
+
+		public void addPostTransferListener(final TransferListener listener){
+			assert listener != null;
+
+			this._postFilters.add(listener);
+
+		}
+
+		public Request getRequest(){
+
+			return this._response.getRequest();
+
+		}
+
+		public String getHeadline(){
+
+			return this._response.getHeadLine();
+
+		}
+
+		public Header getHeader(){
+
+			return this._response.getHeader();
+
+		}
+
+	}
+
 
 }

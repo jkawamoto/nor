@@ -47,6 +47,12 @@ public class HttpException extends RuntimeException{
 
 	}
 
+	public Response createResponse(final Request request){
+
+		return CreateResponse(request, this);
+
+	}
+
 
 	/**
 	 * 例外インスタンスに対応するレスポンスオブジェクトを生成する．

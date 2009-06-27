@@ -28,7 +28,9 @@ import nor.http.Header;
 import nor.http.HeaderName;
 import nor.http.Request;
 import nor.http.Response;
-import nor.util.NoCloseInputStream;
+import nor.http.error.HttpException;
+import nor.http.error.InternalServerErrorException;
+import nor.http.error.RequestTimeoutException;
 import nor.util.NoCloseOutputStream;
 
 /**
@@ -41,7 +43,7 @@ class Requester {
 
 	private static final int Timeout = 300;
 
-	public Response request(final Request request) throws IOException{
+	public Response request(final Request request){
 		assert request != null;
 
 		final Header header = request.getHeader();
@@ -59,58 +61,49 @@ class Requester {
 
 	}
 
-	public Response request(final Request request, final InetSocketAddress address) throws IOException{
-
-		// ソケットの取得
-		Socket socket = new Socket();
-		socket.setKeepAlive(true);
-		socket.connect(address, Timeout);
+	public Response request(final Request request, final InetSocketAddress address){
+		assert request != null;
+		assert address != null;
 
 		// 送受信
 		Response response = null;
 
-		//リトライ回数
-//		for(int i = 0; i != 2; ++i){
+		try{
 
-			try{
+			// ソケットの取得
+			Socket socket = new Socket();
+			socket.setKeepAlive(true);
+			socket.connect(address, Timeout);
 
-				final OutputStream out = socket.getOutputStream();
+			final OutputStream out = socket.getOutputStream();
 
-				// リクエストの送信
-				LOGGER.fine("Sending " + request.toOnelineString());
-				request.writeMessage(new NoCloseOutputStream(out));
+			// リクエストの送信
+			LOGGER.fine("Sending " + request.toOnelineString());
+			request.writeMessage(new NoCloseOutputStream(out));
 
-				// レスポンスの作成
-				//response = request.createResponse(new NoCloseInputStream(socket.getInputStream()));
-				response = request.createResponse(socket.getInputStream());
+			// レスポンスの作成
+			//response = request.createResponse(new NoCloseInputStream(socket.getInputStream()));
+			response = request.createResponse(socket.getInputStream());
 
-//				break;
+		}catch(final IOException e){
 
-			}catch(final IOException e){
+			LOGGER.warning("IOException is occurd (" + e.getLocalizedMessage() + ")");
 
-				LOGGER.warning(e.getLocalizedMessage());
-//
-//				// ソケットの再作成
-//				socket = new Socket();
-//				socket.setKeepAlive(true);
-//				socket.connect(address, Timeout);
+			final HttpException err = new InternalServerErrorException();
+			response = err.createResponse(request);
 
 
-			}catch (final BadMessageException e) {
+		}catch (final BadMessageException e) {
 
-				// ソケットがタイムアウトした可能性がある
-				 LOGGER.warning(String.format("Bad Message [%s]", request.toString()));
+			// ソケットがタイムアウトした可能性がある
+			LOGGER.warning(String.format("Bad Message [%s]", request.toString()));
 
-//				// ソケットの再作成
-//				socket = new Socket();
-//				socket.setKeepAlive(true);
-//				socket.connect(address, Timeout);
+			final HttpException err = new RequestTimeoutException();
+			response = err.createResponse(request);
 
-			}
+		}
 
-//		}
-
-
+		assert response != null;
 		return response;
 
 	}

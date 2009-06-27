@@ -17,10 +17,15 @@
  */
 package nor;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
+import nor.http.Body2.IOStreams;
 import nor.http.server.HttpServer;
 import nor.http.server.proxyserver.ProxyRequestHandler;
+import nor.http.server.proxyserver.ResponseFilter;
+import nor.http.server.proxyserver.TransferListener;
 
 /**
  * @author KAWAMOTO Junpei
@@ -34,6 +39,52 @@ public class Nor {
 	public static void main(String[] args) {
 
 		final ProxyRequestHandler h = new ProxyRequestHandler("Nor");
+
+
+		h.attach(new ResponseFilter(){
+
+			@Override
+			public void update(ResponseInfo register) {
+
+
+				try {
+
+					final FileOutputStream file = new FileOutputStream("F:\\Nor\\" + register.getRequest().getPath().replaceAll("\\W", ""));
+					register.addPreTransferListener(new TransferListener(){
+
+						@Override
+						public void update(IOStreams streams) {
+
+							int n = 0;
+							byte[] buffer = new byte[10240];
+							try {
+
+								while((n = streams.in.read(buffer)) != -1){
+
+									file.write(buffer, 0, n);
+									streams.out.write(buffer, 0 , n);
+
+								}
+
+								file.close();
+							} catch (IOException e) {
+								// TODO 自動生成された catch ブロック
+								e.printStackTrace();
+							}
+
+
+						}
+
+					});
+
+				} catch (FileNotFoundException e) {
+					// TODO 自動生成された catch ブロック
+					e.printStackTrace();
+				}
+			}
+
+		});
+
 
 		final HttpServer server = new HttpServer(9080, h, 1);
 
