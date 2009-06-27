@@ -34,7 +34,7 @@ public class FilterRegister {
 				public void run() {
 
 
-					listener.update(getRequest(), getResponseHeader(), s);
+					listener.update(s);
 
 					s.close();
 
