@@ -20,7 +20,6 @@ package nor.http.streams;
 import java.io.IOException;
 import java.io.InputStream;
 
-import nor.http.Chars;
 import nor.util.CopyingInputStream;
 
 /**

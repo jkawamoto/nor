@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import nor.http.Chars;
 
 /**
  * チャンク形式で書き出すストリームフィルタ．

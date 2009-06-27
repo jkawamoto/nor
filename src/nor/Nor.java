@@ -44,13 +44,12 @@ public class Nor {
 		h.attach(new ResponseFilter(){
 
 			@Override
-			public void update(ResponseInfo register) {
-
+			public void update(ResponseInfo info) {
 
 				try {
 
-					final FileOutputStream file = new FileOutputStream("F:\\Nor\\" + register.getRequest().getPath().replaceAll("\\W", ""));
-					register.addPreTransferListener(new TransferListener(){
+					final FileOutputStream file = new FileOutputStream("F:\\Nor\\" + info.getRequest().getPath().replaceAll("\\W", ""));
+					info.addPreTransferListener(new TransferListener(){
 
 						@Override
 						public void update(IOStreams streams) {

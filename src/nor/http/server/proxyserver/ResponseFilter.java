@@ -25,13 +25,15 @@ import nor.http.Header;
 import nor.http.Request;
 import nor.http.Response;
 import nor.http.Body2.IOStreams;
+import nor.util.observer.Observer;
 
 /**
  * @author KAWAMOTO Junpei
  *
  */
-public interface ResponseFilter{
+public interface ResponseFilter extends Observer<ResponseFilter.ResponseInfo>{
 
+	@Override
 	public void update(final ResponseInfo register);
 
 

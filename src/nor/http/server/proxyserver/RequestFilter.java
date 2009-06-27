@@ -17,7 +17,11 @@
  */
 package nor.http.server.proxyserver;
 
+import java.io.IOException;
+
+import nor.http.Header;
 import nor.http.Request;
+import nor.http.Body2.IOStreams;
 import nor.util.observer.Observer;
 
 /**
@@ -28,7 +32,7 @@ import nor.util.observer.Observer;
  * @author KAWAMOTO Junpei
  *
  */
-public interface RequestFilter extends Observer<Request>{
+public interface RequestFilter extends Observer<RequestFilter.RequestInfo>{
 
 	/**
 	 * 新たなHTTPリクエストが送信される前に呼ばれる．
@@ -36,8 +40,62 @@ public interface RequestFilter extends Observer<Request>{
 	 * @param request 送信されようとしているHTTPリクエスト
 	 */
 	@Override
-	public void update(final Request request);
+	public void update(final RequestInfo request);
 
+	public class RequestInfo {
+
+		private final Request _request;
+
+		RequestInfo(final Request request){
+
+			this._request = request;
+
+		}
+
+		public void addPreTransferListener(final TransferListener listener){
+			assert listener != null;
+
+			try {
+
+				final IOStreams s = _request.getBody().getIOStreams();
+				final Thread th = new Thread(new Runnable(){
+
+					@Override
+					public void run() {
+
+
+						listener.update(s);
+
+						s.close();
+
+
+					}
+
+				});
+				th.start();
+
+			} catch (IOException e) {
+
+				// TODO 自動生成された catch ブロック
+				e.printStackTrace();
+
+			}
+
+		}
+
+		public String getHeadline(){
+
+			return this._request.getHeadLine();
+
+		}
+
+		public Header getHeader(){
+
+			return this._request.getHeader();
+
+		}
+
+	}
 
 }
 

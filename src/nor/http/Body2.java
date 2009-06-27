@@ -17,10 +17,7 @@
  */
 package nor.http;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -93,19 +90,19 @@ public class Body2 {
 
 	public IOStreams getIOStreams() throws IOException{
 
-		InputStream in = null;
+		InputStream in = this._in;
 
 		// 転送コーディングの解決
 		final Header header = this._parent.getHeader();
 		if(header.containsKey(HeaderName.TransferEncoding)){
 
-			in = new ChunkedInputStream(this._in);
+			in = new ChunkedInputStream(in);
 			header.remove(HeaderName.TransferEncoding);
 
 		}else if(header.containsKey(HeaderName.ContentLength)){
 
 			final int length = Integer.valueOf(header.get(HeaderName.ContentLength));
-			in = new LimitedInputStream(this._in, length);
+			in = new LimitedInputStream(in, length);
 			header.remove(HeaderName.ContentLength);
 
 		}
@@ -131,6 +128,8 @@ public class Body2 {
 		final PipedOutputStream out = new PipedOutputStream();
 		this._in = new PipedInputStream(out);
 
+		assert in != null;
+		assert out != null;
 		return new IOStreams(in, out);
 
 	}

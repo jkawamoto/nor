@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nor.http.Chars;
 import nor.util.SequentialInputStream;
 
 /**

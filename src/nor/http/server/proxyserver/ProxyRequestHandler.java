@@ -20,8 +20,6 @@ package nor.http.server.proxyserver;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,12 +45,13 @@ public class ProxyRequestHandler implements RequestHandler{
 	/**
 	 * Httpリクエストに対するフィルタ
 	 */
-	private final Subject<Request, RequestFilter> _requestFilters = BasicSubject.create();
+	private final Subject<RequestFilter.RequestInfo, RequestFilter> _requestFilters = BasicSubject.create();
 
 	/**
-	 * バイナリレスポンスに対するフィルタ
+	 * Httpレスポンスに対するフィルタ
 	 */
-	private final List<ResponseFilter> _responseFilters = new ArrayList<ResponseFilter>();
+	private final Subject<ResponseFilter.ResponseInfo, ResponseFilter> _responseFilters = BasicSubject.create();
+	//private final List<ResponseFilter> _responseFilters = new ArrayList<ResponseFilter>();
 
 	/**
 	 * 外部プロキシのホスト
@@ -110,15 +109,13 @@ public class ProxyRequestHandler implements RequestHandler{
 	public Response doRequest(final Request request){
 		assert request != null;
 
-		Response response = null;
-
 		// リクエストに対するフィルタを実行
-		this._requestFilters.notify(request);
-
+		this.filtering(request);
 
 		// HTTPヘッダの整理
 		this.cleanRequestHeader(request.getHeader());
 
+		Response response = null;
 		if(this._proxy_host == null){ // 外部プロキシを使用しない場合
 
 			try{
@@ -152,9 +149,10 @@ public class ProxyRequestHandler implements RequestHandler{
 			response = this._requester.request(request, new InetSocketAddress(this._proxy_host, this._proxy_port));
 
 		}
+		assert response != null;
 
 		// TODO : フィルタリングを通さずスルーする設定も追加する
-		// レスポンスボディに対するフィルタリング
+		// レスポンスに対するフィルタリング
 		this.filtering(response);
 
 		// ヘッダの整理
@@ -233,7 +231,7 @@ public class ProxyRequestHandler implements RequestHandler{
 	public void attach(ResponseFilter observer) {
 		assert observer != null;
 
-		this._responseFilters.add(observer);
+		this._responseFilters.attach(observer);
 
 	}
 
@@ -243,7 +241,7 @@ public class ProxyRequestHandler implements RequestHandler{
 	public void detach(ResponseFilter observer) {
 		assert observer != null;
 
-		this._responseFilters.remove(observer);
+		this._responseFilters.detach(observer);
 
 	}
 
@@ -384,15 +382,17 @@ public class ProxyRequestHandler implements RequestHandler{
 
 	}
 
+	private void filtering(final Request request){
+
+		final RequestFilter.RequestInfo info = new RequestFilter.RequestInfo(request);
+		this._requestFilters.notify(info);
+
+	}
+
 	private void filtering(final Response response){
 
-		// preフィルタのスレッドはこの時点で起動してしまう．
 		final ResponseFilter.ResponseInfo info = new ResponseFilter.ResponseInfo(response);
-		for(final ResponseFilter filter : this._responseFilters){
-
-			filter.update(info);
-
-		}
+		this._responseFilters.notify(info);
 
 	}
 

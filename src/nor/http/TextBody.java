@@ -33,6 +33,7 @@ import java.io.Writer;
 import java.util.zip.DeflaterInputStream;
 import java.util.zip.GZIPInputStream;
 
+import nor.http.streams.Chars;
 import nor.http.streams.ChunkedInputStream;
 import nor.util.LimitedInputStream;
 
