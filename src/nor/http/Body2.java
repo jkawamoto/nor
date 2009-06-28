@@ -25,12 +25,14 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 import java.util.zip.DeflaterInputStream;
 import java.util.zip.GZIPInputStream;
 
 import nor.http.streams.ChunkedInputStream;
 import nor.http.streams.ChunkedOutputStream;
+import nor.util.CopyingOutputStream;
 import nor.util.LimitedInputStream;
 
 /**
@@ -44,12 +46,12 @@ public class Body2 {
 	/**
 	 * このメッセージボディを所有するHTTPメッセージ
 	 */
-	protected final Message _parent;
+	private final Message _parent;
 
 	/**
 	 * メッセージボディの入力ストリーム
 	 */
-	protected InputStream _in;
+	private InputStream _in;
 
 	private static int BufferSize = 10240;
 
@@ -167,17 +169,17 @@ public class Body2 {
 		}
 
 		// TODO: Length-requiredの場合はここで全データを受信する．
-
+		final CopyingOutputStream cout = new CopyingOutputStream(out);
 		final byte[] buffer = new byte[BufferSize];
 		int n = -1;
 		while((n = in.read(buffer)) != -1){
 
 			// ボディの書き出し
-			out.write(buffer, 0, n);
-			out.flush();
+			cout.write(buffer, 0, n);
+			cout.flush();
 
 		}
-		out.flush();
+		cout.flush();
 
 	}
 

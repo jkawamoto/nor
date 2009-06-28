@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,7 +57,6 @@ public class ProxyRequestHandler implements RequestHandler{
 	 * Httpレスポンスに対するフィルタ
 	 */
 	private final Subject<ResponseFilter.ResponseInfo, ResponseFilter> _responseFilters = BasicSubject.create();
-	//private final List<ResponseFilter> _responseFilters = new ArrayList<ResponseFilter>();
 
 	/**
 	 * 外部プロキシのホスト
@@ -73,6 +74,8 @@ public class ProxyRequestHandler implements RequestHandler{
 	private final Requester _requester = new Requester();
 
 	private final int BufferSize = 10240;
+
+	private final ExecutorService _executors = Executors.newCachedThreadPool();
 
 	/**
 	 * ロガー
@@ -406,7 +409,7 @@ public class ProxyRequestHandler implements RequestHandler{
 			try{
 
 				final IOStreams s = response.getBody().getIOStreams();
-				final Thread th = new Thread(new Runnable(){
+				_executors.execute(new Runnable(){
 
 					@Override
 					public void run() {
@@ -443,7 +446,6 @@ public class ProxyRequestHandler implements RequestHandler{
 					}
 
 				});
-				th.start();
 
 			}catch(IOException e){
 

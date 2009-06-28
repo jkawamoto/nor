@@ -18,6 +18,8 @@
 package nor.http.server.proxyserver;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 import nor.http.Header;
@@ -47,6 +49,8 @@ public interface RequestFilter extends Observer<RequestFilter.RequestInfo>{
 
 		private final Request _request;
 
+		private static final ExecutorService _executors = Executors.newCachedThreadPool();
+
 		/**
 		 * ロガー
 		 */
@@ -64,7 +68,7 @@ public interface RequestFilter extends Observer<RequestFilter.RequestInfo>{
 			try {
 
 				final IOStreams s = _request.getBody().getIOStreams();
-				final Thread th = new Thread(new Runnable(){
+				_executors.equals(new Runnable(){
 
 					@Override
 					public void run() {
@@ -83,7 +87,6 @@ public interface RequestFilter extends Observer<RequestFilter.RequestInfo>{
 					}
 
 				});
-				th.start();
 
 			} catch (IOException e) {
 

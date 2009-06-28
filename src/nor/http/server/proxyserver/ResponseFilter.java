@@ -20,6 +20,8 @@ package nor.http.server.proxyserver;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 import nor.http.Header;
@@ -44,6 +46,8 @@ public interface ResponseFilter extends Observer<ResponseFilter.ResponseInfo>{
 
 		private final List<TransferredListener> _postFilters = new ArrayList<TransferredListener>();
 
+		private static final ExecutorService _executors = Executors.newCachedThreadPool();
+
 		/**
 		 * ロガー
 		 */
@@ -61,7 +65,7 @@ public interface ResponseFilter extends Observer<ResponseFilter.ResponseInfo>{
 			try {
 
 				final IOStreams s = _response.getBody().getIOStreams();
-				final Thread th = new Thread(new Runnable(){
+				_executors.execute(new Runnable(){
 
 					@Override
 					public void run() {
@@ -80,7 +84,6 @@ public interface ResponseFilter extends Observer<ResponseFilter.ResponseInfo>{
 					}
 
 				});
-				th.start();
 
 			} catch (IOException e) {
 

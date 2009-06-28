@@ -19,6 +19,9 @@ package nor.http;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +48,9 @@ public class Response extends Message{
 	 * Reason-Phrase
 	 */
 	private String _message;
+
+	private List<LoadListener> _listeners = new ArrayList<LoadListener>();
+
 
 	/**
 	 * Status Line解析用正規表現
@@ -121,6 +127,24 @@ public class Response extends Message{
 
 	}
 
+	public void addLoadListener(final LoadListener listener){
+
+		this._listeners.add(listener);
+
+	}
+
+	@Override
+	public void writeMessage(OutputStream output) throws IOException {
+		// TODO 自動生成されたメソッド・スタブ
+		super.writeMessage(output);
+
+
+		// キャッシュ用に取得データをどっかのフォルダに追加しておく仕組みを作る．
+		// そして転送後にそのファイルから読み込んで，ポストフィルタに送る．
+
+
+
+	}
 
 	//====================================================================
 	//	protected メソッド
@@ -195,6 +219,12 @@ public class Response extends Message{
 //		}
 
 		return new Body2(this, in);
+	}
+
+
+
+	public interface LoadListener{
+
 	}
 
 }
