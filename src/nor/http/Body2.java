@@ -19,9 +19,13 @@ package nor.http;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.util.logging.Logger;
 import java.util.zip.DeflaterInputStream;
 import java.util.zip.GZIPInputStream;
 
@@ -48,6 +52,12 @@ public class Body2 {
 	protected InputStream _in;
 
 	private static int BufferSize = 10240;
+
+
+	/**
+	 * ロガー
+	 */
+	private static final Logger LOGGER = Logger.getLogger(Body2.class.getName());
 
 
 	//====================================================================
@@ -188,6 +198,32 @@ public class Body2 {
 
 			in.close();
 			out.close();
+
+		}
+
+		public Reader getReader(){
+
+			// 文字コードの判定
+			final ContentType type = _parent.getHeader().getContentType();
+			if(ContentType.UNKNOWN.equals(type.getCharset())){
+
+				return new InputStreamReader(this.in);
+
+			}else{
+
+				try {
+
+					return new InputStreamReader(this.in, type.getCharset());
+
+				} catch (final UnsupportedEncodingException e) {
+
+					LOGGER.warning("Unsupported encoding " + e.getLocalizedMessage());
+
+					return new InputStreamReader(this.in);
+
+				}
+
+			}
 
 		}
 

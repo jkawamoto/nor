@@ -58,11 +58,6 @@ public abstract class Message {
 	 */
 	private String _version;
 
-	/**
-	 *
-	 */
-	protected static final BodyDirector director = new BodyDirector();
-
 	//====================================================================
 	//	コンストラクタ
 	//====================================================================
@@ -215,6 +210,16 @@ public abstract class Message {
 //		out.close();
 
 	}
+
+
+
+	public String toOnelineString(){
+
+		return this.getClass().getSimpleName() + "[" + this.getHeadLine() + "]";
+
+	}
+
+
 
 	/* (非 Javadoc)
 	 * @see java.lang.Object#toString()

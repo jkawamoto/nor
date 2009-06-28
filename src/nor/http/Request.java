@@ -156,11 +156,11 @@ public class Request extends Message{
 
 	}
 
-	public String toOnelineString(){
-
-		return "Request[" + this.getHeadLine() + "]";
-
-	}
+//	public String toOnelineString(){
+//
+//		return "Request[" + this.getHeadLine() + "]";
+//
+//	}
 
 	//====================================================================
 	//	protected メソッド

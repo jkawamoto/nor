@@ -22,8 +22,6 @@ import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import nor.util.LimitedInputStream;
-
 /**
  * HTTPレスポンスを表すクラス．
  * このクラスのインスタンス一つが，一つのHTTPレスポンスに対応している．
@@ -123,11 +121,6 @@ public class Response extends Message{
 
 	}
 
-	public String toOnelineString(){
-
-		return "Response[" + this.getHeadLine() + "]";
-
-	}
 
 	//====================================================================
 	//	protected メソッド
