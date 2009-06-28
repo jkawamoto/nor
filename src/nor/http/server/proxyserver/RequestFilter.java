@@ -17,15 +17,8 @@
  */
 package nor.http.server.proxyserver;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Logger;
+import nor.http.Message;
 
-import nor.http.Header;
-import nor.http.Request;
-import nor.http.Body2.IOStreams;
-import nor.util.observer.Observer;
 
 /**
  * HTTPリクエストに対するフィルタインタフェース．
@@ -35,7 +28,7 @@ import nor.util.observer.Observer;
  * @author KAWAMOTO Junpei
  *
  */
-public interface RequestFilter extends Observer<RequestFilter.RequestInfo>{
+public interface RequestFilter extends MessageFilter<RequestFilter.Info>{
 
 	/**
 	 * 新たなHTTPリクエストが送信される前に呼ばれる．
@@ -43,73 +36,14 @@ public interface RequestFilter extends Observer<RequestFilter.RequestInfo>{
 	 * @param request 送信されようとしているHTTPリクエスト
 	 */
 	@Override
-	public void update(final RequestInfo request);
+	public void update(final RequestFilter.Info request);
 
-	public class RequestInfo {
+	public class Info extends MessageFilter.Info{
 
-		private final Request _request;
-
-		private static final ExecutorService _executors = Executors.newCachedThreadPool();
-
-		/**
-		 * ロガー
-		 */
-		private static final Logger LOGGER = Logger.getLogger(RequestInfo.class.getName());
-
-		RequestInfo(final Request request){
-
-			this._request = request;
-
-		}
-
-		public void addPreTransferListener(final TransferListener listener){
-			assert listener != null;
-
-			try {
-
-				final IOStreams s = _request.getBody().getIOStreams();
-				_executors.equals(new Runnable(){
-
-					@Override
-					public void run() {
-
-						listener.update(s.in, s.out);
-						try {
-
-							s.close();
-
-						} catch (IOException e) {
-
-							LOGGER.warning("Cannot close " + this + " caused by " + e.getLocalizedMessage());
-
-						}
-
-					}
-
-				});
-
-			} catch (IOException e) {
-
-				LOGGER.severe("Cannot get IOStreams caused by " + e.getLocalizedMessage());
-
-			}
-
-		}
-
-		public String getHeadline(){
-
-			return this._request.getHeadLine();
-
-		}
-
-		public Header getHeader(){
-
-			return this._request.getHeader();
-
+		public Info(final Message msg) {
+			super(msg);
 		}
 
 	}
 
 }
-
-

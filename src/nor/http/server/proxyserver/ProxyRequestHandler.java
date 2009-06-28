@@ -51,12 +51,12 @@ public class ProxyRequestHandler implements RequestHandler{
 	/**
 	 * Httpリクエストに対するフィルタ
 	 */
-	private final Subject<RequestFilter.RequestInfo, RequestFilter> _requestFilters = BasicSubject.create();
+	private final Subject<RequestFilter.Info, RequestFilter> _requestFilters = BasicSubject.create();
 
 	/**
 	 * Httpレスポンスに対するフィルタ
 	 */
-	private final Subject<ResponseFilter.ResponseInfo, ResponseFilter> _responseFilters = BasicSubject.create();
+	private final Subject<ResponseFilter.Info, ResponseFilter> _responseFilters = BasicSubject.create();
 
 	/**
 	 * 外部プロキシのホスト
@@ -393,14 +393,14 @@ public class ProxyRequestHandler implements RequestHandler{
 
 	private void filtering(final Request request){
 
-		final RequestFilter.RequestInfo info = new RequestFilter.RequestInfo(request);
+		final RequestFilter.Info info = new RequestFilter.Info(request);
 		this._requestFilters.notify(info);
 
 	}
 
 	private void filtering(final Response response){
 
-		final ResponseFilter.ResponseInfo info = new ResponseFilter.ResponseInfo(response);
+		final ResponseFilter.Info info = new ResponseFilter.Info(response);
 		this._responseFilters.notify(info);
 
 		if(info.getPostTransferListeners().size() != 0){

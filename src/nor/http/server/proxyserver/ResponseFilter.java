@@ -17,79 +17,32 @@
  */
 package nor.http.server.proxyserver;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Logger;
 
-import nor.http.Header;
 import nor.http.Request;
 import nor.http.Response;
-import nor.http.Body2.IOStreams;
-import nor.util.observer.Observer;
 
 /**
  * @author KAWAMOTO Junpei
  *
  */
-public interface ResponseFilter extends Observer<ResponseFilter.ResponseInfo>{
+public interface ResponseFilter extends MessageFilter<ResponseFilter.Info>{
 
 	@Override
-	public void update(final ResponseInfo register);
+	public void update(final Info register);
 
 
-	public class ResponseInfo {
+	public class Info extends MessageFilter.Info{
 
 		private final Response _response;
 
 		private final List<TransferredListener> _postFilters = new ArrayList<TransferredListener>();
 
-		private static final ExecutorService _executors = Executors.newCachedThreadPool();
-
-		/**
-		 * ロガー
-		 */
-		private static final Logger LOGGER = Logger.getLogger(ResponseInfo.class.getName());
-
-		ResponseInfo(final Response response){
+		Info(final Response response){
+			super(response);
 
 			this._response = response;
-
-		}
-
-		public void addPreTransferListener(final TransferListener listener){
-			assert listener != null;
-
-			try {
-
-				final IOStreams s = _response.getBody().getIOStreams();
-				_executors.execute(new Runnable(){
-
-					@Override
-					public void run() {
-
-						listener.update(s.in, s.out);
-						try {
-
-							s.close();
-
-						}catch(final IOException e){
-
-							LOGGER.warning("Cannot close " + this + " (caused by " + e.getLocalizedMessage() + ")");
-
-						}
-
-					}
-
-				});
-
-			} catch (IOException e) {
-
-				LOGGER.severe("Cannot get IOStreams caused by " + e.getLocalizedMessage());
-
-			}
 
 		}
 
@@ -103,18 +56,6 @@ public interface ResponseFilter extends Observer<ResponseFilter.ResponseInfo>{
 		public Request getRequest(){
 
 			return this._response.getRequest();
-
-		}
-
-		public String getHeadline(){
-
-			return this._response.getHeadLine();
-
-		}
-
-		public Header getHeader(){
-
-			return this._response.getHeader();
 
 		}
 
