@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,36 +21,16 @@ import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.Writer;
 
-/**
- * 出力と同時に複製を作成するフィルタ．
- *
- * @author KAWAMOTO Junpei
- *
- */
 public class CopyingStreamWriter extends FilterWriter{
 
-	/**
-	 * コピー
-	 */
 	private final StringBuilder _copy = new StringBuilder();
 
-	//====================================================================
-	//  コンストラクタ
-	//====================================================================
-	/**
-	 * ライタoutをフィルタリングするCopyingStreamWriterを作成する．
-	 *
-	 * @param out フィルタリング対象のライタ
-	 */
 	public CopyingStreamWriter(final Writer out) {
 
 		super(out);
 
 	}
 
-	//====================================================================
-	//  public メソッド
-	//====================================================================
 	/* (non-Javadoc)
 	 * @see java.io.FilterWriter#write(char[], int, int)
 	 */
@@ -140,19 +120,12 @@ public class CopyingStreamWriter extends FilterWriter{
 
 	}
 
-	/**
-	 * 作成した複製の取得する．
-	 * 書き込みが終了していない場合は，今まで書き込まれた文字列のコピーを返す．
-	 * 返されるコピーは深いコピーである．
-	 *
-	 * @return CopyingStreamWriterに書き込まれた文字列のコピー
-	 */
 	public String copy(){
 
 		return this._copy.toString();
 
-	}
 
+	}
 
 }
 

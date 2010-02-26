@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,26 +21,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * 入力と同時に複製を作成するフィルタ．
- *
- * @author KAWAMOTO Junpei
- *
- */
+
 public class CopyingInputStream extends SequentialInputStream{
 
-	/**
-	 * コピー
-	 */
 	private final ByteArrayOutputStream _copy = new ByteArrayOutputStream();
 
-	//====================================================================
-	//  コンストラクタ
-	//====================================================================
 	/**
-	 * 入力ストリームinをフィルタリングするCopyingInputStreamを作成する．
-	 *
-	 * @param in フィルタリング対象の入力ストリーム
+	 * @param in
 	 */
 	public CopyingInputStream(final InputStream in){
 
@@ -48,9 +35,6 @@ public class CopyingInputStream extends SequentialInputStream{
 
 	}
 
-	//====================================================================
-	//  public メソッド
-	//====================================================================
 	/* (non-Javadoc)
 	 * @see java.io.FilterInputStream#read()
 	 */
@@ -86,13 +70,9 @@ public class CopyingInputStream extends SequentialInputStream{
 	}
 
 	/**
-	 * 作成した複製の取得する．
-	 * 読み込みが終了していない場合は，今まで読み込まれたデータのコピーを返す．
-	 * 返されるコピーは深いコピーである．
-	 *
-	 * @return CopyingInputStreamから読み込まれたデータのコピー
+	 * @return
 	 */
-	public byte[] copy(){
+	public byte[] getCopy(){
 
 		return this._copy.toByteArray();
 

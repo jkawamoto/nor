@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,55 +21,37 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-/**
- * 書き込み可能サイズを指定するストリームフィルタ．
- * 設定されたサイズ以上の書き込みを行うとIOExceptionが投げられる．
- *
- * @author KAWAMOTO Junpei
- *
- */
 public class LimitedOutputStream extends FilterOutputStream{
 
-	/**
-	 * 残り書き込み可能サイズ
-	 */
-	private int _remains;
+	private int remains;
 
-	//====================================================================
-	//  コンストラクタ
-	//====================================================================
-	/**
-	 * 出力ストリームoutをフィルタリングしsizeだけの書き込みを許可するLimitedOutputStreamを作成する．
-	 *
-	 * @param out フィルタリング対象の出力ストリーム
-	 * @param size 書き込み可能サイズ
-	 */
 	public LimitedOutputStream(final OutputStream out, final int size) {
 
 		super(out);
-		this._remains = size;
+		this.remains = size;
 
 	}
 
-	//====================================================================
-	//  public メソッド
-	//====================================================================
+
+
 	/* (non-Javadoc)
 	 * @see java.io.FilterOutputStream#write(byte[], int, int)
 	 */
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
 
-		if(len > this._remains){
+		if(len > this.remains){
 
 			throw new IOException("書き込み可能サイズを超えています");
 
 		}
 
 		this.out.write(b, off, len);
-		this._remains -= len;
+		this.remains -= len;
 
 	}
+
+
 
 	/* (non-Javadoc)
 	 * @see java.io.FilterOutputStream#write(int)
@@ -77,7 +59,7 @@ public class LimitedOutputStream extends FilterOutputStream{
 	@Override
 	public void write(int b) throws IOException {
 
-		if(this._remains == 0){
+		if(this.remains == 0){
 
 			throw new IOException("これ以上書き込めません");
 
@@ -85,18 +67,14 @@ public class LimitedOutputStream extends FilterOutputStream{
 		}
 
 		this.out.write(b);
-		--this._remains;
+		--this.remains;
 
 	}
 
-	/**
-	 * 残り書き込み可能サイズを取得する．
-	 *
-	 * @return 残り書き込み可能サイズ
-	 */
+
 	public int remains(){
 
-		return this._remains;
+		return this.remains;
 
 	}
 

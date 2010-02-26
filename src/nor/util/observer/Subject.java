@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,29 +17,32 @@
  */
 package nor.util.observer;
 
-public interface Subject<Param, ObserverType extends Observer<Param>> {
 
+public interface Subject<Param, ObserverType extends Observer<Param>> {
+	
 	/**
-	 * このSubjectが通知すべきObserverを追加する．
-	 * 追加されたすべてのObserverに対しnotifyによる通知が届く．
-	 *
+	 * 通知先を追加します．
+	 * このSubjectが通知すべきObserverを追加します．追加されたすべてのObserverに対し
+	 * notifyによる通知が届きます．
+	 * 
 	 * @param observer 新たに通知先に加えるObserverインスタンス
 	 */
 	public void attach(final ObserverType observer);
 
 	/**
-	 * このSubjectの通知先からObserverを除外する．
-	 * 登録されていないObserverインスタンスに対してこのメソッドが呼ばれた場合何も行わない．
-	 *
+	 * 通知先の登録を解除します．
+	 * このSubjectの通知先からObserverを除外します．登録されていないObserverインスタンスに対して
+	 * このメソッドが呼ばれた場合，何も起こりません．
+	 * 
 	 * @param observer 通知先から除外するObserverインスタンス
 	 */
 	public void detach(final ObserverType observer);
-
+	
 	/**
-	 * Observerに通知を行う．
-	 * このSubjectに登録されているすべてのObserverに対し通知が行われる．
-	 * 通知の順序は不定である．
-	 *
+	 * Observerに通知を行います．
+	 * このSubjectに登録されているすべてのObserverに対し通知が行われます．
+	 * 通知の順序は不定です．
+	 * 
 	 * @param param 通知の際に送信されるパラメータインスタンス
 	 */
 	public void notify(final Param param);

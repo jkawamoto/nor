@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,24 +17,66 @@
  */
 package nor.http;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Cookieヘッダフィールドをラップするクラス．
+ * Cookieヘッダを表すクラス．
+ * HTTPヘッダ中のCookieヘッダを解析してキーやサブキー，そしてそれらに関連付けられた値を
+ * 取りだし管理します．また，そうしたエントリに対するアクセッサも提供します．
  *
  * @author KAWAMOTO Junpei
  */
 public class Cookie{
 
 	/**
-	 * Cookieの項目名と値のマップ
+	 * Cookieのペアを表すクラス
+	 *
+	 * @author KAWAMOTO Junpei
+	 *
 	 */
-	private final Map<String, String> _elements = new HashMap<String, String>();
+	private class Pair{
+
+		/**
+		 * データのキー
+		 */
+		private String _key;
+
+		/**
+		 * データの値
+		 */
+		private String _value;
+
+		public Pair(final String key, final String value){
+
+			this._key = key;
+			this._value = value;
+
+		}
+
+		public String getKey(){
+
+			return this._key;
+
+		}
+
+		public String getValue(){
+
+			return this._value;
+
+		}
+
+//		public void setValue(final String value){
+//
+//			this._value = value;
+//
+//		}
+
+	}
+
+	private final List<Pair> _pairs = new ArrayList<Pair>();
 
 	private static final String EQ = "=";
 	private static final String SP = ";";
@@ -42,7 +84,7 @@ public class Cookie{
 	/**
 	 * Cookie解析のための正規表現
 	 */
-	private static final Pattern Entry = Pattern.compile("([^=^;^\\s^,]+)=([^;^,]+)");
+	private static final Pattern ENTRY = Pattern.compile("([^=^;^\\s^,]+)=([^;^,]+)");
 
 	/**
 	 * ロガー
@@ -57,19 +99,26 @@ public class Cookie{
 	 *
 	 */
 	public void clear(){
+		LOGGER.entering(Cookie.class.getName(), "clear");
 
-		this._elements.clear();
+		this._pairs.clear();
+
+		LOGGER.exiting(Cookie.class.getName(), "clear");
 
 	}
 
 	/**
-	 * Cookieヘッダ項目が空か調べる．
+	 * SetCookieヘッダが有効かどうか．
 	 *
-	 * @return ヘッダ項目が空の場合true
+	 * @return 有効な場合trueを返す
 	 */
-	public boolean isEmpty() {
+	public boolean isAvailable() {
+		LOGGER.entering(Cookie.class.getName(), "isAvailable");
 
-		return this._elements.isEmpty();
+		final boolean ret = !this._pairs.isEmpty();
+
+		LOGGER.exiting(Cookie.class.getName(), "isAvailable", ret);
+		return ret;
 
 	}
 
@@ -80,47 +129,83 @@ public class Cookie{
 	 * @param value 値
 	 */
 	public void add(final String key, final String value){
+		LOGGER.entering(Cookie.class.getName(), "add", new Object[]{key, value});
 		assert key != null;
 		assert value != null;
 
-		this._elements.put(key, value);
+		this._pairs.add(new Pair(key, value));
 
+		LOGGER.exiting(Cookie.class.getName(), "add");
 	}
 
 	/**
-	 * 要素名keyを削除する．
+	 * 要素を削除する
 	 *
-	 * @param key 削除対象のキー
+	 * @param key 削除対象キー
 	 */
 	public void remove(final String key){
+		LOGGER.entering(Cookie.class.getName(), "remove", key);
 		assert key != null;
 
-		this._elements.remove(key);
+		final Iterator<Pair> iter = this._pairs.iterator();
+		while(iter.hasNext()){
 
+			final Pair pair = iter.next();
+			if(key.equals(pair.getKey())){
+
+				iter.remove();
+
+			}
+
+		}
+
+		LOGGER.exiting(Cookie.class.getName(), "remove");
 	}
 
 	/**
-	 * 要素名keyに対応する値を取得する．
+	 * 要素を取得する．
 	 *
 	 * @param key 取得するキー
 	 * @return キーに関連付けられている値
 	 */
 	public String get(final String key){
+		LOGGER.entering(Cookie.class.getName(), "get", key);
 		assert key != null;
 
-		return this._elements.get(key);
+		String ret = null;
+		for(final Pair pair : this._pairs){
 
+			if(key.equals(pair.getKey())){
+
+				ret = pair.getValue();
+
+			}
+
+		}
+
+		LOGGER.exiting(Cookie.class.getName(), "get", ret);
+		return ret;
 	}
 
 	/**
-	 * キー集合の取得．
+	 * キー集合の取得
 	 *
 	 * @return キー集合
 	 */
-	public Set<String> keySet() {
+	public String[] keys() {
+		LOGGER.entering(Cookie.class.getName(), "keys");
 
-		return this._elements.keySet();
+		final String[] ret = new String[this._pairs.size()];
 
+		int i = 0;
+		for(final Pair pair : this._pairs){
+
+			ret[i++] = pair.getKey();
+
+		}
+
+		LOGGER.exiting(Cookie.class.getName(), "keys", ret);
+		return ret;
 	}
 
 	/**
@@ -130,13 +215,14 @@ public class Cookie{
 	 */
 	@Override
 	public String toString(){
+		LOGGER.entering(Cookie.class.getName(), "toString");
 
 		final StringBuilder builder = new StringBuilder();
-		for(final String key : this._elements.keySet()){
+		for(final Pair pair : this._pairs){
 
-			builder.append(key);
+			builder.append(pair.getKey());
 			builder.append(EQ);
-			builder.append(this._elements.get(key));
+			builder.append(pair.getValue());
 			builder.append(SP);
 			builder.append(" ");
 
@@ -145,6 +231,7 @@ public class Cookie{
 		final String ret = builder.toString();
 		LOGGER.config(String.format("Cookieエントリ[%s]", ret));
 
+		LOGGER.exiting(Cookie.class.getName(), "toString", ret);
 		return ret;
 
 	}
@@ -158,21 +245,24 @@ public class Cookie{
 	 * @param cookie 解析するCookie文字列
 	 */
 	void parse(final String cookie){
+		LOGGER.entering(Cookie.class.getName(), "parse", cookie);
 		assert cookie != null;
 		LOGGER.config(String.format("解析対象Cookieの受信[%s]", cookie));
 
 		// 初期化
-		this.clear();
+		this._pairs.clear();
 
-		final Matcher m = Entry.matcher(cookie);
+		final Matcher m = ENTRY.matcher(cookie);
 		while(m.find()){
 
 			final String key = m.group(1);
 			final String value = m.group(2);
 
-			this.add(key, value);
+			this._pairs.add(new Pair(key, value));
 
 		}
+
+		LOGGER.exiting(Cookie.class.getName(), "parse");
 
 	}
 

@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,26 +22,12 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-/**
- * 出力と同時に複製を作成するフィルタ．
- *
- * @author KAWAMOTO Junpei
- *
- */
 public class CopyingOutputStream extends FilterOutputStream{
 
-	/**
-	 * コピー
-	 */
 	private final ByteArrayOutputStream _copy = new ByteArrayOutputStream();
 
-	//====================================================================
-	//  コンストラクタ
-	//====================================================================
 	/**
-	 * 出力ストリームoutをフィルタリングするCopyingOutputStreamを作成する．
-	 *
-	 * @param out フィルタリング対象の出力ストリーム
+	 * @param out
 	 */
 	public CopyingOutputStream(final OutputStream out){
 
@@ -49,9 +35,6 @@ public class CopyingOutputStream extends FilterOutputStream{
 
 	}
 
-	//====================================================================
-	//  public メソッド
-	//====================================================================
 	/* (non-Javadoc)
 	 * @see java.io.FilterOutputStream#write(int)
 	 */
@@ -75,13 +58,9 @@ public class CopyingOutputStream extends FilterOutputStream{
 	}
 
 	/**
-	 * 作成した複製の取得する．
-	 * 書き込みが終了していない場合は，今まで書き込まれたデータのコピーを返す．
-	 * 返されるコピーは深いコピーである．
-	 *
-	 * @return CopyingOutputStreamに書き込まれたデータのコピー
+	 * @return
 	 */
-	public byte[] copy(){
+	public byte[] getCopy(){
 
 		return this._copy.toByteArray();
 

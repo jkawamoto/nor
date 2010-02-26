@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,97 +15,81 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+//$Id: ProxyRequestHandler.java 439 2010-02-26 16:14:44Z kawamoto $
 package nor.http.server.proxyserver;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
+import java.net.Proxy.Type;
 import java.util.regex.Pattern;
 
-import nor.http.Header;
-import nor.http.HeaderName;
-import nor.http.Request;
-import nor.http.Response;
-import nor.http.Body2.IOStreams;
-import nor.http.error.BadRequestException;
-import nor.http.error.HttpException;
-import nor.http.server.RequestHandler;
-import nor.util.CopyingOutputStream;
-import nor.util.observer.BasicSubject;
-import nor.util.observer.Subject;
+import nor.http.ErrorResponseBuilder;
+import nor.http.ErrorStatus;
+import nor.http.HttpHeader;
+import nor.http.HttpRequest;
+import nor.http.HttpResponse;
+import nor.http.server.HttpRequestHandler;
+import nor.util.log.LoggedObject;
+
+import static nor.http.HeaderName.*;
+
 
 /**
- * プロキシサーバとして働くHttpリクエストハンドラ．
+ * プロキシサーバとして働くHttpRequestHandler．
+ * このクラスは，Httpサーバにおけるリクエストハンドラであり，HttpRequestHandleableを
+ * 実装している．要求が来ると，URLConnectionを用いてWeb上から該当のリソースを取得し
+ * レスポンスとして送信する．即ちプロキシとして動作する．
+ * <br />
+ * また，CookieやQuery，メッセージボディに対するフィルタリング機構を提供し，
+ * プロキシサーバを通過するこれらのデータをトラップし処理することが可能である．
+ * フィルタリングにはObserverパターンを利用している．
+ * <br />
+ *
+ * 外部への接続にプロキシを通さなければならない場合，環境変数に設定する．
+ * <dl>
+ * 	<dt>例</dt>
+ * 	<dd>-Dhttp.proxyHost=proxy.kuins.net -Dhttp.proxyPort=8080</dd>
+ * </dl>
  *
  * @author KAWAMOTO Junpei
  *
  */
-public class ProxyRequestHandler implements RequestHandler{
+public class ProxyRequestHandler extends LoggedObject implements HttpRequestHandler{
 
-	/**
-	 * Httpリクエストに対するフィルタ
-	 */
-	private final Subject<RequestFilter.Info, RequestFilter> _requestFilters = BasicSubject.create();
+	// このクラスはスレッドセーフ
 
-	/**
-	 * Httpレスポンスに対するフィルタ
-	 */
-	private final Subject<ResponseFilter.Info, ResponseFilter> _responseFilters = BasicSubject.create();
+//	/**
+//	 * 外部プロキシサーバのアドレス
+//	 */
+//	private Proxy proxy;
 
-	/**
-	 * 外部プロキシのホスト
-	 */
-	private String _proxy_host;
+	private final String name;
+	private final String version;
 
-	/**
-	 * 外部プロキシのポート
-	 */
-	private int _proxy_port;
+	private final Router router = new Router();
 
-	private final String _serverName;
-	private static final String Via = "%s 1.1";
-
-	private final Requester _requester = new Requester();
-
-	private final int BufferSize = 10240;
-
-	private final ExecutorService _executors = Executors.newCachedThreadPool();
-
-	/**
-	 * ロガー
-	 */
-	private static final Logger LOGGER = Logger.getLogger(ProxyRequestHandler.class.getName());
-
+	private static final String Close = "close";
 
 	//============================================================================
 	//  public メソッド
 	//============================================================================
-	/**
-	 * コンストラクタ．
-	 * 外部プロキシを利用しない場合のコンストラクタ
-	 */
-	public ProxyRequestHandler(final String serverName){
-		assert serverName != null && serverName.length() != 0;
+	public ProxyRequestHandler(final String name, final String version){
+		entering("<init>", name, version);
+		assert name != null && name.length() != 0;
+		assert version != null;
 
-		this._serverName = serverName;
+		this.name = name;
+		this.version = version;
 
-	}
+		HttpURLConnection.setFollowRedirects(false);
 
-	/**
-	 * コンストラクタ．
-	 * 外部プロキシを利用する設定の場合，プロキシの準備を行う．
-	 */
-	public ProxyRequestHandler(final String serverName, final String extProxyHost, final int extProxyPort){
-		this(serverName);
-
-		this.setExternalProxy(extProxyHost, extProxyPort);
-
+		exiting("<init>");
 	}
 
 	//============================================================================
@@ -115,60 +99,43 @@ public class ProxyRequestHandler implements RequestHandler{
 	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.HttpRequestHandleable#doRequest(jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.HttpRequest)
 	 */
 	@Override
-	public Response doRequest(final Request request){
+	public HttpResponse doRequest(final HttpRequest request){
+		entering("doRequest", request);
 		assert request != null;
 
-		// リクエストに対するフィルタを実行
-		this.filtering(request);
+		//LOGGER.info(request.getHeadLine());
 
-		// HTTPヘッダの整理
-		this.cleanRequestHeader(request.getHeader());
+		HttpResponse response = null;
+		try{
 
-		Response response = null;
-		if(this._proxy_host == null){ // 外部プロキシを使用しない場合
+			// ヘッダーの書き換え
+			this.cleanHeader(request);
 
-			try{
+			// URLコネクションの作成
+			HttpURLConnection con;
+			final URL url = new URL(request.getPath());
+			final Proxy proxy = this.router.query(request.getPath());
+			con = (HttpURLConnection)url.openConnection(proxy);
 
-				// 要求パスを相対URLに書き替える
-				// HTTP1.1の仕様上絶対パスを送信しても構わないが，相対パスしか認識できないサーバが存在する
-				final URL url = new URL(request.getPath());
-				if(url.getQuery() != null){
+			// リクエストの送信とレスポンスの作成
+			response = request.createResponse(con);
 
-					request.setPath(String.format("%s?%s", url.getPath(), url.getQuery()));
+		} catch (final IOException e) {
 
-				}else{
+			LOGGER.warning(String.format("IOException [%s]", e.getLocalizedMessage()));
 
-					request.setPath(url.getPath());
-
-				}
-
-				response = this._requester.request(request);
-
-			} catch (final MalformedURLException e) { // URLの解析エラー
-
-				LOGGER.warning("Wrong request path (" + request.getPath() + ")");
-
-				final HttpException err = new BadRequestException();
-				response = err.createResponse(request);
-
-			}
-
-		}else{ // 外部プロキシを使用する場合
-
-			response = this._requester.request(request, new InetSocketAddress(this._proxy_host, this._proxy_port));
+			final StringWriter body = new StringWriter();
+			e.printStackTrace(new PrintWriter(body));
+			response = ErrorResponseBuilder.create(request, ErrorStatus.InternalServerError, body.toString());
 
 		}
-		assert response != null;
-
-		// TODO : フィルタリングを通さずスルーする設定も追加する
-		// レスポンスに対するフィルタリング
-		this.filtering(response);
 
 		// ヘッダの整理
-		response.setVersion("1.1");
-		this.cleanResponseHeader(response);
+		this.cleanHeader(response);
 
-		LOGGER.fine("Created " + response);
+		LOGGER.info(request.getHeadLine() + " > " + response.getHeadLine());
+
+		exiting("doRequest", response);
 		return response;
 
 	}
@@ -180,281 +147,153 @@ public class ProxyRequestHandler implements RequestHandler{
 	 * 外部プロキシを設定する．
 	 * @param extProxyHost プロキシホスト名
 	 * @param extProxyPort プロキシポート番号
+	 * @throws MalformedURLException
 	 */
-	public void setExternalProxy(final String extProxyHost, final int extProxyPort){
-		assert extProxyHost != null;
-		assert extProxyPort >= 0;
+	public void addRouting(final Pattern pat, final URL extProxyHost){
+		entering("addRouting", pat, extProxyHost);
+		assert pat != null;
+		assert extProxyHost != null;;
 
-		final Pattern HOST = Pattern.compile("(.+://)?(.+)(:[0-9]+)?(/)?");
-		final Matcher m = HOST.matcher(extProxyHost);
-		if(m.find()){
+		final InetSocketAddress extProxyAddr = new InetSocketAddress(extProxyHost.getHost(), extProxyHost.getPort());
+		this.router.add(pat, new Proxy(Type.HTTP, extProxyAddr));
 
-			this._proxy_host = m.group(2);
-			this._proxy_port = extProxyPort;
+		LOGGER.info("外部プロキシを使用 [" + extProxyAddr + "]");
 
-		}else{
-
-			// TODO: 例外
-
-		}
-
+		exiting("addRouting");
 	}
 
 	/**
 	 * 外部プロキシの設定を解除する．
 	 *
 	 */
-	public void removeExternalProxy(){
+	public void removeRouting(final Pattern pat){
+		entering("removeRouting", pat);
+		assert pat != null;
 
-		this._proxy_host = null;
+		this.router.remove(pat);
 
-	}
-
-
-	//-----------------------------------------------------------------------------
-	// Observer パターン
-	//-----------------------------------------------------------------------------
-	/**
-	 * @param observer
-	 */
-	public void attach(RequestFilter observer) {
-		assert observer != null;
-
-		this._requestFilters.attach(observer);
-
-	}
-
-	/**
-	 * @param observer
-	 */
-	public void detach(RequestFilter observer) {
-		assert observer != null;
-
-		this._requestFilters.detach(observer);
-
-	}
-
-	/**
-	 * @param observer
-	 */
-	public void attach(ResponseFilter observer) {
-		assert observer != null;
-
-		this._responseFilters.attach(observer);
-
-	}
-
-	/**
-	 * @param observer
-	 */
-	public void detach(ResponseFilter observer) {
-		assert observer != null;
-
-		this._responseFilters.detach(observer);
-
+		exiting("removeRouting");
 	}
 
 	//============================================================================
 	//  private メソッド
 	//============================================================================
-	private void cleanRequestHeader(final Header header){
-		assert header != null;
+	private void cleanHeader(final HttpRequest request){
+		entering("cleanHeader", request);
+		assert request != null;
+
+		final HttpHeader header = request.getHeader();
 
 		// 許容できるエンコーディングの指定
-		header.remove(HeaderName.AcceptEncoding);
-		header.set(HeaderName.AcceptEncoding, "gzip, identity");
+		header.set(AcceptEncoding, "gzip, identity");
 
 		// 持続接続を行うか
 		String timeout = null;
 		boolean close = false;
-		if(header.containsKey(HeaderName.KeepAlive)){
+		if(header.containsKey(KeepAlive)){
 
-			timeout = header.get(HeaderName.KeepAlive);
+			timeout = header.get(KeepAlive);
 
-		}else if(header.containsValue(HeaderName.Connection, "close")){
+		}else if(header.containsValue(Connection, Close)){
 
 			close = true;
 
 		}
 
 		// ホップバイホップヘッダの削除
-		if(header.containsKey(HeaderName.Connection)){
+		if(header.containsKey(Connection)){
 
-			for(final String value : header.get(HeaderName.Connection).split(",")){
+			for(final String value : header.get(Connection).split(",")){
 
 				header.remove(value.trim());
 
 			}
-			header.remove(HeaderName.Connection);
+			header.remove(Connection);
 
 		}
+		// TODO: さらにプロキシ経由の場合も消していいのか？>とりあえず保存する
+		if(this.router.query(request.getPath()) == null && header.containsKey(ProxyConnection)){
 
-		// 外部プロキシを利用する場合は削除しない
-		if(this._proxy_host == null && header.containsKey(HeaderName.ProxyConnection)){
-
-			for(final String value : header.get(HeaderName.ProxyConnection).split(",")){
+			for(final String value : header.get(ProxyConnection).split(",")){
 
 				header.remove(value.trim());
 
 			}
-			header.remove(HeaderName.ProxyConnection);
+			header.remove(ProxyConnection);
 
 		}
 
 		// 持続接続の設定
 		if(timeout != null){
 
-			header.set(HeaderName.Connection, HeaderName.KeepAlive.toString());
-			header.set(HeaderName.KeepAlive, timeout);
+			header.set(Connection, KeepAlive.toString());
+			header.set(KeepAlive, timeout);
 
 		}else if(close){
 
-			header.set(HeaderName.Connection, "close");
+			header.set(Connection, Close);
 
 		}
 
 		// プロキシ通過スタンプ
-		header.set(HeaderName.Via, String.format(ProxyRequestHandler.Via, this._serverName));
+		header.add(Via, String.format("%s %s", this.version, this.name));
 
+		exiting("cleanHeader");
 	}
 
 	/**
-	 * レスポンス用にヘッダを整理する．．
-	 * ホップバイホップヘッダ等を削除し，オリジナルサーバ用に書き換えたヘッダを
-	 * コネクションに書き出す．
+	 * レスポンスヘッダの書き換え．
+	 * ホップバイホップヘッダを削除する．
 	 *
 	 * @param response 整理するレスポンス
 	 */
-	private void cleanResponseHeader(final Response response){
+	private void cleanHeader(final HttpResponse response){
+		entering("cleanHeader", response);
 		assert response != null;
 
-		final Header header = response.getHeader();
-
-		// 持続接続を行うか
-		String timeout = null;
-		boolean close = false;
-		if(header.containsKey(HeaderName.KeepAlive)){
-
-			timeout = header.get(HeaderName.KeepAlive);
-
-		}else if(header.containsValue(HeaderName.Connection, "close")){
-
-			close = true;
-
-		}else if(header.containsValue(HeaderName.ProxyConnection, "close")){
-
-			close = true;
-
-		}
+		final HttpHeader header = response.getHeader();
 
 		// ホップバイホップヘッダの削除
-		if(header.containsKey(HeaderName.Connection)){
+		if(header.containsKey(Connection)){
 
-			for(final String value : header.get(HeaderName.Connection).split(",")){
+			boolean isClose = false;
+			for(final String value : header.get(Connection).split(",")){
 
-				if(!"close".equalsIgnoreCase(value.trim())){
+				final String tvalue = value.trim();
+				if("close".equalsIgnoreCase(tvalue)){
+
+					isClose = true;
+
+				}else{
 
 					header.remove(value.trim());
 
 				}
 
 			}
-			header.remove(HeaderName.Connection);
+			header.remove(Connection);
+			if(isClose){
+
+				header.set(Connection, "close");
+
+			}
 
 		}
-		if(header.containsKey(HeaderName.ProxyConnection)){
+		if(header.containsKey(ProxyConnection)){
 
-			for(final String value : header.get(HeaderName.ProxyConnection).split(",")){
+			for(final String value : header.get(ProxyConnection).split(",")){
 
 				header.remove(value.trim());
 
 			}
-			header.remove(HeaderName.ProxyConnection);
-
-		}
-
-		// 持続接続の設定
-		if(timeout != null){
-
-			// TODO: 単純な追加で良いのか
-			header.set(HeaderName.Connection, HeaderName.KeepAlive);
-			header.set(HeaderName.KeepAlive, timeout);
-
-		}else if(close){
-
-			header.set(HeaderName.Connection, "close");
+			header.remove(ProxyConnection);
 
 		}
 
 		// プロキシ通過スタンプ
-		header.set(HeaderName.Via, String.format(ProxyRequestHandler.Via, this._serverName));
+		header.add(Via, String.format("%s %s", this.version, this.name));
 
-	}
-
-	private void filtering(final Request request){
-
-		final RequestFilter.Info info = new RequestFilter.Info(request);
-		this._requestFilters.notify(info);
-
-	}
-
-	private void filtering(final Response response){
-
-		final ResponseFilter.Info info = new ResponseFilter.Info(response);
-		this._responseFilters.notify(info);
-
-		if(info.getPostTransferListeners().size() != 0){
-
-			// Postフィルタ
-			try{
-
-				final IOStreams s = response.getBody().getIOStreams();
-				_executors.execute(new Runnable(){
-
-					@Override
-					public void run() {
-
-						final CopyingOutputStream out = new CopyingOutputStream(s.out);
-
-						try{
-
-							final byte[] buffer = new byte[BufferSize];
-							int n = -1;
-							while((n = s.in.read(buffer)) != -1){
-
-								// ボディの書き出し
-								out.write(buffer, 0, n);
-								out.flush();
-
-							}
-							out.flush();
-
-						}catch(IOException e){
-
-							e.printStackTrace();
-
-						}
-
-						// フィルタの実行
-						final byte[] copy = out.copy();
-						for(final TransferredListener l : info.getPostTransferListeners()){
-
-							l.update(new ByteArrayInputStream(copy), copy.length);
-
-						}
-
-					}
-
-				});
-
-			}catch(IOException e){
-
-				e.printStackTrace();
-
-			}
-
-		}
-
+		exiting("cleanHeader");
 	}
 
 }

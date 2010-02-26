@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,23 +21,10 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * 逐次読み出しのみをサポートするストリームフィルタ．
- * このフィルタを通した入力ストリームには逐次アクセスしかできなくなる．
- * resetメソッドを使用した場合，IOExceptionが投げられる．
- *
- * @author KAWAMOTO Junpei
- *
- */
 public class SequentialInputStream extends FilterInputStream{
 
-	//====================================================================
-	//  コンストラクタ
-	//====================================================================
 	/**
-	 * 入力ストリームinをフィルタリングするSequentialInputStreamを作成する．
-	 *
-	 * @param in フィルタリング対象の入力ストリーム
+	 * @param in
 	 */
 	protected SequentialInputStream(InputStream in) {
 
@@ -45,9 +32,6 @@ public class SequentialInputStream extends FilterInputStream{
 
 	}
 
-	//====================================================================
-	//  public メソッド
-	//====================================================================
 	/* (non-Javadoc)
 	 * @see java.io.FilterInputStream#markSupported()
 	 */
@@ -69,3 +53,5 @@ public class SequentialInputStream extends FilterInputStream{
 	}
 
 }
+
+

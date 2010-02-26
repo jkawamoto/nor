@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,10 @@
 package nor.util.observer;
 
 /**
- * Observerパターンにおける，Observerを表すインタフェース．
+ * Observerパターンにおける，Observerを表すインタフェースです．
+ * このインタフェースはObserverパターンの実装の簡略化の為に用意されたものです．
+ * Observerを実装したクラスは同パッケージ内のSubjectクラスに登録され監視することが
+ * 可能になります．
  *
  * @param <Param> Observerが受け取るパラメータの型
  * @author KAWAMOTO Junpei
@@ -29,12 +32,10 @@ public interface Observer<Param> {
 	/**
 	 * Subjectからの通知を受け取る．
 	 * Subjectに対しnotifyが呼ばれると，登録されているObserverのupdateへ
-	 * パラメータ型で指定されているクラスをパラメータとして通知される．
+	 * パラメータ型で指定されているクラスをパラメータとして通知されます．
 	 *
 	 * @param param 通知に対するパラメータ
 	 */
 	public void update(final Param param);
 
 }
-
-

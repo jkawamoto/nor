@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,41 +21,22 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-/**
- * 閉じられない出力ストリームフィルタ．
- *
- * @author KAWAMOTO Junpei
- *
- */
 public class NoCloseOutputStream extends FilterOutputStream{
 
-	/**
-	 * 出力ストリームoutをフィルタリングするNoCloseOutputStreamを作成する．
-	 *
-	 * @param out フィルタリング対象の出力ストリーム
-	 */
 	public NoCloseOutputStream(final OutputStream out){
 
 		super(out);
 
 	}
 
-	/* (非 Javadoc)
-	 * @see java.io.FilterOutputStream#close()
-	 */
 	@Override
 	public void close() throws IOException {
 
 	}
 
-	/**
-	 * ストリームを実際に閉じる．
-	 *
-	 * @throws IOException ストリーム操作にI/Oエラーが発生した場合
-	 */
 	public void reallyClose() throws IOException{
 
-		this.close();
+		this.out.close();
 
 	}
 

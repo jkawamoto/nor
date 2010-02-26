@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,33 +21,14 @@ import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
 
-/**
- * 逐次読み出しのみをサポートするフィルタ．
- * このフィルタを通したリーダには逐次アクセスしかできなくなる．
- * mark, resetメソッドを使用した場合，IOExceptionが投げられる．
- *
- * @author KAWAMOTO Junpei
- *
- */
 public class SequentialReader extends FilterReader{
 
-	//====================================================================
-	//  コンストラクタ
-	//====================================================================
-	/**
-	 * ストリームリーダinをフィルタリングするSequentialReaderを作成する．
-	 *
-	 * @param in フィルタリング対象のストリームリーダ
-	 */
 	public SequentialReader(final Reader in){
 
 		super(in);
 
 	}
 
-	//====================================================================
-	//  public メソッド
-	//====================================================================
 	/* (non-Javadoc)
 	 * @see java.io.FilterReader#mark(int)
 	 */
@@ -79,4 +60,5 @@ public class SequentialReader extends FilterReader{
 	}
 
 }
+
 

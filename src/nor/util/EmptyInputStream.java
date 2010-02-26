@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,23 +20,31 @@ package nor.util;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * 空の入力ストリーム．
- * この入力ストリームは常にEOFにセットされている．
- *
- * @author KAWAMOTO Junpei
- *
- */
 public class EmptyInputStream extends InputStream{
 
-	/* (非 Javadoc)
-	 * @see java.io.InputStream#read()
-	 */
+	private static InputStream instance = null;
+
+	private EmptyInputStream(){
+
+	}
+
 	@Override
 	public int read() throws IOException {
-
 		return -1;
+	}
+
+	public static synchronized InputStream getInstance(){
+
+		if(instance == null){
+
+			instance = new EmptyInputStream();
+
+		}
+
+		return instance;
 
 	}
 
 }
+
+
