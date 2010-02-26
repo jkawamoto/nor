@@ -19,6 +19,7 @@ package nor;
 
 import java.io.IOException;
 
+import nor.http.nserver.HttpNServer;
 import nor.http.server.HttpServer;
 import nor.http.server.proxyserver.ProxyRequestHandler;
 
@@ -33,20 +34,21 @@ public class Nor {
 	 */
 	public static void main(String[] args) {
 
-		final ProxyRequestHandler h = new ProxyRequestHandler("Nor");
-
-
-
-
-		final HttpServer server = new HttpServer(9080, h, 1);
+		final ProxyRequestHandler h = new ProxyRequestHandler("Nor", "1.0");
+		final HttpServer server = new HttpNServer(h);
 
 		try {
 
-			server.doService();
+			server.start("127.0.0.1", 9080, 4);
+
+			System.in.read();
+			server.close();
 
 		} catch (IOException e) {
+
 			// TODO 自動生成された catch ブロック
 			e.printStackTrace();
+
 		}
 
 	}

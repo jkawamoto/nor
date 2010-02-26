@@ -20,9 +20,9 @@ package nor.http.error;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import nor.http.BadMessageException;
-import nor.http.Request;
-import nor.http.Response;
+import nor.http.HttpError;
+import nor.http.HttpRequest;
+import nor.http.HttpResponse;
 
 /**
  * @author KAWAMOTO Junpei
@@ -47,7 +47,7 @@ public class HttpException extends RuntimeException{
 
 	}
 
-	public Response createResponse(final Request request){
+	public HttpResponse createResponse(final HttpRequest request){
 
 		return CreateResponse(request, this);
 
@@ -61,11 +61,11 @@ public class HttpException extends RuntimeException{
 	 * @param exception 例外インスタンス
 	 * @return 生成されたエラーレスポンス
 	 */
-	public static Response CreateResponse(final Request request, final HttpException exception){
+	public static HttpResponse CreateResponse(final HttpRequest request, final HttpException exception){
 		assert request != null;
 		assert exception != null;
 
-		Response ret = null;
+		HttpResponse ret = null;
 
 		final StringBuilder header = new StringBuilder();
 		header.append(String.format(StatusLine, exception.code , exception.reason));
@@ -75,18 +75,18 @@ public class HttpException extends RuntimeException{
 		header.append("Server: nor\n");
 		header.append("\n");
 
+
 		try {
 
 			ret = request.createResponse(new ByteArrayInputStream(header.toString().getBytes()));
 
-		} catch (IOException e) {
+		} catch (HttpError e) {
 
-
-
-		} catch (BadMessageException e) {
-
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
 
 		}
+
 
 		assert ret != null;
 		return ret;
