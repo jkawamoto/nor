@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-//$Id: HttpTServer.java 439 2010-02-26 16:14:44Z kawamoto $
+//$Id: HttpTServer.java 452 2010-04-01 10:18:03Z kawamoto $
 package nor.http.tserver;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ import nor.util.log.LoggedObject;
 /**
  * Httpサーバ
  *
- * @version $Rev: 439 $
+ * @version $Rev: 452 $
  * @author KAWAMOTO Junpei
  *
  */
@@ -88,12 +88,11 @@ public class HttpTServer extends LoggedObject implements HttpServer{
 	 *
 	 * @param hostname バインドするホスト名またはIPアドレス
 	 * @param port 待ち受けポート番号
-	 * @param nThreads 同時に処理するリクエストの上限数．0 を指定した場合無制限となる．
 	 * @throws IOException I/Oエラーが発生した場合
 	 */
 	@Override
-	public void start(final String hostname, final int port, final int nThreads) throws IOException{
-		entering("start", hostname, port, nThreads);
+	public void start(final String hostname, final int port) throws IOException{
+		entering("start", hostname, port);
 
 		// ソケットの作成
 		final ServerSocket socket = new ServerSocket();
@@ -103,7 +102,7 @@ public class HttpTServer extends LoggedObject implements HttpServer{
 		socket.bind(new InetSocketAddress(hostname, port));
 		LOGGER.info("Bind the socket to port " + port);
 
-		this.listener = new ListenWorker(socket, this.handler, nThreads);
+		this.listener = new ListenWorker(socket, this.handler, 4);
 		LOGGER.info("Start listening.");
 
 		this.listenThread = new Thread(this.listener);

@@ -17,9 +17,10 @@
  */
 package nor.http.tserver;
 
+import static nor.http.HeaderName.Connection;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,16 +28,11 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.logging.Logger;
 
-import nor.http.ErrorStatus;
-import nor.http.HttpError;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.server.HttpRequestHandler;
 import nor.util.NoCloseInputStream;
 import nor.util.NoCloseOutputStream;
-import nor.util.Stream;
-
-import static nor.http.HeaderName.Connection;;
 
 
 /**

@@ -26,22 +26,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.ClosedChannelException;
+import java.util.logging.Logger;
 
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.server.HttpRequestHandler;
-import nor.util.log.LoggedObject;
 
-class ServiceWorker extends LoggedObject implements Runnable, Closeable{
+class ServiceWorker implements Runnable, Closeable{
 
-	private final Queue<Connection> queue;
+	private final ThreadManager manager;
 	private final HttpRequestHandler handler;
 
 	private boolean running = true;
 
-	public ServiceWorker(final Queue<Connection> queue, final HttpRequestHandler handler){
+	private static final Logger LOGGER = Logger.getLogger(ServiceWorker.class.getName());
 
-		this.queue = queue;
+	public ServiceWorker(final ThreadManager manager, final HttpRequestHandler handler){
+
+		this.manager = manager;
 		this.handler = handler;
 
 	}
@@ -52,68 +54,87 @@ class ServiceWorker extends LoggedObject implements Runnable, Closeable{
 	@Override
 	public synchronized void run() {
 
-		try{
+		while(this.running){
 
-			while(this.running){
+			final Connection con = this.manager.poll();
+			if(con == null){
 
-				// スレッドの名称を変更
-				Thread.currentThread().setName("Sleep");
-				final Connection con = queue.remove();
-				//LOGGER.fine("ソケットが新しい要求を受理");
+				break;
 
-				try{
+			}
 
-					// ストリームの取得
-					final InputStream input = new BufferedInputStream(con.getInputStream());
-					final OutputStream output = new BufferedOutputStream(con.getOutputStream());
+			LOGGER.finest(Thread.currentThread().getName() + " begins to handle the " + con);
+			try{
 
-					// 切断要求が来るまで持続接続する
-					boolean keepAlive = true;
-					String prefix = "";
-					while(keepAlive){
+				// ストリームの取得
+				final InputStream input = new BufferedInputStream(con.getInputStream());
+				final OutputStream output = new BufferedOutputStream(con.getOutputStream());
 
-						// TODO: パイプライン化に対応。作れるだけリクエストを作成してキューに入れる．
+				// 切断要求が来るまで持続接続する
+				boolean keepAlive = true;
+				String prefix = "";
+				//					do{
 
-						// リクエストオブジェクト
-						final HttpRequest request = HttpRequest.create(input, prefix);
-						if(request == null){
+				// TODO: パイプライン化に対応。作れるだけリクエストを作成してキューに入れる．
 
-							break;
+				// リクエストオブジェクト
+				final HttpRequest request = HttpRequest.create(input, prefix);
+				if(request == null){
 
-						}
+					LOGGER.finest(Thread.currentThread().getName() + " receives a null request");
+					keepAlive = false;
+					//							break;
 
-						// スレッドの名称を変更
-						Thread.currentThread().setName(request.getHeadLine());
+				}else{
 
-						// リクエストに切断要求が含まれているか
-						keepAlive &= this.isKeepingAlive(request);
+					LOGGER.finest(Thread.currentThread().getName() + " receives the " + request);
 
-						// リクエストの実行
-						final HttpResponse response = handler.doRequest(request);
+					// リクエストに切断要求が含まれているか
+					keepAlive &= this.isKeepingAlive(request);
 
-						// レスポンスに切断要求が含まれているか
-						keepAlive &= this.isKeepingAlive(response);
+					//						レスポンスを受け取って返すところは別のスレッドにできる．
 
-						// レスポンスの書き出し
-						response.writeOut(output);
-						output.flush();
+					// リクエストの実行
+					final HttpResponse response = handler.doRequest(request);
 
-					} // Keep-Alive
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+					// レスポンスに切断要求が含まれているか
+					keepAlive &= this.isKeepingAlive(response);
+
+					// レスポンスの書き出し
+					// TODO: レスポンスの転送側もnioを使って非同期（マネージスレッドを一つ）に行う必要がある：そうでなければでかいファイルの読み込み時にブロックしてしまう
+					response.writeOut(output);
+					output.flush();
+
+					//					}while(input.available() > 0);
+				}
+
+				if(keepAlive){
+
+					//						LOGGER.finest(Thread.currentThread().getName() + " requeues the " + con + " because it has no data to read");
+					LOGGER.finest(Thread.currentThread().getName() + " requeues the " + con);
+					this.manager.add(con);
+
+				}else{
+
+					LOGGER.finest(Thread.currentThread().getName() + " finishes to handle and closes the " + con);
 					input.close();
 					output.close();
-
-				}catch(final ClosedChannelException e){
-
-					LOGGER.warning(e.getLocalizedMessage());
-					e.printStackTrace();
-
-				}catch(final IOException e){
-
-					LOGGER.warning(e.getLocalizedMessage());
-					// e.printStackTrace();
-
-				}finally{
 
 					try {
 						con.close();
@@ -124,16 +145,24 @@ class ServiceWorker extends LoggedObject implements Runnable, Closeable{
 
 				}
 
-				LOGGER.fine("要求を完了しました");
+			}catch(final ClosedChannelException e){
 
-			} // 1チャネル
+				// TODO: この例外はここよりも上位でハンドリングすべき
 
-		}catch(final InterruptedException e){
+				LOGGER.warning(e.getLocalizedMessage());
+				e.printStackTrace();
 
-			Thread.interrupted();
-			e.printStackTrace();
+			}catch(final IOException e){
+
+				LOGGER.warning(e.getLocalizedMessage());
+				// e.printStackTrace();
+
+			}
 
 		}
+
+		this.manager.endRunning(this);
+
 
 		//LOGGER.exiting(ServiceWorker.class.getName(), "run");
 	}

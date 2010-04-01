@@ -39,7 +39,7 @@ public class Nor {
 
 		try {
 
-			server.start("127.0.0.1", 9080, 4);
+			server.start("127.0.0.1", 9080);
 
 			System.in.read();
 			server.close();

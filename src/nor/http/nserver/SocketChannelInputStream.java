@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
+import java.util.logging.Logger;
 
 class SocketChannelInputStream extends InputStream{
 
@@ -31,6 +32,8 @@ class SocketChannelInputStream extends InputStream{
 	private boolean closed = false;
 
 	private int timeout = 1000;
+
+	private static final Logger LOGGER = Logger.getLogger(SocketChannelInputStream.class.getName());
 
 	public SocketChannelInputStream(final SelectionKey key){
 
@@ -41,8 +44,12 @@ class SocketChannelInputStream extends InputStream{
 	}
 
 	//============================================================================
-	//  InputStream のオーバーライド
+	//  public methods
 	//============================================================================
+
+	//----------------------------------------------------------------------------
+	//  InputStream のオーバーライド
+	//----------------------------------------------------------------------------
 	@Override
 	public int read() throws IOException {
 
@@ -122,12 +129,11 @@ class SocketChannelInputStream extends InputStream{
 
 	}
 
-	//============================================================================
+	//----------------------------------------------------------------------------
 	//  SocketChannel との通信
-	//============================================================================
+	//----------------------------------------------------------------------------
 	public synchronized int loadFromChannel(final ReadableByteChannel channel) throws IOException{
-
-//		System.err.println("load");
+		LOGGER.entering(this.getClass().getName(), "loadFromChannel", channel);
 
 		this.buffer.clear();
 		final int ret = channel.read(this.buffer);
@@ -136,13 +142,16 @@ class SocketChannelInputStream extends InputStream{
 
 		this.notify();
 
+		LOGGER.exiting(this.getClass().getName(), "loadFromChannel", ret);
 		return ret;
 
 	}
 
+	//============================================================================
+	//  private methods
+	//============================================================================
 	private synchronized void load(){
-
-//		System.err.println("load 要求");
+		LOGGER.entering(this.getClass().getName(), "load");
 
 		try {
 
@@ -156,6 +165,7 @@ class SocketChannelInputStream extends InputStream{
 
 		}
 
+		LOGGER.exiting(this.getClass().getName(), "load");
 	}
 
 }

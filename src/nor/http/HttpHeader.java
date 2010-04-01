@@ -15,16 +15,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-//$Id: HttpHeader.java 423 2010-01-16 10:58:27Z kawamoto $
+//$Id: HttpHeader.java 443 2010-02-27 17:29:45Z kawamoto $
 package nor.http;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;

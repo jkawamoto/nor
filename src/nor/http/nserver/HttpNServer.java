@@ -33,6 +33,10 @@ public class HttpNServer extends LoggedObject implements HttpServer{
 	private ListenWorker listener;
 	private Thread listenThread;
 
+	private final int minThreads = 4;
+	private final int queueSize = 3;
+	private final int waitTime = 6000;
+
 
 	//============================================================================
 	//  コンストラクタ
@@ -66,14 +70,13 @@ public class HttpNServer extends LoggedObject implements HttpServer{
 	 *
 	 * @param hostname バインドするホスト名またはIPアドレス
 	 * @param port 待ち受けポート番号
-	 * @param nThreads 同時に処理するリクエストの上限数．
 	 * @throws IOException I/Oエラーが発生した場合
 	 */
 	@Override
-	public void start(final String hostname, final int port, final int nThreads) throws IOException{
-		entering("start", hostname, port, nThreads);
+	public void start(final String hostname, final int port) throws IOException{
+		entering("start", hostname, port);
 
-		this.listener = new ListenWorker(hostname, port, this.handler, nThreads);
+		this.listener = new ListenWorker(hostname, port, this.handler, this.minThreads, this.queueSize, this.waitTime);
 		this.listenThread = new Thread(this.listener);
 		this.listenThread.start();
 

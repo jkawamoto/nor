@@ -21,7 +21,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -33,13 +32,16 @@ class Connection implements Closeable{
 	private final SocketChannelInputStream in;
 	private final SocketChannelOutputStream out;
 
-	public Connection(final SocketChannel socket, final Selector selector) throws IOException{
+	private final SocketChannel schannel;
+
+	public Connection(final SocketChannel schannel, final Selector selector) throws IOException{
 
 		// ソケットをノンブロッキングモードにする
-		socket.configureBlocking(false);
+		this.schannel = schannel;
+		this.schannel.configureBlocking(false);
 
 		// ソケットをセレクタに登録
-		this.key = socket.register(selector, 0);
+		this.key = this.schannel.register(selector, 0);
 
 		// 登録キーにこのオブジェクトを添付
 		this.key.attach(this);
@@ -50,36 +52,18 @@ class Connection implements Closeable{
 
 	}
 
-	public void handle(final SelectionKey key) throws IOException {
+	public void loadFromChannel() throws IOException{
 
-		// このメソッドはソケット側からのみ呼ばれる
-		try{
-
-			final SocketChannel s = (SocketChannel)key.channel();
-			if(key.isReadable()){
-
-				this.in.loadFromChannel(s);
-
-			}
-			if(key.isWritable() && key.isValid()){
-
-				this.out.storeToChannel(s);
-
-			}
-
-		}catch(final ClosedChannelException e){
-
-			e.printStackTrace();
-			this.close();
-
-		}catch(final IOException e){
-
-			// e.printStackTrace();
-			this.close();
-
-		}
+		this.in.loadFromChannel(this.schannel);
 
 	}
+
+	public void storeToChannel() throws IOException{
+
+		this.out.storeToChannel(this.schannel);
+
+	}
+
 
 	@Override
 	public void close() throws IOException{
@@ -101,6 +85,13 @@ class Connection implements Closeable{
 	public OutputStream getOutputStream(){
 
 		return this.out;
+
+	}
+
+	@Override
+	public String toString(){
+
+		return String.format("Connection from the %s", this.schannel.socket());
 
 	}
 

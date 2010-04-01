@@ -15,8 +15,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-//$Id: ProxyRequestHandler.java 439 2010-02-26 16:14:44Z kawamoto $
+//$Id: ProxyRequestHandler.java 451 2010-03-31 17:26:38Z kawamoto $
 package nor.http.server.proxyserver;
+
+import static nor.http.HeaderName.AcceptEncoding;
+import static nor.http.HeaderName.Connection;
+import static nor.http.HeaderName.KeepAlive;
+import static nor.http.HeaderName.ProxyConnection;
+import static nor.http.HeaderName.Via;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -36,8 +42,6 @@ import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.server.HttpRequestHandler;
 import nor.util.log.LoggedObject;
-
-import static nor.http.HeaderName.*;
 
 
 /**
@@ -63,11 +67,6 @@ import static nor.http.HeaderName.*;
 public class ProxyRequestHandler extends LoggedObject implements HttpRequestHandler{
 
 	// このクラスはスレッドセーフ
-
-//	/**
-//	 * 外部プロキシサーバのアドレス
-//	 */
-//	private Proxy proxy;
 
 	private final String name;
 	private final String version;

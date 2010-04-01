@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-// $Id: HttpMessage.java 411 2010-01-11 09:51:02Z kawamoto $
+// $Id: HttpMessage.java 449 2010-03-15 01:44:32Z kawamoto $
 package nor.http;
 
 import java.io.BufferedWriter;
@@ -69,6 +69,8 @@ public abstract class HttpMessage extends LoggedObject{
 
 		exiting("writeMessage");
 	}
+
+
 
 	/* (非 Javadoc)
 	 * @see java.lang.Object#toString()

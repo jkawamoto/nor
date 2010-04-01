@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-// $Id: HttpRequest.java 427 2010-01-23 08:41:26Z kawamoto $
+// $Id: HttpRequest.java 445 2010-03-14 02:54:17Z kawamoto $
 package nor.http;
 
 import java.io.BufferedOutputStream;
@@ -323,11 +323,13 @@ public class HttpRequest extends HttpMessage{
 	public String toString(){
 		LOGGER.entering("toString");
 
-		final StringBuilder ret = new StringBuilder();
+		final String ret = String.format("Request[method=%s, path=%s]", this.getMethod(), this.getPath());
 
-		ret.append(this.getHeadLine());
-		ret.append("\n");
-		ret.append(this.getHeader().toString());
+//		final StringBuilder ret = new StringBuilder();
+//
+//		ret.append(this.getHeadLine());
+//		ret.append("\n");
+//		ret.append(this.getHeader().toString());
 
 		LOGGER.exiting("toString", ret);
 		return ret.toString();

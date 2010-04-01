@@ -22,7 +22,7 @@ import java.io.IOException;
 
 public interface HttpServer extends Closeable{
 
-	public void start(final String hostname, final int port, final int nThreads) throws IOException;
+	public void start(final String hostname, final int port) throws IOException;
 
 
 }
