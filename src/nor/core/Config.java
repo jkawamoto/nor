@@ -143,7 +143,7 @@ public class Config {
 		LOGGER.entering(Config.class.getName(), "isEnabel", plugin);
 		assert plugin != null;
 
-		final boolean ret = Boolean.getBoolean(this.prop.getProperty(String.format(Template.PLUGIN_ENABEL, plugin.getClass().getName()), "true"));
+		final boolean ret = Boolean.parseBoolean(this.prop.getProperty(String.format(Template.PLUGIN_ENABEL, plugin.getClass().getName()), "true"));
 
 		LOGGER.exiting(Config.class.getName(), "isEnable", ret);
 		return ret;

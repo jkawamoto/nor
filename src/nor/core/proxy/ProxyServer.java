@@ -115,6 +115,8 @@ public class ProxyServer implements Closeable{
 	public void attach(final Plugin plugin){
 		LOGGER.entering("attach", plugin);
 
+		LOGGER.info("Loading a plugin (" + plugin.getClass().getName() + ")");
+
 		this.handler.attach(plugin.messageHandlers());
 		this.handler.attach(plugin.requestFilters());
 		this.handler.attach(plugin.responseFilters());
