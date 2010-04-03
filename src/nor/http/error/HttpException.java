@@ -18,7 +18,6 @@
 package nor.http.error;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 
 import nor.http.HttpError;
 import nor.http.HttpRequest;
