@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-//$Id: ProxyRequestHandler.java 451 2010-03-31 17:26:38Z kawamoto $
+//$Id: ProxyRequestHandler.java 471 2010-04-03 10:25:20Z kawamoto $
 package nor.http.server.proxyserver;
 
 import static nor.http.HeaderName.AcceptEncoding;
@@ -41,7 +41,7 @@ import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.server.HttpRequestHandler;
-import nor.util.log.LoggedObject;
+import nor.util.log.EasyLogger;
 
 
 /**
@@ -64,7 +64,7 @@ import nor.util.log.LoggedObject;
  * @author KAWAMOTO Junpei
  *
  */
-public class ProxyRequestHandler extends LoggedObject implements HttpRequestHandler{
+public class ProxyRequestHandler implements HttpRequestHandler{
 
 	// このクラスはスレッドセーフ
 
@@ -75,11 +75,14 @@ public class ProxyRequestHandler extends LoggedObject implements HttpRequestHand
 
 	private static final String Close = "close";
 
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(ProxyRequestHandler.class);
+
+
 	//============================================================================
 	//  public メソッド
 	//============================================================================
 	public ProxyRequestHandler(final String name, final String version){
-		entering("<init>", name, version);
+		LOGGER.entering("<init>", name, version);
 		assert name != null && name.length() != 0;
 		assert version != null;
 
@@ -88,7 +91,7 @@ public class ProxyRequestHandler extends LoggedObject implements HttpRequestHand
 
 		HttpURLConnection.setFollowRedirects(false);
 
-		exiting("<init>");
+		LOGGER.exiting("<init>");
 	}
 
 	//============================================================================
@@ -99,10 +102,10 @@ public class ProxyRequestHandler extends LoggedObject implements HttpRequestHand
 	 */
 	@Override
 	public HttpResponse doRequest(final HttpRequest request){
-		entering("doRequest", request);
+		LOGGER.entering("doRequest", request);
 		assert request != null;
 
-		//LOGGER.info(request.getHeadLine());
+		LOGGER.finest(request.getHeadLine());
 
 		HttpResponse response = null;
 		try{
@@ -134,7 +137,7 @@ public class ProxyRequestHandler extends LoggedObject implements HttpRequestHand
 
 		LOGGER.info(request.getHeadLine() + " > " + response.getHeadLine());
 
-		exiting("doRequest", response);
+		LOGGER.exiting("doRequest", response);
 		return response;
 
 	}
@@ -149,16 +152,16 @@ public class ProxyRequestHandler extends LoggedObject implements HttpRequestHand
 	 * @throws MalformedURLException
 	 */
 	public void addRouting(final Pattern pat, final URL extProxyHost){
-		entering("addRouting", pat, extProxyHost);
+		LOGGER.entering("addRouting", pat, extProxyHost);
 		assert pat != null;
 		assert extProxyHost != null;;
 
 		final InetSocketAddress extProxyAddr = new InetSocketAddress(extProxyHost.getHost(), extProxyHost.getPort());
-		this.router.add(pat, new Proxy(Type.HTTP, extProxyAddr));
+		this.router.put(pat, new Proxy(Type.HTTP, extProxyAddr));
 
 		LOGGER.info("外部プロキシを使用 [" + extProxyAddr + "]");
 
-		exiting("addRouting");
+		LOGGER.exiting("addRouting");
 	}
 
 	/**
@@ -166,19 +169,19 @@ public class ProxyRequestHandler extends LoggedObject implements HttpRequestHand
 	 *
 	 */
 	public void removeRouting(final Pattern pat){
-		entering("removeRouting", pat);
+		LOGGER.entering("removeRouting", pat);
 		assert pat != null;
 
 		this.router.remove(pat);
 
-		exiting("removeRouting");
+		LOGGER.exiting("removeRouting");
 	}
 
 	//============================================================================
 	//  private メソッド
 	//============================================================================
 	private void cleanHeader(final HttpRequest request){
-		entering("cleanHeader", request);
+		LOGGER.entering("cleanHeader", request);
 		assert request != null;
 
 		final HttpHeader header = request.getHeader();
@@ -237,7 +240,7 @@ public class ProxyRequestHandler extends LoggedObject implements HttpRequestHand
 		// プロキシ通過スタンプ
 		header.add(Via, String.format("%s %s", this.version, this.name));
 
-		exiting("cleanHeader");
+		LOGGER.exiting("cleanHeader");
 	}
 
 	/**
@@ -247,7 +250,7 @@ public class ProxyRequestHandler extends LoggedObject implements HttpRequestHand
 	 * @param response 整理するレスポンス
 	 */
 	private void cleanHeader(final HttpResponse response){
-		entering("cleanHeader", response);
+		LOGGER.entering("cleanHeader", response);
 		assert response != null;
 
 		final HttpHeader header = response.getHeader();
@@ -292,7 +295,7 @@ public class ProxyRequestHandler extends LoggedObject implements HttpRequestHand
 		// プロキシ通過スタンプ
 		header.add(Via, String.format("%s %s", this.version, this.name));
 
-		exiting("cleanHeader");
+		LOGGER.exiting("cleanHeader");
 	}
 
 }

@@ -15,13 +15,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server;
+package nor.util;
 
-import java.io.Closeable;
-import java.io.IOException;
 
-public interface HttpServer extends Closeable{
+public interface Querable<Type>{
 
-	public void start(final String hostname, final int port) throws IOException;
+	public Type query(final String url);
 
 }

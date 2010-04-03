@@ -15,12 +15,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.util;
+package nor.core.proxy.filter;
 
-public interface Disposable {
-	
-	public void dispose();
+import nor.http.HttpResponse;
+import nor.util.Matchable;
+
+public interface ResponseFilter extends MessageFilter<HttpResponse>, Matchable{
+
 
 }
-
-

@@ -29,7 +29,7 @@ import nor.http.io.ChunkedInputStream;
 import nor.http.io.ChunkedOutputStream;
 import nor.util.LimitedInputStream;
 import nor.util.Stream;
-import nor.util.log.LoggedObject;
+import nor.util.log.EasyLogger;
 
 
 /**
@@ -44,7 +44,7 @@ import nor.util.log.LoggedObject;
  * @author KAWAMOTO Junpei
  *
  */
-public class HttpBody extends LoggedObject{
+public class HttpBody{
 
 	/**
 	 * このメッセージボディを所有するHTTPメッセージ
@@ -52,6 +52,8 @@ public class HttpBody extends LoggedObject{
 	protected final HttpMessage parent;
 
 	protected InputStream in;
+
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpBody.class);
 
 	//====================================================================
 	//  コンストラクタ
@@ -64,7 +66,7 @@ public class HttpBody extends LoggedObject{
 	 * @throws IOException I/Oエラーが発生した場合
 	 */
 	HttpBody(final HttpMessage parent, final InputStream in) throws IOException{
-		entering("<init>", parent, in);
+		LOGGER.entering("<init>", parent, in);
 		assert parent != null;
 		assert in != null;
 
@@ -101,7 +103,7 @@ public class HttpBody extends LoggedObject{
 
 		}
 
-		exiting("<init>");
+		LOGGER.exiting("<init>");
 	}
 
 	//====================================================================
@@ -161,9 +163,9 @@ public class HttpBody extends LoggedObject{
 	 * @return このメッセージボディに設定されている入力ストリーム
 	 */
 	public InputStream getStream(){
-		entering("getStream");
+		LOGGER.entering("getStream");
 
-		exiting("getStream", this.in);
+		LOGGER.exiting("getStream", this.in);
 		return this.in;
 	}
 
@@ -173,11 +175,11 @@ public class HttpBody extends LoggedObject{
 	 * @param in このメッセージボディに設定する入力ストリーム
 	 */
 	public void setStream(final InputStream in){
-		entering("setStream", in);
+		LOGGER.entering("setStream", in);
 
 		this.in = in;
 
-		exiting("setStream");
+		LOGGER.exiting("setStream");
 	}
 
 }

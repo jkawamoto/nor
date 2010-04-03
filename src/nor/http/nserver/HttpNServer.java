@@ -21,9 +21,11 @@ import java.io.IOException;
 
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.HttpServer;
-import nor.util.log.LoggedObject;
+import nor.util.log.EasyLogger;
 
-public class HttpNServer extends LoggedObject implements HttpServer{
+public class HttpNServer implements HttpServer{
+
+	public static final String VERSION = "1.1";
 
 	/**
 	 * Httpリクエストに答えるハンドラ
@@ -36,6 +38,8 @@ public class HttpNServer extends LoggedObject implements HttpServer{
 	private final int minThreads = 4;
 	private final int queueSize = 3;
 	private final int waitTime = 6000;
+
+	private static final EasyLogger LOGGER =  EasyLogger.getLogger(HttpNServer.class);
 
 
 	//============================================================================
@@ -51,13 +55,13 @@ public class HttpNServer extends LoggedObject implements HttpServer{
 	 * @see #close()
 	 */
 	public HttpNServer(final HttpRequestHandler handler){
-		entering("<init>", handler);
+		LOGGER.entering("<init>", handler);
 		assert handler != null;
 
 		// ハンドラの登録
 		this.handler = handler;
 
-		exiting("<init>");
+		LOGGER.exiting("<init>");
 	}
 
 
@@ -74,13 +78,13 @@ public class HttpNServer extends LoggedObject implements HttpServer{
 	 */
 	@Override
 	public void start(final String hostname, final int port) throws IOException{
-		entering("start", hostname, port);
+		LOGGER.entering("start", hostname, (Object)port);
 
 		this.listener = new ListenWorker(hostname, port, this.handler, this.minThreads, this.queueSize, this.waitTime);
 		this.listenThread = new Thread(this.listener);
 		this.listenThread.start();
 
-		exiting("service");
+		LOGGER.exiting("service");
 	}
 
 	/**
@@ -92,21 +96,24 @@ public class HttpNServer extends LoggedObject implements HttpServer{
 	 */
 	@Override
 	public void close() throws IOException{
-		entering("close");
+		LOGGER.entering("close");
 
-		this.listener.close();
-		try {
+		if(this.listener != null){
 
-			this.listenThread.join();
+			this.listener.close();
+			try {
 
-		} catch (InterruptedException e) {
+				this.listenThread.join();
 
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
+			} catch (final InterruptedException e) {
+
+				LOGGER.throwing("close", e);
+
+			}
 
 		}
 
-		exiting("close");
+		LOGGER.exiting("close");
 	}
 
 }

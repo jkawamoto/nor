@@ -15,13 +15,19 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server;
+package nor.core.plugin;
 
 import java.io.Closeable;
-import java.io.IOException;
 
-public interface HttpServer extends Closeable{
+import nor.core.proxy.filter.MessageHandler;
+import nor.core.proxy.filter.RequestFilter;
+import nor.core.proxy.filter.ResponseFilter;
 
-	public void start(final String hostname, final int port) throws IOException;
+public interface Plugin extends Closeable{
+
+	public MessageHandler[] messageHandlers();
+	public RequestFilter[] requestFilters();
+	public ResponseFilter[] responseFilters();
+
 
 }

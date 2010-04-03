@@ -35,37 +35,37 @@ public class ChunkedInputStream extends SequentialInputStream{
 	/**
 	 *  読み出した合計サイズ
 	 */
-	private int _size = 0;
+	private int size = 0;
 
 	/**
 	 * バッファ
 	 */
-	private byte[] _buffer = new byte[0];
+	private byte[] buffer = new byte[0];
 
 	/**
 	 * バッファインデックス
 	 */
-	private int _counter = 0;
+	private int counter = 0;
 
 	/**
 	 *  カレントチャンクの残りサイズ
 	 */
-	private int _remains = 0;
+	private int remains = 0;
 
 	/**
 	 *  カレントチャンクから読み出したサイズ
 	 */
-	private int _readed = 0;
+	private int readed = 0;
 
 	/**
 	 *  ストリームの終わりに達したか
 	 */
-	private boolean _isEOF = false;
+	private boolean isEOF = false;
 
 	/**
 	 *  トレイラも考慮する
 	 */
-	private final Map<String, String> _trailers = new HashMap<String, String>();
+	private final Map<String, String> trailers = new HashMap<String, String>();
 
 	/**
 	 * チャンク形式をデコードするストリームを作成する.
@@ -85,7 +85,7 @@ public class ChunkedInputStream extends SequentialInputStream{
 	public int read() throws IOException {
 
 		// ストリームの終わりに達していたら
-		if(this._isEOF){
+		if(this.isEOF){
 
 			return -1;
 
@@ -103,8 +103,8 @@ public class ChunkedInputStream extends SequentialInputStream{
 
 		}
 
-		++this._size;
-		return this._buffer[this._counter++] & 0xff;
+		++this.size;
+		return this.buffer[this.counter++] & 0xff;
 
 	}
 
@@ -127,7 +127,7 @@ public class ChunkedInputStream extends SequentialInputStream{
 
 
 		// ストリームの終わりに達していたら
-		if(this._isEOF){
+		if(this.isEOF){
 
 			return -1;
 
@@ -151,8 +151,8 @@ public class ChunkedInputStream extends SequentialInputStream{
 
 			for(int i = 0; i != available; ++i){
 
-				++this._size;
-				b[off + i] = this._buffer[this._counter++];
+				++this.size;
+				b[off + i] = this.buffer[this.counter++];
 
 			}
 
@@ -162,8 +162,8 @@ public class ChunkedInputStream extends SequentialInputStream{
 
 			for(int i = 0; i != len; ++i){
 
-				++this._size;
-				b[off + i] = this._buffer[this._counter++];
+				++this.size;
+				b[off + i] = this.buffer[this.counter++];
 
 			}
 
@@ -179,7 +179,7 @@ public class ChunkedInputStream extends SequentialInputStream{
 	@Override
 	public int available(){
 
-		return this._readed - this._counter;
+		return this.readed - this.counter;
 
 	}
 
@@ -206,7 +206,7 @@ public class ChunkedInputStream extends SequentialInputStream{
 
 			}else{
 
-				this._counter += n;
+				this.counter += n;
 				return n;
 
 			}
@@ -224,7 +224,7 @@ public class ChunkedInputStream extends SequentialInputStream{
 	 */
 	public int size(){
 
-		return this._size;
+		return this.size;
 
 	}
 
@@ -236,7 +236,7 @@ public class ChunkedInputStream extends SequentialInputStream{
 	 */
 	public Map<String, String> getTrailers(){
 
-		return this._trailers;
+		return this.trailers;
 
 	}
 
@@ -247,13 +247,13 @@ public class ChunkedInputStream extends SequentialInputStream{
 	private boolean reload() throws IOException{
 
 		// 現在のチャンクからすべてのデータを読み出していたら
-		if(this._remains == 0){
+		if(this.remains == 0){
 
 			// 次のチャンクを解析
 			this.analyze();
 
 			// ストリームの終わりに達していたら終了
-			if(this._isEOF){
+			if(this.isEOF){
 
 				return false;
 
@@ -262,9 +262,9 @@ public class ChunkedInputStream extends SequentialInputStream{
 		}
 
 		// チャンクから読み出す
-		this._readed = this.in.read(this._buffer, 0, this._remains);
-		this._remains -= this._readed;
-		this._counter = 0;
+		this.readed = this.in.read(this.buffer, 0, this.remains);
+		this.remains -= this.readed;
+		this.counter = 0;
 
 		return true;
 
@@ -301,7 +301,7 @@ public class ChunkedInputStream extends SequentialInputStream{
 
 				case EOF:
 
-					this._isEOF = true;
+					this.isEOF = true;
 					return;
 
 				default:
@@ -326,11 +326,11 @@ public class ChunkedInputStream extends SequentialInputStream{
 
 			// チャンクサイズの取得
 			final String size = sp[0].trim();
-			this._remains = Integer.parseInt(size, 16);
-			this._buffer = new byte[this._remains];
+			this.remains = Integer.parseInt(size, 16);
+			this.buffer = new byte[this.remains];
 
 			// 最終チャンク（サイズが0）の場合
-			if(this._remains == 0){
+			if(this.remains == 0){
 
 				// これ以降ストリームには空行で終わるトレイラが付く
 				final BufferedReader input = new BufferedReader(new InputStreamReader(new HeaderInputStream(this.in)));
@@ -349,13 +349,13 @@ public class ChunkedInputStream extends SequentialInputStream{
 						final String key = kv[0].trim().toLowerCase();
 						final String value = kv[1].trim();
 
-						this._trailers.put(key, value);
+						this.trailers.put(key, value);
 
 					}
 
 				}
 
-				this._isEOF = true;
+				this.isEOF = true;
 
 			}
 

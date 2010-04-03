@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-// $Id: HttpRequest.java 445 2010-03-14 02:54:17Z kawamoto $
+// $Id: HttpRequest.java 471 2010-04-03 10:25:20Z kawamoto $
 package nor.http;
 
 import java.io.BufferedOutputStream;
@@ -75,7 +75,7 @@ public class HttpRequest extends HttpMessage{
 	/**
 	 * ロガー
 	 */
-	private static final EasyLogger LOGGER = new EasyLogger(HttpRequest.class.getName());
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpRequest.class);
 
 	//====================================================================
 	//	コンストラクタ

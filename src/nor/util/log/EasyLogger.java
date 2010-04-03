@@ -17,23 +17,104 @@
  */
 package nor.util.log;
 
-public class EasyLogger extends LoggedObject{
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
-	public EasyLogger(final String className){
-		super(className);
+public class EasyLogger extends Logger{
+
+	private final String classname;
+
+	private EasyLogger(final String classname){
+		super(classname, null);
+
+		this.classname = classname;
+
 	}
 
-	public void entering(final String method, final Object ...params){
-		super.entering(method, params);
+	public static <T> EasyLogger getLogger(final Class<T> type){
+
+		final String classname = type.getName();
+		final LogManager m = LogManager.getLogManager();
+
+		final Logger log = m.getLogger(classname);
+		if(log == null || !(log instanceof EasyLogger)){
+
+			final EasyLogger n = new EasyLogger(classname);
+			m.addLogger(n);
+
+			return n;
+
+		}else{
+
+			return (EasyLogger)log;
+
+		}
+
 	}
 
-	public void exiting(final String method, final Object ...params){
-		super.exiting(method, params);
+	public <T> void entering(final String method, final T ... params){
+
+		super.entering(this.classname, method, params);
+
 	}
 
-	public void warning(final String msg){
+	public void exiting(final String method){
 
-		this.LOGGER.warning(msg);
+		super.exiting(this.classname, method);
+
+	}
+
+	public <T> void exiting(final String method, final T param){
+
+		super.exiting(this.classname, method, param);
+
+	}
+
+	public void finest(final Object msg){
+
+		if(msg == null){
+
+			super.finest("null");
+
+		}else{
+
+			super.finest(msg.toString());
+
+		}
+
+	}
+
+	public void warning(final Object msg){
+
+		if(msg == null){
+
+			super.warning("null");
+
+		}else{
+
+			super.warning(msg.toString());
+
+		}
+
+	}
+
+	public void severe(final Object msg){
+
+		if(msg == null){
+
+			super.severe("null");
+
+		}else{
+
+			super.severe(msg.toString());
+
+		}
+
+	}
+
+	public void throwing(final String method, final Throwable e){
+
+		super.throwing(this.classname, method, e);
 
 	}
 

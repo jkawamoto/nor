@@ -15,41 +15,24 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.util.log;
+package nor.core.proxy.filter;
 
-import java.util.logging.Logger;
+import nor.core.proxy.FilterContainer;
+import nor.http.HttpMessage;
 
-public abstract class LoggedObject {
+/**
+ * @author Junpei
+ *
+ */
+public interface MessageFilter<Message extends HttpMessage>{
 
-	private final String className;
-	protected final Logger LOGGER;
-
-	public LoggedObject(){
-
-		this.className = this.getClass().getName();
-		this.LOGGER = Logger.getLogger(this.className);
-
-	}
-
-	protected LoggedObject(final String className){
-
-		this.className = className;
-		this.LOGGER = Logger.getLogger(this.className);
-
-	}
-
-	protected void entering(final String method, final Object ...params){
-
-		this.LOGGER.entering(this.className, method, params);
-
-	}
-
-	protected void exiting(final String method, final Object ...params){
-
-		this.LOGGER.exiting(this.className, method, params);
-
-	}
+	/**
+	 * 新しいメッセージが届いたことを通知します．
+	 *
+	 * @param msg 新しいメッセージ
+	 * @param container ストリームフィルタの登録先
+	 * @param isCharacter テキストメッセージの場合 true
+	 */
+	public void update(final Message msg, final FilterContainer container, final boolean isCharacter);
 
 }
-
-

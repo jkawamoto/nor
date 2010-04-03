@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-//$Id: HttpTServer.java 452 2010-04-01 10:18:03Z kawamoto $
+//$Id: HttpTServer.java 471 2010-04-03 10:25:20Z kawamoto $
 package nor.http.tserver;
 
 import java.io.IOException;
@@ -24,16 +24,16 @@ import java.net.ServerSocket;
 
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.HttpServer;
-import nor.util.log.LoggedObject;
+import nor.util.log.EasyLogger;
 
 /**
  * Httpサーバ
  *
- * @version $Rev: 452 $
+ * @version $Rev: 471 $
  * @author KAWAMOTO Junpei
  *
  */
-public class HttpTServer extends LoggedObject implements HttpServer{
+public class HttpTServer implements HttpServer{
 
 	/**
 	 * Httpリクエストに答えるハンドラ
@@ -55,6 +55,8 @@ public class HttpTServer extends LoggedObject implements HttpServer{
 	 */
 	private ListenWorker listener = null;
 
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpTServer.class);
+
 
 	//============================================================================
 	//  コンストラクタ
@@ -69,13 +71,13 @@ public class HttpTServer extends LoggedObject implements HttpServer{
 	 * @see #close()
 	 */
 	public HttpTServer(final HttpRequestHandler handler){
-		entering("<init>", handler);
+		LOGGER.entering("<init>", handler);
 		assert handler != null;
 
 		// ハンドラの登録
 		this.handler = handler;
 
-		exiting("<init>");
+		LOGGER.exiting("<init>");
 	}
 
 
@@ -92,7 +94,7 @@ public class HttpTServer extends LoggedObject implements HttpServer{
 	 */
 	@Override
 	public void start(final String hostname, final int port) throws IOException{
-		entering("start", hostname, port);
+		LOGGER.entering("start", hostname, (Object)port);
 
 		// ソケットの作成
 		final ServerSocket socket = new ServerSocket();
@@ -102,14 +104,14 @@ public class HttpTServer extends LoggedObject implements HttpServer{
 		socket.bind(new InetSocketAddress(hostname, port));
 		LOGGER.info("Bind the socket to port " + port);
 
-		this.listener = new ListenWorker(socket, this.handler, 4);
+		this.listener = new ListenWorker(socket, this.handler, 0);
 		LOGGER.info("Start listening.");
 
 		this.listenThread = new Thread(this.listener);
 		this.listenThread.setName("ListenWorker");
 		this.listenThread.start();
 
-		exiting("service");
+		LOGGER.exiting("service");
 	}
 
 	/**
@@ -121,7 +123,7 @@ public class HttpTServer extends LoggedObject implements HttpServer{
 	 */
 	@Override
 	public void close() throws IOException{
-		entering("close");
+		LOGGER.entering("close");
 
 		if(this.listener != null){
 
@@ -137,11 +139,11 @@ public class HttpTServer extends LoggedObject implements HttpServer{
 
 			}
 
-			LOGGER.fine("End.");
+			LOGGER.info("End.");
 
 		}
 
-		exiting("close");
+		LOGGER.exiting("close");
 	}
 
 }

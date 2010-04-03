@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-// $Id: HttpMessage.java 449 2010-03-15 01:44:32Z kawamoto $
+// $Id: HttpMessage.java 471 2010-04-03 10:25:20Z kawamoto $
 package nor.http;
 
 import java.io.BufferedWriter;
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
-import nor.util.log.LoggedObject;
+import nor.util.log.EasyLogger;
 
 
 /**
@@ -33,7 +33,9 @@ import nor.util.log.LoggedObject;
  * @author KAWAMOTO Junpei
  *
  */
-public abstract class HttpMessage extends LoggedObject{
+public abstract class HttpMessage{
+
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpMessage.class);
 
 	/**
 	 * HTTPメッセージを書き出す．
@@ -43,7 +45,7 @@ public abstract class HttpMessage extends LoggedObject{
 	 * @throws IOException ストリームの書き出しにエラーが発生した場合
 	 */
 	public void writeOut(final OutputStream output) throws IOException{
-		entering("writeMessage", output);
+		LOGGER.entering("writeMessage", output);
 		assert output != null;
 
 		// ヘッドラインの書き出し
@@ -67,7 +69,7 @@ public abstract class HttpMessage extends LoggedObject{
 
 		output.close();
 
-		exiting("writeMessage");
+		LOGGER.exiting("writeMessage");
 	}
 
 
@@ -77,7 +79,7 @@ public abstract class HttpMessage extends LoggedObject{
 	 */
 	@Override
 	public String toString(){
-		entering("toString");
+		LOGGER.entering("toString");
 
 		final StringBuilder ret = new StringBuilder();
 
@@ -87,7 +89,7 @@ public abstract class HttpMessage extends LoggedObject{
 		ret.append("\n");
 		//ret.append(this._body);
 
-		exiting("toString", ret.toString());
+		LOGGER.exiting("toString", ret.toString());
 		return ret.toString();
 	}
 

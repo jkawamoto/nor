@@ -18,28 +18,23 @@
 package nor.http.server.proxyserver;
 
 import java.net.Proxy;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Router {
+import nor.util.Querable;
+
+public class Router implements Map<Pattern, Proxy>, Querable<Proxy>{
 
 	private final Map<Pattern, Proxy> routs = new HashMap<Pattern, Proxy>();
 
-
-	public void add(final Pattern pattern, final Proxy proxy){
-
-		this.routs.put(pattern, proxy);
-
-	}
-
-	public void remove(final Pattern pat){
-
-		this.routs.remove(pat);
-
-	}
-
+	/* (非 Javadoc)
+	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.util.Querable#query(java.lang.String)
+	 */
+	@Override
 	public Proxy query(final String url){
 
 		for(final Pattern p : this.routs.keySet()){
@@ -55,5 +50,149 @@ public class Router {
 		return Proxy.NO_PROXY;
 
 	}
+
+	//--------------------------------------------------------------------
+	//  委譲メソッド
+	//--------------------------------------------------------------------
+	/* (非 Javadoc)
+	 * @see java.util.Map#clear()
+	 */
+	@Override
+	public void clear() {
+
+		this.routs.clear();
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.util.Map#containsKey(java.lang.Object)
+	 */
+	@Override
+	public boolean containsKey(Object key) {
+
+		return routs.containsKey(key);
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.util.Map#containsValue(java.lang.Object)
+	 */
+	@Override
+	public boolean containsValue(Object value) {
+
+		return routs.containsValue(value);
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.util.Map#entrySet()
+	 */
+	@Override
+	public Set<java.util.Map.Entry<Pattern, Proxy>> entrySet() {
+
+		return routs.entrySet();
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		return routs.equals(o);
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.util.Map#get(java.lang.Object)
+	 */
+	@Override
+	public Proxy get(Object key) {
+
+		return routs.get(key);
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+
+		return routs.hashCode();
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.util.Map#isEmpty()
+	 */
+	@Override
+	public boolean isEmpty() {
+
+		return routs.isEmpty();
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.util.Map#keySet()
+	 */
+	@Override
+	public Set<Pattern> keySet() {
+
+		return routs.keySet();
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.util.Map#put(K, V)
+	 */
+	@Override
+	public Proxy put(Pattern key, Proxy value) {
+
+		return routs.put(key, value);
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.util.Map#putAll(java.util.Map<? extends K,? extends V>)
+	 */
+	@Override
+	public void putAll(Map<? extends Pattern, ? extends Proxy> m) {
+
+		routs.putAll(m);
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.util.Map#remove(java.lang.Object)
+	 */
+	@Override
+	public Proxy remove(Object key) {
+
+		return routs.remove(key);
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.util.Map#size()
+	 */
+	@Override
+	public int size() {
+
+		return routs.size();
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.util.Map#values()
+	 */
+	@Override
+	public Collection<Proxy> values() {
+
+		return routs.values();
+
+	}
+
 
 }

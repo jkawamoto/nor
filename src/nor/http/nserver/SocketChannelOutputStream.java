@@ -24,11 +24,17 @@ import java.nio.channels.CancelledKeyException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.WritableByteChannel;
 
+import nor.util.log.EasyLogger;
+
 class SocketChannelOutputStream extends OutputStream{
 
 	private final SelectionKey key;
 	private final ByteBuffer buffer;
 	private int timeout = 1000;
+
+	private boolean isAlive = true;
+
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(SocketChannelOutputStream.class);
 
 	public SocketChannelOutputStream(final SelectionKey key){
 
@@ -43,20 +49,7 @@ class SocketChannelOutputStream extends OutputStream{
 	@Override
 	public void write(int b) throws IOException {
 
-		if(this.available() == 0){
-
-			this.flush();
-
-		}
-
-		this.buffer.put((byte)b);
-
-	}
-
-	@Override
-	public void write(byte[] b, int off, int len) throws IOException {
-
-		while(len != 0){
+		if(this.isAlive){
 
 			if(this.available() == 0){
 
@@ -64,18 +57,39 @@ class SocketChannelOutputStream extends OutputStream{
 
 			}
 
-			final int size = this.available();
-			if(len > size){
+			this.buffer.put((byte)b);
 
-				this.buffer.put(b, off, size);
-				off += size;
-				len -= size;
+		}
 
-			}else{
+	}
 
-				this.buffer.put(b, off, len);
-				off += len;
-				len -= len;
+	@Override
+	public void write(byte[] b, int off, int len) throws IOException {
+
+		if(this.isAlive){
+
+			while(len != 0){
+
+				if(this.available() == 0){
+
+					this.flush();
+
+				}
+
+				final int size = this.available();
+				if(len > size){
+
+					this.buffer.put(b, off, size);
+					off += size;
+					len -= size;
+
+				}else{
+
+					this.buffer.put(b, off, len);
+					off += len;
+					len -= len;
+
+				}
 
 			}
 
@@ -86,21 +100,32 @@ class SocketChannelOutputStream extends OutputStream{
 	@Override
 	public synchronized void flush() throws IOException {
 
-		//		System.err.println("store 要求");
-		try {
+		if(this.isAlive){
 
-			this.key.interestOps(this.key.interestOps() | SelectionKey.OP_WRITE);
-			this.key.selector().wakeup();
+			try {
 
-			this.wait(this.timeout);
+				this.key.interestOps(this.key.interestOps() | SelectionKey.OP_WRITE);
+				this.key.selector().wakeup();
 
-		}catch(final InterruptedException e){
+				this.wait(this.timeout);
 
-			throw new IOException(e);
+			}catch(final InterruptedException e){
 
-		}catch(final CancelledKeyException e){
+				LOGGER.warning(e.getMessage());
+				throw new IOException(e);
 
-			throw new IOException(e);
+			}catch(final CancelledKeyException e){
+
+				LOGGER.throwing("flush", e);
+				throw new IOException(e);
+
+			}
+
+			if(!this.isAlive){
+
+				throw new IOException();
+
+			}
 
 		}
 
@@ -116,16 +141,27 @@ class SocketChannelOutputStream extends OutputStream{
 	//============================================================================
 	// SocketChannel との通信
 	//============================================================================
-	public synchronized int storeToChannel(final WritableByteChannel channel) throws IOException{
+	public synchronized int storeToChannel(final WritableByteChannel channel){
 
-		//		System.err.println("store");
-		this.buffer.flip();
-		final int ret = channel.write(this.buffer);
-		this.buffer.clear();
+		int ret = -1;
+		try{
 
-		this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_WRITE);
+			this.buffer.flip();
+			ret = channel.write(this.buffer);
+			this.buffer.clear();
 
-		this.notify();
+			this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_WRITE);
+
+		}catch(final IOException e){
+
+			this.isAlive = false;
+			LOGGER.throwing("storeToChannel", e);
+
+		}finally{
+
+			this.notify();
+
+		}
 
 		return ret;
 

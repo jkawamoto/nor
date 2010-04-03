@@ -15,13 +15,24 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server;
+package nor.core.proxy.filter;
 
 import java.io.Closeable;
 import java.io.IOException;
 
-public interface HttpServer extends Closeable{
+public interface MessageBodyFilter<Type> extends Closeable{
 
-	public void start(final String hostname, final int port) throws IOException;
+	public boolean readonly();
+
+	/**
+	 *
+	 * @param msg
+	 * @param in
+	 * @return
+	 */
+	public Type update(final Type in);
+
+
+	public void close() throws IOException;
 
 }

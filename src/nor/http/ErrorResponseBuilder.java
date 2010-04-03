@@ -51,7 +51,7 @@ public class ErrorResponseBuilder {
 	/**
 	 * ロガー．
 	 */
-	private static final EasyLogger LOGGER = new EasyLogger(ErrorResponseBuilder.class.getName());
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(ErrorResponseBuilder.class);
 
 	private static String serverName;
 

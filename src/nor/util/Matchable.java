@@ -15,13 +15,16 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server;
+package nor.util;
 
-import java.io.Closeable;
-import java.io.IOException;
+import java.util.regex.Pattern;
 
-public interface HttpServer extends Closeable{
+public interface Matchable {
 
-	public void start(final String hostname, final int port) throws IOException;
+	/**
+	 * @return
+	 */
+	public Pattern pattern();
+
 
 }

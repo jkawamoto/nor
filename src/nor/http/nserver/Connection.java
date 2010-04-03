@@ -52,15 +52,15 @@ class Connection implements Closeable{
 
 	}
 
-	public void loadFromChannel() throws IOException{
+	public int loadFromChannel(){
 
-		this.in.loadFromChannel(this.schannel);
+		return this.in.loadFromChannel(this.schannel);
 
 	}
 
-	public void storeToChannel() throws IOException{
+	public int storeToChannel(){
 
-		this.out.storeToChannel(this.schannel);
+		return this.out.storeToChannel(this.schannel);
 
 	}
 
@@ -71,6 +71,8 @@ class Connection implements Closeable{
 		final Selector selector = this.key.selector();
 		this.key.attach(null);
 		this.key.channel().close();
+
+		this.key.cancel();
 
 		selector.wakeup();
 

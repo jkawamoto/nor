@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,41 +15,27 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor;
+package nor.core.proxy.filter;
 
-import java.io.IOException;
+import java.util.regex.Pattern;
 
-import nor.http.nserver.HttpNServer;
-import nor.http.server.HttpServer;
-import nor.http.server.proxyserver.ProxyRequestHandler;
+public abstract class MessageHandlerAdapter implements MessageHandler{
 
-/**
- * @author KAWAMOTO Junpei
- *
- */
-public class Nor {
+	private final Pattern pat;
 
-	/**
-	 * @param args
+	public MessageHandlerAdapter(final Pattern pat){
+
+		this.pat = pat;
+
+	}
+
+	/* (非 Javadoc)
+	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.nor.proxy.Matchable#getPattern()
 	 */
-	public static void main(String[] args) {
+	@Override
+	public Pattern pattern() {
 
-		final ProxyRequestHandler h = new ProxyRequestHandler("Nor", "1.0");
-		final HttpServer server = new HttpNServer(h);
-
-		try {
-
-			server.start("127.0.0.1", 9080);
-
-			System.in.read();
-			server.close();
-
-		} catch (IOException e) {
-
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
-
-		}
+		return this.pat;
 
 	}
 

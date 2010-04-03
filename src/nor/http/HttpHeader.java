@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-//$Id: HttpHeader.java 443 2010-02-27 17:29:45Z kawamoto $
+//$Id: HttpHeader.java 471 2010-04-03 10:25:20Z kawamoto $
 package nor.http;
 
 import java.io.BufferedReader;
@@ -25,9 +25,10 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import nor.util.log.EasyLogger;
 
 
 /**
@@ -81,7 +82,7 @@ public class HttpHeader{
 	/**
 	 * ロガー
 	 */
-	private static final Logger LOGGER = Logger.getLogger(HttpHeader.class.getName());
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpHeader.class);
 
 	//============================================================================
 	//  コンストラクタ
@@ -92,13 +93,12 @@ public class HttpHeader{
 	 * @param parent
 	 */
 	HttpHeader(final HttpMessage parent){
-		LOGGER.entering(HttpHeader.class.getName(), "<init>", parent);
+		LOGGER.entering("<init>", parent);
 		assert parent != null;
 
 		this.parent = parent;
 
-		LOGGER.exiting(HttpHeader.class.getName(), "<init>");
-
+		LOGGER.exiting("<init>");
 	}
 
 	/**
@@ -109,15 +109,14 @@ public class HttpHeader{
 	 * @throws IOException ストリーム処理中にI/Oエラーが発生した場合
 	 */
 	HttpHeader(final HttpMessage parent, final BufferedReader reader) throws IOException{
-		LOGGER.entering(HttpHeader.class.getName(), "<init>", new Object[]{parent, reader});
+		LOGGER.entering("<init>", parent, reader);
 		assert parent != null;
 		assert reader != null;
 
 		this.parent = parent;
 		this.readHeader(reader);
 
-		LOGGER.exiting(HttpHeader.class.getName(), "<init>");
-
+		LOGGER.exiting("<init>");
 	}
 
 
@@ -129,15 +128,14 @@ public class HttpHeader{
 	 * @param elements このオブジェクトに持たせるヘッダ要素
 	 */
 	HttpHeader(final HttpMessage parent, final Map<String, String> elements){
-		LOGGER.entering(HttpHeader.class.getName(), "<init>", new Object[]{parent, elements});
+		LOGGER.entering("<init>", parent, elements);
 		assert parent != null;
 		assert elements != null;
 
 		this.parent = parent;
 		this.setAll(elements);
 
-		LOGGER.exiting(HttpHeader.class.getName(), "<init>");
-
+		LOGGER.exiting("<init>");
 	}
 
 	//============================================================================
@@ -149,7 +147,7 @@ public class HttpHeader{
 	 * @param value 追加する値
 	 */
 	public void set(final String key, final String value){
-		LOGGER.entering(HttpHeader.class.getName(), "set", new Object[]{key, value});
+		LOGGER.entering("set", key, value);
 		assert key != null;
 		assert value != null;
 
@@ -184,8 +182,7 @@ public class HttpHeader{
 
 //		}
 
-		LOGGER.exiting(HttpHeader.class.getName(), "set");
-
+		LOGGER.exiting("set");
 	}
 
 
@@ -218,7 +215,7 @@ public class HttpHeader{
 	 * @param key 削除するkey
 	 */
 	public void remove(final String key){
-		LOGGER.entering(HttpHeader.class.getName(), "remove", key);
+		LOGGER.entering("remove", key);
 		assert key != null;
 
 //		if(HeaderName.Cookie.equalsIgnoreCase(key)){
@@ -242,7 +239,7 @@ public class HttpHeader{
 
 //		}
 
-		LOGGER.exiting(HttpHeader.class.getName(), "remove");
+		LOGGER.exiting("remove");
 
 	}
 
@@ -252,15 +249,14 @@ public class HttpHeader{
 	 *
 	 */
 	public void clear(){
-		LOGGER.entering(HttpHeader.class.getName(), "clear");
+		LOGGER.entering("clear");
 
 //		this._cookie.clear();
 //		this._setCookies.clear();
 //		this.contentType.clear();
 		this.elements.clear();
 
-		LOGGER.exiting(HttpHeader.class.getName(), "clear");
-
+		LOGGER.exiting("clear");
 	}
 
 
@@ -271,7 +267,7 @@ public class HttpHeader{
 	 * @return keyに関連付けられている値のコレクション
 	 */
 	public String get(final String key){
-		LOGGER.entering(HttpHeader.class.getName(), "getValue", key);
+		LOGGER.entering("getValue", key);
 		assert key != null;
 
 		String ret = null;
@@ -296,7 +292,7 @@ public class HttpHeader{
 
 //		}
 
-		LOGGER.exiting(HttpHeader.class.getName(), "getValues", ret);
+		LOGGER.exiting("getValues", ret);
 		return ret;
 
 	}
@@ -308,13 +304,13 @@ public class HttpHeader{
 	 * @return keyが含まれている場合tureを返す
 	 */
 	public boolean containsKey(final String key){
-		LOGGER.entering(HttpHeader.class.getName(), "containsKey", key);
+		LOGGER.entering("containsKey", key);
 		assert key != null;
 
 		// TODO: Cookieの場合
 		final boolean ret = this.elements.containsKey(key);
 
-		LOGGER.exiting(HttpHeader.class.getName(), "containsKey", ret);
+		LOGGER.exiting("containsKey", ret);
 		return ret;
 
 	}
@@ -346,11 +342,11 @@ public class HttpHeader{
 	 * @return このヘッダオブジェクトに登録されているキー集合
 	 */
 	public Set<String> keySet(){
-		LOGGER.entering(HttpHeader.class.getName(), "keySet");
+		LOGGER.entering("keySet");
 
 		final Set<String> ret = this.elements.keySet();
 
-		LOGGER.exiting(HttpHeader.class.getName(), "keySet", ret);
+		LOGGER.exiting("keySet", ret);
 		return ret;
 
 	}
@@ -361,12 +357,12 @@ public class HttpHeader{
 	 * @return このヘッダに登録されているキーの数
 	 */
 	public int getKeySize(){
-		LOGGER.entering(HttpHeader.class.getName(), "getKeySize");
+		LOGGER.entering("getKeySize");
 
 		// TODO: Cookieの場合
 		final int ret = this.elements.size();
 
-		LOGGER.exiting(HttpHeader.class.getName(), "getKeySize", ret);
+		LOGGER.exiting("getKeySize", ret);
 		return ret;
 
 	}
@@ -379,7 +375,7 @@ public class HttpHeader{
 	 * @throws IOException I/Oエラーが発生した場合
 	 */
 	public void writeHeader(final BufferedWriter writer) throws IOException{
-		LOGGER.entering(HttpHeader.class.getName(), "writeHeader", writer);
+		LOGGER.entering("writeHeader", writer);
 		assert writer != null;
 
 		// ヘッダを追加
@@ -428,7 +424,7 @@ public class HttpHeader{
 
 		writer.flush();
 
-		LOGGER.exiting(HttpHeader.class.getName(), "writeHeader");
+		LOGGER.exiting("writeHeader");
 
 	}
 
@@ -439,7 +435,7 @@ public class HttpHeader{
 	 */
 	@Override
 	public String toString(){
-		LOGGER.entering(HttpHeader.class.getName(), "toString");
+		LOGGER.entering("toString");
 
 		final StringWriter buffer = new StringWriter();
 		String ret = "";
@@ -454,7 +450,7 @@ public class HttpHeader{
 
 		}
 
-		LOGGER.exiting(HttpHeader.class.getName(), "toString", ret);
+		LOGGER.exiting("toString", ret);
 		return ret;
 
 	}
@@ -556,7 +552,7 @@ public class HttpHeader{
 	 * @throws IOException ストリーム読み込み時にI/Oエラーが発生した場合
 	 */
 	private void readHeader(final BufferedReader reader) throws IOException{
-		LOGGER.entering(HttpHeader.class.getName(), "readHeader", reader);
+		LOGGER.entering("readHeader", reader);
 		assert reader != null;
 
 		for(String line = reader.readLine(); line != null; line = reader.readLine()){
@@ -577,8 +573,7 @@ public class HttpHeader{
 
 		}
 
-		LOGGER.exiting(HttpHeader.class.getName(), "readHeader");
-
+		LOGGER.exiting("readHeader");
 	}
 
 	/**
@@ -588,7 +583,7 @@ public class HttpHeader{
 	 * @param elements このオブジェクトに追加するコレクション
 	 */
 	private void setAll(final Map<String, String> elements){
-		LOGGER.entering(HttpHeader.class.getName(), "setAll", elements);
+		LOGGER.entering("setAll", (Object)elements);
 		assert elements != null;
 
 		for(final String key : elements.keySet()){
@@ -602,8 +597,7 @@ public class HttpHeader{
 
 		}
 
-		LOGGER.exiting(HttpHeader.class.getName(), "setAll");
-
+		LOGGER.exiting("setAll");
 	}
 
 }

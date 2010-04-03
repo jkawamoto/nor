@@ -19,6 +19,8 @@ package nor.http.nserver;
 
 
 import java.io.Closeable;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
@@ -28,11 +30,10 @@ import java.util.concurrent.Executors;
 import nor.http.server.HttpRequestHandler;
 
 /**
- * @author tcowan
+ * @author Junpei
+ *
  */
-class ThreadManager implements Closeable{
-
-	private int threads = 0;
+class ThreadManager implements Closeable, Queue<Connection>{
 
 	private final int minThreads;
 	private final int queueSize;
@@ -58,10 +59,9 @@ class ThreadManager implements Closeable{
 	public synchronized boolean offer(final Connection e) {
 
 		final boolean ret = queue.offer(e);
-		if(this.threads < this.minThreads || this.size() > this.queueSize){
+		if(ServiceWorker.nThreads() < this.minThreads || this.size() > this.queueSize){
 
-			this.pool.execute(new ServiceWorker(this, this.handler));
-			++this.threads;
+			this.pool.execute(ServiceWorker.create(this, this.handler));
 
 		}
 
@@ -96,11 +96,6 @@ class ThreadManager implements Closeable{
 
 	}
 
-	public synchronized void endRunning(final ServiceWorker w){
-
-		--this.threads;
-
-	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -132,6 +127,100 @@ class ThreadManager implements Closeable{
 	public int size() {
 
 		return this.queue.size();
+
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	@Override
+	public Connection element() {
+
+		return this.queue.element();
+
+	}
+
+	@Override
+	public Connection peek() {
+
+		return this.queue.peek();
+
+	}
+
+	@Override
+	public boolean addAll(Collection<? extends Connection> c) {
+
+		for(final Connection e : c){
+
+			this.add(e);
+
+		}
+		return true;
+
+	}
+
+	@Override
+	public void clear() {
+
+		this.queue.clear();
+
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	@Override
+	public boolean contains(Object o) {
+
+		return this.queue.contains(o);
+
+	}
+
+	@Override
+	public boolean containsAll(Collection<?> c) {
+
+		return this.queue.containsAll(c);
+
+	}
+
+	@Override
+	public Iterator<Connection> iterator() {
+
+		return this.queue.iterator();
+
+	}
+
+	@Override
+	public boolean remove(Object o) {
+
+		return this.queue.remove(o);
+	}
+
+	@Override
+	public boolean removeAll(Collection<?> c) {
+
+		return this.removeAll(c);
+
+	}
+
+	@Override
+	public synchronized boolean retainAll(Collection<?> c) {
+
+		final boolean ret = this.queue.retainAll(c);
+		this.notify();
+
+		return ret;
+
+	}
+
+	@Override
+	public Object[] toArray() {
+
+		return this.queue.toArray();
+	}
+
+	@Override
+	public <T> T[] toArray(T[] a) {
+
+		return this.queue.toArray(a);
 
 	}
 

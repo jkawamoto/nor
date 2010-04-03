@@ -23,7 +23,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
-import java.util.logging.Logger;
+
+import nor.util.log.EasyLogger;
 
 class SocketChannelInputStream extends InputStream{
 
@@ -33,7 +34,7 @@ class SocketChannelInputStream extends InputStream{
 
 	private int timeout = 1000;
 
-	private static final Logger LOGGER = Logger.getLogger(SocketChannelInputStream.class.getName());
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(SocketChannelInputStream.class);
 
 	public SocketChannelInputStream(final SelectionKey key){
 
@@ -132,17 +133,28 @@ class SocketChannelInputStream extends InputStream{
 	//----------------------------------------------------------------------------
 	//  SocketChannel との通信
 	//----------------------------------------------------------------------------
-	public synchronized int loadFromChannel(final ReadableByteChannel channel) throws IOException{
-		LOGGER.entering(this.getClass().getName(), "loadFromChannel", channel);
+	public synchronized int loadFromChannel(final ReadableByteChannel channel){
+		LOGGER.entering("loadFromChannel", channel);
 
-		this.buffer.clear();
-		final int ret = channel.read(this.buffer);
-		this.buffer.flip();
-		this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_READ);
+		int ret = -1;
+		try{
 
-		this.notify();
+			this.buffer.clear();
+			ret = channel.read(this.buffer);
+			this.buffer.flip();
+			this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_READ);
 
-		LOGGER.exiting(this.getClass().getName(), "loadFromChannel", ret);
+		}catch(final IOException e){
+
+			LOGGER.throwing("loadFromChannel", e);
+
+		}finally{
+
+			this.notify();
+
+		}
+
+		LOGGER.exiting("loadFromChannel", ret);
 		return ret;
 
 	}
@@ -151,7 +163,7 @@ class SocketChannelInputStream extends InputStream{
 	//  private methods
 	//============================================================================
 	private synchronized void load(){
-		LOGGER.entering(this.getClass().getName(), "load");
+		LOGGER.entering("load");
 
 		try {
 
@@ -161,11 +173,15 @@ class SocketChannelInputStream extends InputStream{
 
 		}catch(final InterruptedException e) {
 
+			LOGGER.throwing("load", e);
+
 		}catch(final CancelledKeyException e){
+
+			LOGGER.throwing("load", e);
 
 		}
 
-		LOGGER.exiting(this.getClass().getName(), "load");
+		LOGGER.exiting("load");
 	}
 
 }

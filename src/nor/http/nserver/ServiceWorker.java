@@ -26,24 +26,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.ClosedChannelException;
-import java.util.logging.Logger;
+import java.util.Queue;
 
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.server.HttpRequestHandler;
+import nor.util.log.EasyLogger;
 
 class ServiceWorker implements Runnable, Closeable{
 
-	private final ThreadManager manager;
+	private final Queue<Connection> queue;
 	private final HttpRequestHandler handler;
 
 	private boolean running = true;
 
-	private static final Logger LOGGER = Logger.getLogger(ServiceWorker.class.getName());
+	private static int nThreads = 0;
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(ServiceWorker.class);
 
-	public ServiceWorker(final ThreadManager manager, final HttpRequestHandler handler){
+	private ServiceWorker(final Queue<Connection> queue, final HttpRequestHandler handler){
 
-		this.manager = manager;
+		this.queue = queue;
 		this.handler = handler;
 
 	}
@@ -53,10 +55,11 @@ class ServiceWorker implements Runnable, Closeable{
 	 */
 	@Override
 	public synchronized void run() {
+		LOGGER.entering("run");
 
 		while(this.running){
 
-			final Connection con = this.manager.poll();
+			final Connection con = this.queue.poll();
 			if(con == null){
 
 				break;
@@ -68,14 +71,11 @@ class ServiceWorker implements Runnable, Closeable{
 
 				// ストリームの取得
 				final InputStream input = new BufferedInputStream(con.getInputStream());
-				final OutputStream output = new BufferedOutputStream(con.getOutputStream());
+				final OutputStream output = new BufferedOutputStream(new NoExceptionOutputStreamFilter(con.getOutputStream()));
 
 				// 切断要求が来るまで持続接続する
 				boolean keepAlive = true;
 				String prefix = "";
-				//					do{
-
-				// TODO: パイプライン化に対応。作れるだけリクエストを作成してキューに入れる．
 
 				// リクエストオブジェクト
 				final HttpRequest request = HttpRequest.create(input, prefix);
@@ -83,7 +83,6 @@ class ServiceWorker implements Runnable, Closeable{
 
 					LOGGER.finest(Thread.currentThread().getName() + " receives a null request");
 					keepAlive = false;
-					//							break;
 
 				}else{
 
@@ -92,43 +91,22 @@ class ServiceWorker implements Runnable, Closeable{
 					// リクエストに切断要求が含まれているか
 					keepAlive &= this.isKeepingAlive(request);
 
-					//						レスポンスを受け取って返すところは別のスレッドにできる．
-
 					// リクエストの実行
 					final HttpResponse response = handler.doRequest(request);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 					// レスポンスに切断要求が含まれているか
 					keepAlive &= this.isKeepingAlive(response);
 
 					// レスポンスの書き出し
-					// TODO: レスポンスの転送側もnioを使って非同期（マネージスレッドを一つ）に行う必要がある：そうでなければでかいファイルの読み込み時にブロックしてしまう
 					response.writeOut(output);
 					output.flush();
 
-					//					}while(input.available() > 0);
 				}
 
 				if(keepAlive){
 
-					//						LOGGER.finest(Thread.currentThread().getName() + " requeues the " + con + " because it has no data to read");
 					LOGGER.finest(Thread.currentThread().getName() + " requeues the " + con);
-					this.manager.add(con);
+					this.queue.add(con);
 
 				}else{
 
@@ -136,35 +114,24 @@ class ServiceWorker implements Runnable, Closeable{
 					input.close();
 					output.close();
 
-					try {
-						con.close();
-					} catch (IOException e) {
-						// TODO 自動生成された catch ブロック
-						e.printStackTrace();
-					}
+					con.close();
 
 				}
 
 			}catch(final ClosedChannelException e){
 
-				// TODO: この例外はここよりも上位でハンドリングすべき
-
-				LOGGER.warning(e.getLocalizedMessage());
-				e.printStackTrace();
+				LOGGER.throwing("run", e);
 
 			}catch(final IOException e){
 
-				LOGGER.warning(e.getLocalizedMessage());
-				// e.printStackTrace();
+				LOGGER.throwing("run", e);
 
 			}
 
 		}
 
-		this.manager.endRunning(this);
-
-
-		//LOGGER.exiting(ServiceWorker.class.getName(), "run");
+		ServiceWorker.decrease();
+		LOGGER.exiting("run");
 	}
 
 	private boolean isKeepingAlive(final HttpRequest request){
@@ -185,5 +152,26 @@ class ServiceWorker implements Runnable, Closeable{
 		this.running = false;
 
 	}
+
+
+	public static synchronized ServiceWorker create(final Queue<Connection> queue, final HttpRequestHandler handler){
+
+		++ServiceWorker.nThreads;
+		return new ServiceWorker(queue, handler);
+
+	}
+
+	public static synchronized int nThreads(){
+
+		return ServiceWorker.nThreads;
+
+	}
+
+	private static synchronized void decrease(){
+
+		--ServiceWorker.nThreads;
+
+	}
+
 
 }

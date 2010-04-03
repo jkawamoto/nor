@@ -26,9 +26,9 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.logging.Logger;
 
 import nor.http.server.HttpRequestHandler;
+import nor.util.log.EasyLogger;
 
 class ListenWorker implements Runnable, Closeable{
 
@@ -40,7 +40,7 @@ class ListenWorker implements Runnable, Closeable{
 	private Selector selector;
 	private boolean running = true;
 
-	private static final Logger LOGGER = Logger.getLogger(ListenWorker.class.getName());
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(ListenWorker.class);
 
 	public ListenWorker(final String hostname, final int port, final HttpRequestHandler handler, final int minThreads, final int queueSize, final int waitTime){
 
@@ -70,7 +70,7 @@ class ListenWorker implements Runnable, Closeable{
 			while (this.running) {
 
 				// セレクタにイベントが発生するまでブロック
-				final int nc = selector.select(6000);
+				final int nc = selector.select();
 				LOGGER.finest("Begins a selection (" + nc + ")");
 
 				// 獲得したイベントごとに処理を実行
@@ -110,16 +110,22 @@ class ListenWorker implements Runnable, Closeable{
 								assert(o instanceof Connection);
 
 								final Connection con = (Connection)o;
-								//								con.handle(key);
+								int ret = -1;
 								if(key.isReadable()){
 
 									LOGGER.finest("Receives a readable key from the " + con.toString());
-									con.loadFromChannel();
+									ret = con.loadFromChannel();
 
 								}else if(key.isWritable() && key.isValid()){
 
 									LOGGER.finest("Receives a writable key from the " + con.toString());
-									con.storeToChannel();
+									ret = con.storeToChannel();
+
+								}
+
+								if(ret == -1){
+
+									con.close();
 
 								}
 
@@ -134,7 +140,7 @@ class ListenWorker implements Runnable, Closeable{
 
 					}catch(final CancelledKeyException e){
 
-						LOGGER.warning(e.toString());
+						LOGGER.throwing("run", e);
 
 						final Object o = key.attachment();
 						if(o instanceof Connection){
@@ -142,13 +148,6 @@ class ListenWorker implements Runnable, Closeable{
 							((Connection)o).close();
 
 						}
-
-					}catch(final IOException e){
-
-						LOGGER.severe(e.toString());
-
-						key.cancel();
-						e.printStackTrace();
 
 					}finally{
 
@@ -168,6 +167,7 @@ class ListenWorker implements Runnable, Closeable{
 
 		}catch(final IOException e){
 
+			LOGGER.throwing("run", e);
 			LOGGER.severe("ListenWorker is stopped by " + e.toString());
 			e.printStackTrace();
 

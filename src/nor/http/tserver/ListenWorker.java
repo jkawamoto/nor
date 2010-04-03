@@ -27,13 +27,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import nor.http.server.HttpRequestHandler;
-import nor.util.log.LoggedObject;
+import nor.util.log.EasyLogger;
 
 
 /**
  * ポートリスンを行うスレッドクラス．
  */
-final class ListenWorker extends LoggedObject implements Runnable, Closeable{
+final class ListenWorker implements Runnable, Closeable{
 
 	/**
 	 * Httpサーバが利用するソケット
@@ -50,12 +50,14 @@ final class ListenWorker extends LoggedObject implements Runnable, Closeable{
 	 */
 	private final ExecutorService pool;
 
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(ListenWorker.class);
+
 	/**
 	 * 指定されたポリシで動作するリスンスレッドクラスを作成する．
 	 * @param policy 接続要求応答ポリシ
 	 */
 	ListenWorker(final ServerSocket socket, final HttpRequestHandler handler, final int nThreads){
-		entering("<init>", socket, handler, nThreads);
+		LOGGER.entering("<init>", socket, handler, nThreads);
 		assert socket != null;
 		assert handler != null;
 		assert nThreads >= 0;
@@ -74,7 +76,7 @@ final class ListenWorker extends LoggedObject implements Runnable, Closeable{
 
 		}
 
-		exiting("<init>");
+		LOGGER.exiting("<init>");
 	}
 
 	/**
@@ -82,7 +84,7 @@ final class ListenWorker extends LoggedObject implements Runnable, Closeable{
 	 */
 	@Override
 	public void run() {
-		entering("run");
+		LOGGER.entering("run");
 
 		try{
 
@@ -102,7 +104,7 @@ final class ListenWorker extends LoggedObject implements Runnable, Closeable{
 			LOGGER.severe(e.getLocalizedMessage());
 		}
 
-		exiting("run");
+		LOGGER.exiting("run");
 	}
 
 	/**
@@ -110,7 +112,7 @@ final class ListenWorker extends LoggedObject implements Runnable, Closeable{
 	 * @throws IOException IOエラーが発生した場合
 	 */
 	public void close() throws IOException{
-		entering("close");
+		LOGGER.entering("close");
 
 		this.pool.shutdownNow();
 		try {
@@ -127,7 +129,7 @@ final class ListenWorker extends LoggedObject implements Runnable, Closeable{
 
 		}
 
-		exiting("close");
+		LOGGER.exiting("close");
 	}
 
 }

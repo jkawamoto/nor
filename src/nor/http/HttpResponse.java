@@ -41,7 +41,7 @@ import nor.util.log.EasyLogger;
 public class HttpResponse extends HttpMessage{
 
 	// ロガー
-	private static final EasyLogger LOGGER = new EasyLogger(HttpResponse.class.getName());
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpResponse.class);
 
 	/**
 	 * このレスポンスの基になった要求

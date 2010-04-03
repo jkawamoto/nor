@@ -40,11 +40,11 @@ public class ChunkedOutputStream extends FilterOutputStream{
 	public static final int DefaultBufferSize = 4096;
 
 	// バッファ
-	private final byte[] _buffer;
-	private int _counter;
+	private final byte[] buffer;
+	private int counter;
 
 	// トレイラ
-	private final Map<String, String> _trailer = new HashMap<String, String>();
+	private final Map<String, String> trailer = new HashMap<String, String>();
 
 	/**
 	 * 渡されたストリームに書き出すチャンクフィルタを作成する.
@@ -64,8 +64,8 @@ public class ChunkedOutputStream extends FilterOutputStream{
 	public ChunkedOutputStream(final OutputStream out, final int buffer_size){
 
 		super(out);
-		this._buffer = new byte[buffer_size];
-		this._counter = 0;
+		this.buffer = new byte[buffer_size];
+		this.counter = 0;
 
 	}
 
@@ -75,8 +75,8 @@ public class ChunkedOutputStream extends FilterOutputStream{
 	@Override
 	public void write(int b) throws IOException {
 
-		this._buffer[this._counter++] = (byte)b;
-		if(this._counter == this._buffer.length){
+		this.buffer[this.counter++] = (byte)b;
+		if(this.counter == this.buffer.length){
 
 			this.flush();
 
@@ -116,21 +116,21 @@ public class ChunkedOutputStream extends FilterOutputStream{
 	@Override
 	public void flush() throws IOException {
 
-		if(this._counter != 0){
+		if(this.counter != 0){
 
-			final String size = Integer.toHexString(this._counter);
+			final String size = Integer.toHexString(this.counter);
 
 			this.out.write(size.getBytes());
 			this.out.write(CR);
 			this.out.write(LF);
 
-			this.out.write(this._buffer, 0, this._counter);
+			this.out.write(this.buffer, 0, this.counter);
 
 			this.out.write(CR);
 			this.out.write(LF);
 
 			this.out.flush();
-			this._counter = 0;
+			this.counter = 0;
 
 		}
 
@@ -162,11 +162,11 @@ public class ChunkedOutputStream extends FilterOutputStream{
 		this.out.flush();
 
 		final BufferedWriter output = new BufferedWriter(new OutputStreamWriter(this.out));
-		for(final String key : this._trailer.keySet()){
+		for(final String key : this.trailer.keySet()){
 
 			output.append(key);
 			output.append(": ");
-			output.append(this._trailer.get(key));
+			output.append(this.trailer.get(key));
 			output.append("\n");
 
 		}
@@ -177,25 +177,25 @@ public class ChunkedOutputStream extends FilterOutputStream{
 
 	public String getTrailer(final String key){
 
-		return this._trailer.get(key);
+		return this.trailer.get(key);
 
 	}
 
 	public void setTrailer(final String key, final String value){
 
-		this._trailer.put(key.toLowerCase(), value);
+		this.trailer.put(key.toLowerCase(), value);
 
 	}
 
 	public boolean containsTrailer(final String key){
 
-		return this._trailer.containsKey(key);
+		return this.trailer.containsKey(key);
 
 	}
 
 	public void removeTrailer(final String key){
 
-		this._trailer.remove(key);
+		this.trailer.remove(key);
 
 	}
 
