@@ -45,7 +45,7 @@ public class Nor{
 
 
 	/**
-	 * ローカルプロキシ(Lotte)．
+	 * ローカルプロキシ
 	 */
 	private ProxyServer proxy;
 
