@@ -29,5 +29,4 @@ public interface Plugin extends Closeable{
 	public RequestFilter[] requestFilters();
 	public ResponseFilter[] responseFilters();
 
-
 }

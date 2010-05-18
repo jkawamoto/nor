@@ -23,6 +23,9 @@ import nor.core.proxy.filter.ResponseFilter;
 
 public abstract class PluginAdapter implements Plugin{
 
+	/* (非 Javadoc)
+	 * @see nor.core.plugin.Plugin#messageHandlers()
+	 */
 	@Override
 	public MessageHandler[] messageHandlers(){
 
@@ -39,6 +42,9 @@ public abstract class PluginAdapter implements Plugin{
 
 	}
 
+	/* (非 Javadoc)
+	 * @see nor.core.plugin.Plugin#requestFilters()
+	 */
 	@Override
 	public RequestFilter[] requestFilters() {
 
@@ -55,6 +61,9 @@ public abstract class PluginAdapter implements Plugin{
 
 	}
 
+	/* (非 Javadoc)
+	 * @see nor.core.plugin.Plugin#responseFilters()
+	 */
 	@Override
 	public ResponseFilter[] responseFilters() {
 
@@ -71,6 +80,9 @@ public abstract class PluginAdapter implements Plugin{
 
 	}
 
+	/* (非 Javadoc)
+	 * @see java.io.Closeable#close()
+	 */
 	@Override
 	public void close(){
 
