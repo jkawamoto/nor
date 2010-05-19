@@ -19,15 +19,43 @@ package nor.http;
 
 
 /**
- * HTTP標準で規定されているエラーステータス．
+ * HTTP標準のステータス．
  *
  * @author KAWAMOTO Junpei
  *
  */
-public enum ErrorStatus{
+public enum Status{
+
+	Continue(100, "Continue"),
+	SwitchingProtocols(101, "Switching Protocols"),
+	Processing(102, "Processing"),
 
 	/**
-	 * 400 - Bad Request -要求が不正です。
+	 * 200 - OK
+	 */
+	OK(200, "OK"),
+	Created(201, "Created"),
+	Accepted(202, "Accepted"),
+	NonAuthoritativeInformation(203, "Non-Authoritative Information"),
+	NoContent(204, "No Content"),
+	ResetContent(205, "Reset Content"),
+	PartialContent(206, "Partial Content"),
+	MultiStatus(207, "Multi-Status"),
+	IMUsed(226, "IM Used"),
+
+	MultipleChoices(300, "Multiple Choices"),
+	MovedPermanently(301, "Moved Permanently"),
+	Found(302, "Found"),
+	/**
+	 * 303 - See Other
+	 */
+	SeeOther(303, "See Other"),
+	NotModified(304, "Not Modified"),
+	UseProxy(305, "Use Proxy"),
+	TemporaryRedirect(307, "Temporary Redirect"),
+
+	/**
+	 * 400 - Bad Request - 要求が不正です。
 	 */
 	BadRequest(400, "Bad Request"),
 
@@ -146,34 +174,49 @@ public enum ErrorStatus{
 	 */
 	HTTPVersionNotSupported(505, "HTTP Version Not Supported");
 
-	private final int _code;
-	private final String _msg;
+	private final int code;
+	private final String msg;
 
-	private ErrorStatus(final int code, final String msg){
+	private Status(final int code, final String msg){
 
-		this._code = code;
-		this._msg = msg;
+		this.code = code;
+		this.msg = msg;
 
 	}
 
 	public int getCode(){
 
-		return this._code;
+		return this.code;
 
 	}
 
 	public String getMessage(){
 
-		return this._msg;
+		return this.msg;
 
 	}
 
 
 	public String toString(){
 
-		return String.format("%d %s", this._code, this._msg);
+		return String.format("%d %s", this.code, this.msg);
 
 	}
 
+	public static Status valueOf(final int code){
+
+		for(final Status s : Status.values()){
+
+			if(s.code == code){
+
+				return s;
+
+			}
+
+		}
+
+		return null;
+
+	}
 
 }

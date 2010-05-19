@@ -17,14 +17,11 @@
  */
 package nor.http;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -105,7 +102,7 @@ public class HttpResponse extends HttpMessage{
 			}
 			if(this.code == 0){
 
-				throw new HttpError(ErrorStatus.InternalServerError);
+				throw new HttpError(Status.InternalServerError);
 
 			}
 
@@ -120,127 +117,166 @@ public class HttpResponse extends HttpMessage{
 
 		}catch(final IOException e){
 
-			throw new HttpError(ErrorStatus.InternalServerError, e);
+			throw new HttpError(Status.InternalServerError, e);
 
 		}
 
 		LOGGER.exiting("<init>");
 	}
 
-	HttpResponse(final HttpRequest request, final HttpURLConnection con) throws HttpError{
-		LOGGER.entering("<init>", request, con);
-		assert request != null;
-		assert con != null;
+//	HttpResponse(final HttpRequest request, final HttpURLConnection con) throws HttpError{
+//		LOGGER.entering("<init>", request, con);
+//		assert request != null;
+//		assert con != null;
+//
+//		try{
+//
+//			this.request = request;
+//			this.code = con.getResponseCode();
+//			this.message = con.getResponseMessage();
+//			this.version = "1.1";
+//
+//			this.header = new HttpHeader(this);
+//			final Map<String, List<String>> fields = con.getHeaderFields();
+//			for(final String key : fields.keySet()){
+//
+//				if(key != null){
+//
+//					final StringBuilder v = new StringBuilder();
+//					for(final String a : fields.get(key)){
+//
+//						v.append(a);
+//						v.append(", ");
+//
+//					}
+//					if(v.length() != 0){
+//
+//						v.delete(v.length()-2, v.length());
+//
+//					}
+//
+//					this.header.set(key, v.toString());
+//
+//				}
+//
+//			}
+//
+//			// HttpURLConnection は転送コーディングを自動でデコードする
+//			this.header.remove(HeaderName.TransferEncoding);
+//			this.header.remove(HeaderName.Trailer);
+//
+//			this.body = this.readBody(new BufferedInputStream(con.getInputStream()));
+//
+//			// 出力用にヘッダを修正する(読み込み時は転送コーディングを自動デコードするが書き出し時には必要)
+//			if(!header.containsKey(HeaderName.ContentLength)){
+//
+//				if(!header.containsKey(HeaderName.TransferEncoding)){
+//
+//					header.set(HeaderName.TransferEncoding, "chunked");
+//
+//				}
+//
+//			}
+//
+//		}catch(final IOException e){
+//
+//			throw new HttpError(Status.InternalServerError, e);
+//
+//		}
+//
+//		LOGGER.exiting("<init>");
+//	}
+//
+//	HttpResponse(final HttpRequest request, final HttpURLConnection con, final InputStream altInput) throws HttpError{
+//		LOGGER.entering("<init>", request, con, altInput);
+//		assert request != null;
+//		assert con != null;
+//		assert altInput != null;
+//
+//		try{
+//
+//			this.request = request;
+//			this.code = con.getResponseCode();
+//			this.message = con.getResponseMessage();
+//			this.version = "1.1";
+//
+//			this.header = new HttpHeader(this);
+//			final Map<String, List<String>> fields = con.getHeaderFields();
+//			for(final String key : fields.keySet()){
+//
+//				if(key != null){
+//
+//					final StringBuilder v = new StringBuilder();
+//					for(final String a : fields.get(key)){
+//
+//						v.append(a);
+//						v.append(", ");
+//
+//					}
+//					if(v.length() != 0){
+//
+//						v.delete(v.length()-2, v.length());
+//
+//					}
+//
+//					this.header.set(key, v.toString());
+//
+//				}
+//
+//			}
+//
+//			// HttpURLConnection は転送コーディングを自動でデコードする
+//			this.header.remove(HeaderName.TransferEncoding);
+//			this.header.remove(HeaderName.Trailer);
+//
+//			this.body = this.readBody(altInput);
+//
+//		}catch(final IOException e){
+//
+//			throw new HttpError(Status.InternalServerError, e);
+//
+//		}
+//
+//		LOGGER.exiting("<init>");
+//	}
 
-		try{
+	// TODO: VersionはHttpクラスを作成してそこの静的メンバに格納しておく：いちいち設定しなくても良い (ServerNameも)
 
-			this.request = request;
-			this.code = con.getResponseCode();
-			this.message = con.getResponseMessage();
-			this.version = "1.1";
+	HttpResponse(final HttpRequest request, final Status status){
 
-			this.header = new HttpHeader(this);
-			final Map<String, List<String>> fields = con.getHeaderFields();
-			for(final String key : fields.keySet()){
+		this(request, status, null);
 
-				if(key != null){
-
-					final StringBuilder v = new StringBuilder();
-					for(final String a : fields.get(key)){
-
-						v.append(a);
-						v.append(", ");
-
-					}
-					if(v.length() != 0){
-
-						v.delete(v.length()-2, v.length());
-
-					}
-
-					this.header.set(key, v.toString());
-
-				}
-
-			}
-
-			// HttpURLConnection は転送コーディングを自動でデコードする
-			this.header.remove(HeaderName.TransferEncoding);
-			this.header.remove(HeaderName.Trailer);
-
-			this.body = this.readBody(new BufferedInputStream(con.getInputStream()));
-
-			// 出力用にヘッダを修正する(読み込み時は転送コーディングを自動デコードするが書き出し時には必要)
-			if(!header.containsKey(HeaderName.ContentLength)){
-
-				if(!header.containsKey(HeaderName.TransferEncoding)){
-
-					header.set(HeaderName.TransferEncoding, "chunked");
-
-				}
-
-			}
-
-		}catch(final IOException e){
-
-			throw new HttpError(ErrorStatus.InternalServerError, e);
-
-		}
-
-		LOGGER.exiting("<init>");
 	}
 
-	HttpResponse(final HttpRequest request, final HttpURLConnection con, final InputStream altInput) throws HttpError{
-		LOGGER.entering("<init>", request, con, altInput);
-		assert request != null;
-		assert con != null;
-		assert altInput != null;
+	HttpResponse(final HttpRequest request, final Status status, final InputStream input){
 
-		try{
+		this.request = request;
+		this.code = status.getCode();
+		this.message = status.getMessage();
+		this.version = "1.1";
 
-			this.request = request;
-			this.code = con.getResponseCode();
-			this.message = con.getResponseMessage();
-			this.version = "1.1";
+		this.header = new HttpHeader(this);
 
-			this.header = new HttpHeader(this);
-			final Map<String, List<String>> fields = con.getHeaderFields();
-			for(final String key : fields.keySet()){
+		HttpBody b = null;
+		try {
 
-				if(key != null){
+			if(input != null){
 
-					final StringBuilder v = new StringBuilder();
-					for(final String a : fields.get(key)){
+				b = this.readBody(input);
 
-						v.append(a);
-						v.append(", ");
+			}else{
 
-					}
-					if(v.length() != 0){
-
-						v.delete(v.length()-2, v.length());
-
-					}
-
-					this.header.set(key, v.toString());
-
-				}
+				b = this.readBody(new ByteArrayInputStream(new byte[0]));
 
 			}
 
-			// HttpURLConnection は転送コーディングを自動でデコードする
-			this.header.remove(HeaderName.TransferEncoding);
-			this.header.remove(HeaderName.Trailer);
-
-			this.body = this.readBody(altInput);
-
-		}catch(final IOException e){
-
-			throw new HttpError(ErrorStatus.InternalServerError, e);
-
+		} catch (IOException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
 		}
+		this.body = b;
 
-		LOGGER.exiting("<init>");
+
 	}
 
 	//====================================================================

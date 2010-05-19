@@ -20,7 +20,7 @@ package nor.http.server.rest;
 import java.util.logging.Logger;
 
 import nor.http.ErrorResponseBuilder;
-import nor.http.ErrorStatus;
+import nor.http.Status;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.Method;
@@ -132,7 +132,7 @@ public class RESTRequestHandler implements HttpRequestHandler{
 			HttpResponse ret = super.toDelete(path, request);
 			if(ret == null){
 
-				ret = ErrorResponseBuilder.create(request, ErrorStatus.NotFound);
+				ret = ErrorResponseBuilder.create(request, Status.NotFound);
 
 			}
 
@@ -147,7 +147,7 @@ public class RESTRequestHandler implements HttpRequestHandler{
 			HttpResponse ret =  super.toGet(path, request);
 			if(ret == null){
 
-				ret = ErrorResponseBuilder.create(request, ErrorStatus.NotFound);
+				ret = ErrorResponseBuilder.create(request, Status.NotFound);
 
 			}
 
@@ -162,7 +162,7 @@ public class RESTRequestHandler implements HttpRequestHandler{
 			HttpResponse ret = super.toPost(path, request);
 			if(ret == null){
 
-				ret = ErrorResponseBuilder.create(request, ErrorStatus.NotFound);
+				ret = ErrorResponseBuilder.create(request, Status.NotFound);
 
 			}
 
@@ -177,7 +177,7 @@ public class RESTRequestHandler implements HttpRequestHandler{
 			HttpResponse ret = super.toPut(path, request);
 			if(ret == null){
 
-				ret = ErrorResponseBuilder.create(request, ErrorStatus.NotFound);
+				ret = ErrorResponseBuilder.create(request, Status.NotFound);
 
 			}
 

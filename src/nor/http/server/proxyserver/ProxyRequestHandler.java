@@ -36,7 +36,7 @@ import java.net.Proxy.Type;
 import java.util.regex.Pattern;
 
 import nor.http.ErrorResponseBuilder;
-import nor.http.ErrorStatus;
+import nor.http.Status;
 import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
@@ -128,7 +128,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 			final StringWriter body = new StringWriter();
 			e.printStackTrace(new PrintWriter(body));
-			response = ErrorResponseBuilder.create(request, ErrorStatus.InternalServerError, body.toString());
+			response = ErrorResponseBuilder.create(request, Status.InternalServerError, body.toString());
 
 		}
 

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import nor.http.ErrorResponseBuilder;
-import nor.http.ErrorStatus;
+import nor.http.Status;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 
@@ -117,7 +117,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 
 		if(ret == null){
 
-			ret = ErrorResponseBuilder.create(request, ErrorStatus.NotFound);
+			ret = ErrorResponseBuilder.create(request, Status.NotFound);
 
 		}
 
@@ -156,7 +156,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 
 		if(ret == null){
 
-			ret = ErrorResponseBuilder.create(request, ErrorStatus.NotFound);
+			ret = ErrorResponseBuilder.create(request, Status.NotFound);
 
 		}
 
@@ -196,7 +196,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 
 		if(ret == null){
 
-			ret = ErrorResponseBuilder.create(request, ErrorStatus.NotFound);
+			ret = ErrorResponseBuilder.create(request, Status.NotFound);
 
 		}
 
@@ -236,7 +236,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 
 		if(ret == null){
 
-			ret = ErrorResponseBuilder.create(request, ErrorStatus.NotFound);
+			ret = ErrorResponseBuilder.create(request, Status.NotFound);
 
 		}
 

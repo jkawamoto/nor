@@ -23,12 +23,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.DeflaterInputStream;
+import java.util.zip.GZIPInputStream;
 
 import nor.http.io.HeaderInputStream;
 import nor.util.log.EasyLogger;
@@ -228,6 +230,9 @@ public class HttpRequest extends HttpMessage{
 	//	}
 
 
+	//--------------------------------------------------------------------
+	//	レスポンスの作成
+	//--------------------------------------------------------------------
 	/**
 	 * レスポンスオブジェクトを作成する．
 	 *
@@ -248,9 +253,9 @@ public class HttpRequest extends HttpMessage{
 		LOGGER.entering("createResponse", con);
 		assert con != null;
 
-		HttpResponse ret;
 
-		// ヘッダの登録
+		// リクエストの処理
+		// リクエストヘッダの登録
 		final HttpHeader header = this.getHeader();
 		for(final String key : header.keySet()){
 
@@ -258,41 +263,103 @@ public class HttpRequest extends HttpMessage{
 
 		}
 
+		con.setConnectTimeout(60000);
+
+		try{
+
+			// ボディがある場合は送信
+			if(header.containsKey(HeaderName.ContentLength)){
+
+				final int length = Integer.parseInt(header.get(HeaderName.ContentLength));
+				con.setFixedLengthStreamingMode(length);
+				con.setDoOutput(true);
+				con.connect();
+
+				this.getBody().writeOut(new BufferedOutputStream(con.getOutputStream()));
+
+			}else{
+
+				con.connect();
+
+			}
+
+		}catch(final IOException e){
+
+			return ErrorResponseBuilder.create(this, Status.InternalServerError, e);
+
+		}
+
+
+		// リクエストの作成
+		HttpResponse ret;
 		try {
 
-			try{
+			final int code = con.getResponseCode();
+			InputStream resStream = null;
+			if(code < 400){
 
-				con.setConnectTimeout(60000);
+				resStream = con.getInputStream();
 
-				// ボディがある場合は送信
-				if(header.containsKey(HeaderName.ContentLength)){
+				// 内容エンコーディングの解決
+				final String encode = con.getHeaderField(HeaderName.ContentEncoding.toString());
+				if(encode != null){
 
-					final int length = Integer.parseInt(header.get(HeaderName.ContentLength));
-					con.setFixedLengthStreamingMode(length);
-					con.setDoOutput(true);
-					con.connect();
+					if("gzip".equalsIgnoreCase(encode)){
 
-					this.getBody().writeOut(new BufferedOutputStream(con.getOutputStream()));
+						resStream = new GZIPInputStream(resStream);
 
-				}else{
+					}else if("deflate".equalsIgnoreCase(encode)){
 
-					con.connect();
+						resStream = new DeflaterInputStream(resStream);
+
+					}
 
 				}
 
-				// レスポンスの作成
-				ret = new HttpResponse(this, con);
+			}else{
 
-			} catch (final HttpError e) {
+				resStream = con.getErrorStream();
 
-				final InputStream err = con.getErrorStream();
-				if(err != null){
+			}
+			ret = new HttpResponse(this, Status.valueOf(code), resStream);
 
-					ret = new HttpResponse(this, con, con.getErrorStream());
 
-				}else{
+			// ヘッダの登録
+			final HttpHeader resHeader = ret.getHeader();
+			final Map<String, List<String>> fields = con.getHeaderFields();
+			for(final String key : fields.keySet()){
 
-					throw e;
+				if(key != null){
+
+					final StringBuilder v = new StringBuilder();
+					for(final String a : fields.get(key)){
+
+						v.append(a);
+						v.append(", ");
+
+					}
+					if(v.length() != 0){
+
+						v.delete(v.length()-2, v.length());
+
+					}
+
+					resHeader.set(key, v.toString());
+
+				}
+
+			}
+
+			// HttpURLConnection は転送コーディングを自動でデコードする
+			resHeader.remove(HeaderName.TransferEncoding);
+			resHeader.remove(HeaderName.Trailer);
+
+			// 出力用にヘッダを修正する(読み込み時は転送コーディングを自動デコードするが書き出し時には必要)
+			if(!resHeader.containsKey(HeaderName.ContentLength)){
+
+				if(!resHeader.containsKey(HeaderName.TransferEncoding)){
+
+					resHeader.set(HeaderName.TransferEncoding, "chunked");
 
 				}
 
@@ -300,15 +367,7 @@ public class HttpRequest extends HttpMessage{
 
 		}catch(final IOException e){
 
-			final StringWriter body = new StringWriter();
-			e.printStackTrace(new PrintWriter(body));
-			ret = ErrorResponseBuilder.create(this, ErrorStatus.InternalServerError, body.toString());
-
-		}catch(final HttpError e){
-
-			final StringWriter body = new StringWriter();
-			e.printStackTrace(new PrintWriter(body));
-			ret = ErrorResponseBuilder.create(this, e.getStatus(), body.toString());
+			ret = ErrorResponseBuilder.create(this, Status.InternalServerError, e);
 
 		}
 
@@ -316,6 +375,14 @@ public class HttpRequest extends HttpMessage{
 		LOGGER.exiting("createResponse", ret);
 		return ret;
 	}
+
+	public HttpResponse createResponse(final Status status) throws HttpError{
+
+		final HttpResponse ret = new HttpResponse(this, status);
+		return ret;
+
+	}
+
 
 	/* (非 Javadoc)
 	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#toString()
@@ -325,11 +392,11 @@ public class HttpRequest extends HttpMessage{
 
 		final String ret = String.format("Request[method=%s, path=%s]", this.getMethod(), this.getPath());
 
-//		final StringBuilder ret = new StringBuilder();
-//
-//		ret.append(this.getHeadLine());
-//		ret.append("\n");
-//		ret.append(this.getHeader().toString());
+		//		final StringBuilder ret = new StringBuilder();
+		//
+		//		ret.append(this.getHeadLine());
+		//		ret.append("\n");
+		//		ret.append(this.getHeader().toString());
 
 		LOGGER.exiting("toString", ret);
 		return ret.toString();

@@ -21,36 +21,36 @@ package nor.http;
 @SuppressWarnings("serial")
 public class HttpError extends Exception{
 
-	private final ErrorStatus status;
+	private final Status status;
 
-	public HttpError(final ErrorStatus status){
+	public HttpError(final Status status){
 
 		this.status = status;
 
 	}
 
-	public HttpError(final ErrorStatus status, final String message){
+	public HttpError(final Status status, final String message){
 		super(message);
 
 		this.status = status;
 
 	}
 
-	public HttpError(final ErrorStatus status, final Throwable cause){
+	public HttpError(final Status status, final Throwable cause){
 		super(cause);
 
 		this.status = status;
 
 	}
 
-	public HttpError(final ErrorStatus status, final String message, final Throwable cause){
+	public HttpError(final Status status, final String message, final Throwable cause){
 		super(message, cause);
 
 		this.status = status;
 
 	}
 
-	public ErrorStatus getStatus(){
+	public Status getStatus(){
 
 		return this.status;
 

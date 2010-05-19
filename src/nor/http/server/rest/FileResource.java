@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 
 import nor.http.ContentType;
 import nor.http.ErrorResponseBuilder;
-import nor.http.ErrorStatus;
+import nor.http.Status;
 import nor.http.HttpError;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
@@ -253,7 +253,7 @@ public class FileResource extends Resource{
 
 		if(ret == null){
 
-			ret = ErrorResponseBuilder.create(request, ErrorStatus.NotFound);
+			ret = ErrorResponseBuilder.create(request, Status.NotFound);
 
 		}
 

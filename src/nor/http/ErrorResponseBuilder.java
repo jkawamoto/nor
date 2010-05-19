@@ -18,8 +18,8 @@
 package nor.http;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import nor.util.log.EasyLogger;
 
@@ -71,23 +71,21 @@ public class ErrorResponseBuilder {
 	 * @param status レスポンスを生成するエラーステータス
 	 * @return 生成されたエラーレスポンス
 	 */
-	public static HttpResponse create(final HttpRequest request, final ErrorStatus status){
+	public static HttpResponse create(final HttpRequest request, final Status status){
 		LOGGER.entering("create", request, status);
 		assert request != null;
 		assert status != null;
 
 		HttpResponse ret = null;
 
-		final StringBuilder header = new StringBuilder();
-		header.append(String.format("HTTP/1.1 %d %s\n", status.getCode() , status.getMessage()));
-		header.append("Content-Type: text/html; charset=utf-8\n");
-		header.append("Connection: close\n");
-		header.append(String.format("Server: %s\n", serverName));
-		header.append("\n");
-
 		try{
 
-			ret = request.createResponse(new ByteArrayInputStream(header.toString().getBytes()));
+			ret = request.createResponse(status);
+
+			final HttpHeader header = ret.getHeader();
+			header.add(HeaderName.ContentType, "text/html; charset=utf-8");
+			header.add(HeaderName.Connection, "close");
+			header.add(HeaderName.Server, serverName);
 
 		}catch (final HttpError e){
 
@@ -101,7 +99,7 @@ public class ErrorResponseBuilder {
 
 	}
 
-    /**
+	/**
 	 * エラーステータスに対応するエラーレスポンスオブジェクトを生成する．
 	 * この実装では，エラーレスポンスオブジェクトは毎回生成し，再利用は行わない．
 	 * その為，返されるインスタンスは変更可能である．
@@ -111,7 +109,7 @@ public class ErrorResponseBuilder {
 	 * @param body メッセージボディ
 	 * @return 生成されたエラーレスポンス
 	 */
-	public static HttpResponse create(final HttpRequest request, final ErrorStatus status, final String body){
+	public static HttpResponse create(final HttpRequest request, final Status status, final String body){
 		LOGGER.entering("create", request, status, body);
 		assert request != null;
 		assert status != null;
@@ -119,19 +117,17 @@ public class ErrorResponseBuilder {
 
 		HttpResponse ret = null;
 
-		final StringBuilder header = new StringBuilder();
-		header.append(String.format("HTTP/1.1 %d %s\r\n", status.getCode() , status.getMessage()));
-		header.append("Content-Type: text/html; charset=utf-8\r\n");
-		header.append("Connection: close\r\n");
-		header.append(String.format("Server: %s\r\n", serverName));
-		header.append("Content-Length: ");
-		header.append(body.getBytes().length);
-		header.append("\r\n\r\n");
-
 		try{
 
-			final InputStream in = new SequenceInputStream(new ByteArrayInputStream(header.toString().getBytes()), new ByteArrayInputStream(body.getBytes()));
-			ret = request.createResponse(in);
+			ret = request.createResponse(status);
+
+			final HttpHeader header = ret.getHeader();
+			header.add(HeaderName.ContentType, "text/html; charset=utf-8");
+			header.add(HeaderName.Connection, "close");
+			header.add(HeaderName.Server, serverName);
+			header.add(HeaderName.ContentLength, Integer.toString(body.getBytes().length));
+
+			ret.getBody().setStream(new ByteArrayInputStream(body.getBytes()));
 
 		}catch (final HttpError e){
 
@@ -141,6 +137,16 @@ public class ErrorResponseBuilder {
 
 		LOGGER.exiting("create", ret);
 		return ret;
+
+	}
+
+	public static HttpResponse create(final HttpRequest request, final Status status, final Exception e){
+
+		final StringWriter body = new StringWriter();
+		e.printStackTrace(new PrintWriter(body));
+
+		// TODO: 出力を整形する
+		return ErrorResponseBuilder.create(request, status, body.toString());
 
 	}
 
