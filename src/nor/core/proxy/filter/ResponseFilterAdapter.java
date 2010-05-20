@@ -19,9 +19,6 @@ package nor.core.proxy.filter;
 
 import java.util.regex.Pattern;
 
-import nor.core.proxy.FilterContainer;
-import nor.http.HttpResponse;
-
 public abstract class ResponseFilterAdapter implements ResponseFilter{
 
 	protected Pattern pattern;
@@ -39,14 +36,6 @@ public abstract class ResponseFilterAdapter implements ResponseFilter{
 	public Pattern pattern() {
 
 		return this.pattern;
-
-	}
-
-	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.arthra.lotte.MessageFilter#update(null, jp.ac.kyoto_u.i.soc.db.j.kawamoto.arthra.lotte.FilterContainer, boolean)
-	 */
-	@Override
-	public void update(HttpResponse msg, FilterContainer container, boolean isCharacter) {
 
 	}
 

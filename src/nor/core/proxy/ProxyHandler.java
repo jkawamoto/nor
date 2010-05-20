@@ -22,6 +22,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,17 +56,17 @@ class ProxyHandler implements HttpRequestHandler{
 	/**
 	 * Httpリクエストに対するフィルタ
 	 */
-	private final MatchableSet<RequestFilter> requestFilters = new MatchableSet<RequestFilter>();
+	private final Collection<RequestFilter> requestFilters = new ArrayList<RequestFilter>();
 
 	/**
 	 * Httpレスポンスに対するフィルタ
 	 */
-	private final MatchableSet<ResponseFilter> responseFilters = new MatchableSet<ResponseFilter>();
+	private final Collection<ResponseFilter> responseFilters = new ArrayList<ResponseFilter>();
 
 	/**
 	 * 特別なリクエストハンドラ
 	 */
-	private final MatchableSet<MessageHandler> handlers = new MatchableSet<MessageHandler>();
+	private final Collection<MessageHandler> handlers = new ArrayList<MessageHandler>();
 
 
 	/**
@@ -107,12 +109,18 @@ class ProxyHandler implements HttpRequestHandler{
 		ProxyHandler.doFiltering(request, this.requestFilters);
 
 		// 他のハンドラがインストールされている場合はそれを実行する
-		for(final HttpRequestHandler hander : this.handlers.query(request.getPath())){
+		final String path = request.getPath();
+		for(final MessageHandler h : this.handlers){
 
-			response = hander.doRequest(request);
-			if(response != null){
+			final Matcher m = h.pattern().matcher(path);
+			if(m.matches()){
 
-				break;
+				response = h.doRequest(request, m);
+				if(response != null){
+
+					break;
+
+				}
 
 			}
 
@@ -304,7 +312,7 @@ class ProxyHandler implements HttpRequestHandler{
 	//====================================================================
 	// private static メソッド
 	//====================================================================
-	private static <Message extends HttpMessage, Filter extends MessageFilter<Message> & Matchable> void doFiltering(final Message msg, final MatchableSet<Filter> filters){
+	private static <Message extends HttpMessage, Filter extends MessageFilter<Message> & Matchable> void doFiltering(final Message msg, final Collection<Filter> filters){
 
 		// 文字コードの取得
 		Charset charset = null;
@@ -335,9 +343,15 @@ class ProxyHandler implements HttpRequestHandler{
 
 		// メッセージフィルタに対してメッセージボディフィルタが必要か尋ねる
 		final FilterContainer container = new FilterContainer();
-		for(final MessageFilter<Message> f : filters.query(msg.getPath())){
+		final String path = msg.getPath();
+		for(final MessageFilter<Message> f : filters){
 
-			f.update(msg, container, isChar);
+			final Matcher m = f.pattern().matcher(path);
+			if(m.matches()){
+
+				f.update(msg, m, container, isChar);
+
+			}
 
 		}
 

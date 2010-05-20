@@ -18,8 +18,6 @@
 package nor.http;
 
 import java.io.ByteArrayInputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 import nor.util.log.EasyLogger;
 
@@ -142,10 +140,15 @@ public class ErrorResponseBuilder {
 
 	public static HttpResponse create(final HttpRequest request, final Status status, final Exception e){
 
-		final StringWriter body = new StringWriter();
-		e.printStackTrace(new PrintWriter(body));
+		final StringBuilder body = new StringBuilder();
 
-		// TODO: 出力を整形する
+		for(final StackTraceElement i : e.getStackTrace()){
+
+			body.append(i.toString());
+			body.append("<br>");
+
+		}
+
 		return ErrorResponseBuilder.create(request, status, body.toString());
 
 	}

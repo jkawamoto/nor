@@ -159,6 +159,26 @@ public class HttpRequest extends HttpMessage{
 		LOGGER.exiting("setPath");
 	}
 
+	/* (非 Javadoc)
+	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#toString()
+	 */
+	@Override
+	public String toString(){
+		LOGGER.entering("toString");
+
+		final String ret = String.format("Request[method=%s, path=%s]", this.getMethod(), this.getPath());
+
+		//		final StringBuilder ret = new StringBuilder();
+		//
+		//		ret.append(this.getHeadLine());
+		//		ret.append("\n");
+		//		ret.append(this.getHeader().toString());
+
+		LOGGER.exiting("toString", ret);
+		return ret.toString();
+
+	}
+
 	//	/**
 	//	 * このHTTPリクエストに含まれるクエリを返す．
 	//	 *
@@ -234,7 +254,7 @@ public class HttpRequest extends HttpMessage{
 	//	レスポンスの作成
 	//--------------------------------------------------------------------
 	/**
-	 * レスポンスオブジェクトを作成する．
+	 * 入力ストリームからレスポンスオブジェクトを作成する．
 	 *
 	 * @param input レスポンスを含むストリーム
 	 * @throws HttpError
@@ -249,6 +269,13 @@ public class HttpRequest extends HttpMessage{
 		return ret;
 	}
 
+	/**
+	 * HttpURLコネクションからレスポンスを作成する．
+	 * リクエストを処理しレスポンスを作成する．
+	 *
+	 * @param con
+	 * @return
+	 */
 	public HttpResponse createResponse(final HttpURLConnection con){
 		LOGGER.entering("createResponse", con);
 		assert con != null;
@@ -376,30 +403,17 @@ public class HttpRequest extends HttpMessage{
 		return ret;
 	}
 
+	/**
+	 * ステータスコードのみからレスポンスを作成する
+	 *
+	 * @param status
+	 * @return
+	 * @throws HttpError
+	 */
 	public HttpResponse createResponse(final Status status) throws HttpError{
 
 		final HttpResponse ret = new HttpResponse(this, status);
 		return ret;
-
-	}
-
-
-	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#toString()
-	 */
-	public String toString(){
-		LOGGER.entering("toString");
-
-		final String ret = String.format("Request[method=%s, path=%s]", this.getMethod(), this.getPath());
-
-		//		final StringBuilder ret = new StringBuilder();
-		//
-		//		ret.append(this.getHeadLine());
-		//		ret.append("\n");
-		//		ret.append(this.getHeader().toString());
-
-		LOGGER.exiting("toString", ret);
-		return ret.toString();
 
 	}
 

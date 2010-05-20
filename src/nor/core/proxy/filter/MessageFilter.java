@@ -17,14 +17,17 @@
  */
 package nor.core.proxy.filter;
 
+import java.util.regex.MatchResult;
+
 import nor.core.proxy.FilterContainer;
 import nor.http.HttpMessage;
+import nor.util.Matchable;
 
 /**
  * @author Junpei
  *
  */
-public interface MessageFilter<Message extends HttpMessage>{
+public interface MessageFilter<Message extends HttpMessage> extends Matchable{
 
 	/**
 	 * 新しいメッセージが届いたことを通知します．
@@ -33,6 +36,6 @@ public interface MessageFilter<Message extends HttpMessage>{
 	 * @param container ストリームフィルタの登録先
 	 * @param isCharacter テキストメッセージの場合 true
 	 */
-	public void update(final Message msg, final FilterContainer container, final boolean isCharacter);
+	public void update(final Message msg, final MatchResult m, final FilterContainer container, final boolean isCharacter);
 
 }

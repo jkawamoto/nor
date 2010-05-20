@@ -18,9 +18,8 @@
 package nor.core.proxy.filter;
 
 import nor.http.HttpResponse;
-import nor.util.Matchable;
 
-public interface ResponseFilter extends MessageFilter<HttpResponse>, Matchable{
+public interface ResponseFilter extends MessageFilter<HttpResponse>{
 
 
 }
