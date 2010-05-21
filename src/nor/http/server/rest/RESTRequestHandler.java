@@ -37,7 +37,7 @@ public class RESTRequestHandler implements HttpRequestHandler{
 	/**
 	 * ルートリソース
 	 */
-	private final RootResource _root = new RootResource();
+	private final RootResource root = new RootResource();
 
 	/**
 	 * ロガー
@@ -55,7 +55,7 @@ public class RESTRequestHandler implements HttpRequestHandler{
 	public DirResource getRoot(){
 		LOGGER.entering(RESTRequestHandler.class.getName(), "getRoot");
 
-		final DirResource ret = this._root;
+		final DirResource ret = this.root;
 
 		LOGGER.exiting(RESTRequestHandler.class.getName(), "getRoot", ret);
 		return ret;
@@ -77,22 +77,22 @@ public class RESTRequestHandler implements HttpRequestHandler{
 
 				case GET:
 
-					ret = this._root.toGet(path, request);
+					ret = this.root.toGet(path, request);
 					break;
 
 				case POST:
 
-					ret = this._root.toPost(path, request);
+					ret = this.root.toPost(path, request);
 					break;
 
 				case PUT:
 
-					ret = this._root.toPut(path, request);
+					ret = this.root.toPut(path, request);
 					break;
 
 				case DELETE:
 
-					ret = this._root.toDelete(path, request);
+					ret = this.root.toDelete(path, request);
 					break;
 
 			}

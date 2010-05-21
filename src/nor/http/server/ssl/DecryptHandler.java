@@ -17,15 +17,15 @@
  */
 package nor.http.server.ssl;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 
-import nor.http.HttpError;
+import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
+import nor.http.Status;
 
 public class DecryptHandler implements ConnectHandler{
 
@@ -40,29 +40,20 @@ public class DecryptHandler implements ConnectHandler{
 		// final String prefix = "https://" + request.getHeader().get(HttpHeader.HeaderName.Host, 0);
 		final String prefix = "https://" + request.getPath();
 
-		final StringBuilder header = new StringBuilder();
-		header.append("HTTP/1.1 200 Connection established\n");
-		header.append("Proxy-agent: arthra/1.0\n");
-		header.append("\n");
+		final HttpResponse ret = request.createResponse(Status.OK);
+		final HttpHeader header = ret.getHeader();
+		header.add("Proxy-agent", "nor/1.0");
 
-		try{
 
-			final HttpResponse ret = request.createResponse(new ByteArrayInputStream(header.toString().getBytes()));
-			ret.writeOut(output);
+		ret.writeOut(output);
 
-			// なぜかこいつを使いまわすと落ちる
-			SecureManager m = new SecureManager();
+		// なぜかこいつを使いまわすと落ちる
+		SecureManager m = new SecureManager();
 
-			SecureManager.SecureSession s = m.createSession(input, output);
+		SecureManager.SecureSession s = m.createSession(input, output);
 
-			result = new Result(prefix, s.getInputStream(), s.getOutputStream());
+		result = new Result(prefix, s.getInputStream(), s.getOutputStream());
 
-		} catch (HttpError e) {
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
-		}finally{
-
-		}
 
 		LOGGER.exiting(DecryptHandler.class.getName(), "doConnect", result);
 		return result;

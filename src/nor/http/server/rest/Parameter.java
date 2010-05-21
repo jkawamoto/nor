@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 
 public class Parameter{
 
-	private final Map<String, String> _param = new TreeMap<String, String>();
+	private final Map<String, String> param = new TreeMap<String, String>();
 
 	/**
 	 * ロガー
@@ -54,7 +54,7 @@ public class Parameter{
 				final String key = pair.substring(0, s);
 				final String value = pair.substring(s+1);
 				
-				this._param.put(key, value);
+				this.param.put(key, value);
 
 			}
 
@@ -67,35 +67,35 @@ public class Parameter{
 	//  public メソッド
 	//====================================================================
 	public boolean containsKey(Object key) {
-		return _param.containsKey(key);
+		return param.containsKey(key);
 	}
 
 	public boolean containsValue(Object value) {
-		return _param.containsValue(value);
+		return param.containsValue(value);
 	}
 
 	public Set<Entry<String, String>> entrySet() {
-		return _param.entrySet();
+		return param.entrySet();
 	}
 
 	public String get(Object key) {
-		return _param.get(key);
+		return param.get(key);
 	}
 
 	public boolean isEmpty() {
-		return _param.isEmpty();
+		return param.isEmpty();
 	}
 
 	public Set<String> keySet() {
-		return _param.keySet();
+		return param.keySet();
 	}
 
 	public int size() {
-		return _param.size();
+		return param.size();
 	}
 
 	public Collection<String> values() {
-		return _param.values();
+		return param.values();
 	}
 	
 	

@@ -18,7 +18,6 @@
 package nor.http;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -124,12 +123,6 @@ public class HttpResponse extends HttpMessage{
 		LOGGER.exiting("<init>");
 	}
 
-	HttpResponse(final HttpRequest request, final Status status){
-
-		this(request, status, null);
-
-	}
-
 	HttpResponse(final HttpRequest request, final Status status, final InputStream input){
 
 		this.request = request;
@@ -142,22 +135,13 @@ public class HttpResponse extends HttpMessage{
 		HttpBody b = null;
 		try {
 
-			if(input != null){
-
-				b = this.readBody(input);
-
-			}else{
-
-				b = this.readBody(new ByteArrayInputStream(new byte[0]));
-
-			}
+			b = this.readBody(input);
 
 		} catch (IOException e) {
 			// TODO 自動生成された catch ブロック
 			e.printStackTrace();
 		}
 		this.body = b;
-
 
 	}
 

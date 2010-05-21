@@ -40,12 +40,12 @@ public class DirResource extends Resource implements Collection<Resource>{
 	/**
 	 * リソースの名前
 	 */
-	private final String _name;
+	private final String name;
 
 	/**
 	 * 子リソース
 	 */
-	private final List<Resource> _children = Collections.synchronizedList(new ArrayList<Resource>());
+	private final List<Resource> children = Collections.synchronizedList(new ArrayList<Resource>());
 
 	/**
 	 * ロガー
@@ -64,7 +64,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 		LOGGER.entering(DirResource.class.getName(), "<init>", name);
 		assert name != null;
 
-		this._name = name;
+		this.name = name;
 
 		LOGGER.exiting(DirResource.class.getName(), "<init>");
 	}
@@ -79,7 +79,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	public String getName() {
 		LOGGER.entering(DirResource.class.getName(), "getName");
 
-		final String ret = this._name;
+		final String ret = this.name;
 
 		LOGGER.exiting(DirResource.class.getName(), "getName", ret);
 		return ret;
@@ -94,11 +94,11 @@ public class DirResource extends Resource implements Collection<Resource>{
 		LOGGER.entering(DirResource.class.getName(), "toDelete");
 
 		HttpResponse ret = null;
-		final String name = path.substring(this._name.length() + 1);
+		final String name = path.substring(this.name.length() + 1);
 
-		synchronized(this._children){
+		synchronized(this.children){
 
-			for(final Resource r : this._children){
+			for(final Resource r : this.children){
 
 				if(name.startsWith(r.getName())){
 
@@ -133,11 +133,11 @@ public class DirResource extends Resource implements Collection<Resource>{
 		LOGGER.entering(DirResource.class.getName(), "toGet");
 
 		HttpResponse ret = null;
-		final String name = path.substring(this._name.length() + 1);
+		final String name = path.substring(this.name.length() + 1);
 
-		synchronized(this._children){
+		synchronized(this.children){
 
-			for(final Resource r : this._children){
+			for(final Resource r : this.children){
 
 				if(name.startsWith(r.getName())){
 
@@ -173,11 +173,11 @@ public class DirResource extends Resource implements Collection<Resource>{
 		LOGGER.entering(DirResource.class.getName(), "toPost");
 
 		HttpResponse ret = null;
-		final String name = path.substring(this._name.length() + 1);
+		final String name = path.substring(this.name.length() + 1);
 
-		synchronized(this._children){
+		synchronized(this.children){
 
-			for(final Resource r : this._children){
+			for(final Resource r : this.children){
 
 				if(name.startsWith(r.getName())){
 
@@ -213,11 +213,11 @@ public class DirResource extends Resource implements Collection<Resource>{
 		LOGGER.entering(DirResource.class.getName(), "toPut");
 
 		HttpResponse ret = null;
-		final String name = path.substring(this._name.length() + 1);
+		final String name = path.substring(this.name.length() + 1);
 
-		synchronized(this._children){
+		synchronized(this.children){
 
-			for(final Resource r : this._children){
+			for(final Resource r : this.children){
 
 				if(name.startsWith(r.getName())){
 
@@ -251,7 +251,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	@Override
 	public String toString(){
 
-		return "DirResource : " + this._name;
+		return "DirResource : " + this.name;
 
 	}
 
@@ -265,7 +265,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	@Override
 	public boolean add(final Resource r){
 
-		return this._children.add(r);
+		return this.children.add(r);
 
 	}
 
@@ -275,7 +275,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	@Override
 	public boolean remove(Object o) {
 
-		return _children.remove(o);
+		return children.remove(o);
 
 	}
 
@@ -285,7 +285,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	@Override
 	public boolean addAll(Collection<? extends Resource> c) {
 
-		return _children.addAll(c);
+		return children.addAll(c);
 
 	}
 
@@ -295,7 +295,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	@Override
 	public void clear() {
 
-		_children.clear();
+		children.clear();
 
 	}
 
@@ -305,7 +305,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	@Override
 	public boolean contains(Object o) {
 
-		return _children.contains(o);
+		return children.contains(o);
 
 	}
 
@@ -315,7 +315,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	@Override
 	public boolean containsAll(Collection<?> c) {
 
-		return _children.containsAll(c);
+		return children.containsAll(c);
 
 	}
 
@@ -325,7 +325,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	@Override
 	public boolean isEmpty() {
 
-		return _children.isEmpty();
+		return children.isEmpty();
 
 	}
 
@@ -335,7 +335,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	@Override
 	public Iterator<Resource> iterator() {
 
-		return _children.iterator();
+		return children.iterator();
 
 	}
 
@@ -345,7 +345,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	@Override
 	public boolean removeAll(Collection<?> c) {
 
-		return _children.removeAll(c);
+		return children.removeAll(c);
 
 	}
 
@@ -355,7 +355,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	@Override
 	public boolean retainAll(Collection<?> c) {
 
-		return _children.retainAll(c);
+		return children.retainAll(c);
 
 	}
 
@@ -364,7 +364,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	 */
 	@Override
 	public int size() {
-		return _children.size();
+		return children.size();
 	}
 
 	/* (non-Javadoc)
@@ -373,7 +373,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	@Override
 	public Object[] toArray() {
 
-		return _children.toArray();
+		return children.toArray();
 
 	}
 
@@ -383,7 +383,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 	@Override
 	public <T> T[] toArray(T[] a) {
 
-		return _children.toArray(a);
+		return children.toArray(a);
 
 	}
 

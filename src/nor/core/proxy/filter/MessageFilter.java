@@ -18,16 +18,18 @@
 package nor.core.proxy.filter;
 
 import java.util.regex.MatchResult;
+import java.util.regex.Pattern;
 
 import nor.core.proxy.FilterContainer;
 import nor.http.HttpMessage;
-import nor.util.Matchable;
 
 /**
  * @author Junpei
  *
  */
-public interface MessageFilter<Message extends HttpMessage> extends Matchable{
+public interface MessageFilter<Message extends HttpMessage>{
+
+	public Pattern pattern();
 
 	/**
 	 * 新しいメッセージが届いたことを通知します．

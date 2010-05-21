@@ -18,14 +18,15 @@
 package nor.core.proxy.filter;
 
 import java.util.regex.MatchResult;
+import java.util.regex.Pattern;
 
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
-import nor.util.Matchable;
 
 
-public interface MessageHandler extends Matchable{
+public interface MessageHandler{
 
+	public Pattern pattern();
 	public HttpResponse doRequest(final HttpRequest request, final MatchResult m);
 
 }

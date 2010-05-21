@@ -17,18 +17,11 @@
  */
 package nor.http.server.rest;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Logger;
 
 import nor.http.ContentType;
-import nor.http.HttpError;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 
@@ -39,19 +32,13 @@ public class TextResource extends Resource{
 
 	private static final ContentType DEFAULT_CONTENT_TYPE = new ContentType("text/plain");
 
-	private final String _name;
+	private final String name;
 
-	private String _text;
+	private String text;
 
-	private final ContentType _type;
+	private final ContentType type;
 
-	private Date _modified;
-
-	/**
-	 * 日付フォーマット
-	 *
-	 */
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss zzz", java.util.Locale.US);
+	private Date modified;
 
 	//====================================================================
 	//  コンストラクタ
@@ -69,11 +56,11 @@ public class TextResource extends Resource{
 		assert text != null;
 		assert type != null;
 
-		this._name = name;
-		this._text = text;
-		this._type = type;
+		this.name = name;
+		this.text = text;
+		this.type = type;
 
-		this._modified = Calendar.getInstance().getTime();
+		this.modified = Calendar.getInstance().getTime();
 
 		LOGGER.exiting(TextResource.class.getName(), "<init>");
 	}
@@ -115,7 +102,7 @@ public class TextResource extends Resource{
 	public String getText(){
 		LOGGER.entering(TextResource.class.getName(), "getText");
 
-		final String ret = this._text;
+		final String ret = this.text;
 
 		LOGGER.exiting(TextResource.class.getName(), "getText", ret);
 		return ret;
@@ -131,8 +118,8 @@ public class TextResource extends Resource{
 		LOGGER.entering(TextResource.class.getName(), "setText", text);
 		assert text != null;
 
-		this._text = text;
-		this._modified = Calendar.getInstance().getTime();
+		this.text = text;
+		this.modified = Calendar.getInstance().getTime();
 
 		LOGGER.exiting(TextResource.class.getName(), "setText");
 	}
@@ -147,68 +134,7 @@ public class TextResource extends Resource{
 		assert path != null;
 		assert request != null;
 
-		HttpResponse ret = null;
-
-		final StringBuilder header = new StringBuilder();
-		header.append("HTTP/1.1 200 OK\n");
-		header.append("Content-Type: ");
-		header.append(this._type);
-		header.append("\n");
-		header.append("Last-Modified: ");
-		header.append(DATE_FORMAT.format(this._modified));
-		header.append("\n");
-		header.append("Server: arthra\n");
-		header.append("Content-Length: ");
-		header.append(this._text.length());
-		header.append("\n");
-		header.append("Date: ");
-		header.append(DATE_FORMAT.format(Calendar.getInstance().getTime()));
-		header.append("\n\n");
-
-		try {
-
-			final InputStream headerIn = new ByteArrayInputStream(header.toString().getBytes());
-			final InputStream bodyIn = new ByteArrayInputStream(this._text.getBytes());
-			final InputStream in = new SequenceInputStream(headerIn, bodyIn);
-
-			ret = request.createResponse(in);
-			in.close();
-			bodyIn.close();
-			headerIn.close();
-
-		} catch (FileNotFoundException e) {
-
-			LOGGER.warning(e.getLocalizedMessage());
-
-		} catch (IOException e) {
-
-			LOGGER.warning(e.getLocalizedMessage());
-
-		} catch (HttpError e) {
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
-		}
-
-
-		if(ret == null){
-
-			final String error = "HTTP/1.1 404 Not Found\n\n";
-			try {
-
-				final InputStream in = new ByteArrayInputStream(error.getBytes());
-
-				ret = request.createResponse(in);
-				in.close();
-
-			} catch (IOException e) {
-				// TODO 自動生成された catch ブロック
-				e.printStackTrace();
-			} catch (HttpError e) {
-				// TODO 自動生成された catch ブロック
-				e.printStackTrace();
-			}
-
-		}
+		final HttpResponse ret = SimpleResponseBuilder.create(request, this.text, this.type);
 
 		LOGGER.exiting(FileResource.class.getName(), "toGet", ret);
 		return ret;
@@ -222,7 +148,7 @@ public class TextResource extends Resource{
 	public String getName(){
 		LOGGER.entering(FileResource.class.getName(), "getName");
 
-		final String ret = this._name;
+		final String ret = this.name;
 
 		LOGGER.exiting(FileResource.class.getName(), "getName", ret);
 		return ret;
@@ -231,7 +157,7 @@ public class TextResource extends Resource{
 	@Override
 	public String toString(){
 
-		return this._text + "(" + this._modified + ")";
+		return this.text + "(" + this.modified + ")";
 
 
 	}

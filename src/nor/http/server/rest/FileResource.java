@@ -17,13 +17,9 @@
  */
 package nor.http.server.rest;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -31,10 +27,11 @@ import java.util.logging.Logger;
 
 import nor.http.ContentType;
 import nor.http.ErrorResponseBuilder;
-import nor.http.Status;
-import nor.http.HttpError;
+import nor.http.HeaderName;
+import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
+import nor.http.Status;
 
 // TODO: これはRead-onlyファイル。その他の種類も作成する。本来FileResourceはJavaにおけるFileクラスを表したものであるべき。
 /**
@@ -49,17 +46,17 @@ public class FileResource extends Resource{
 	/**
 	 * リソースの名前
 	 */
-	private final String _name;
+	private final String name;
 
 	/**
 	 * 関連付けられたファイル
 	 */
-	private final File _file;
+	private final File file;
 
 	/**
 	 * コンテンツタイプ
 	 */
-	private final ContentType _type;
+	private final ContentType type;
 
 	/**
 	 * 日付フォーマット
@@ -88,9 +85,9 @@ public class FileResource extends Resource{
 		assert file != null;
 		assert type != null;
 
-		this._name = name;
-		this._file = file;
-		this._type = type;
+		this.name = name;
+		this.file = file;
+		this.type = type;
 
 		LOGGER.exiting(FileResource.class.getName(), "<init>");
 
@@ -170,9 +167,9 @@ public class FileResource extends Resource{
 		assert file != null;
 		assert type != null;
 
-		this._file = new File(file);
-		this._name = this._file.getName();
-		this._type = type;
+		this.file = new File(file);
+		this.name = this.file.getName();
+		this.type = type;
 
 		LOGGER.exiting(FileResource.class.getName(), "<init>");
 
@@ -203,50 +200,22 @@ public class FileResource extends Resource{
 		assert request != null;
 
 		HttpResponse ret = null;
-		if(this._file.canRead()){
+		if(this.file.canRead()){
 
-			final StringBuilder header = new StringBuilder();
-			header.append("HTTP/1.1 200 OK\n");
-			header.append("Content-Type: ");
-			header.append(this._type);
-			header.append("\n");
-			header.append("Last-Modified: ");
-			header.append(DATE_FORMAT.format(new Date(this._file.lastModified())));
-			header.append("\n");
-			// アプリケーション名
-			header.append("Server: ");
-			header.append(System.getProperty("app.name"));
-			header.append("\n");
-			header.append("Content-Length: ");
-			header.append(this._file.length());
-			header.append("\n");
-			header.append("Date: ");
-			header.append(DATE_FORMAT.format(Calendar.getInstance().getTime()));
-			header.append("\n\n");
+			try{
 
-			try {
+				ret = request.createResponse(Status.OK, new FileInputStream(this.file));
+				final HttpHeader header = ret.getHeader();
+				header.add(HeaderName.ContentType, this.type.toString());
+				header.add(HeaderName.LastModified, DATE_FORMAT.format(new Date(this.file.lastModified())));
+				header.add(HeaderName.Server, System.getProperty("app.name"));
+				header.add(HeaderName.ContentLength, Long.toString(this.file.length()));
+				header.add(HeaderName.Date, DATE_FORMAT.format(Calendar.getInstance().getTime()));
 
-				final InputStream fileIn = new FileInputStream(this._file);
-				final InputStream headerIn = new ByteArrayInputStream(header.toString().getBytes());
-				final InputStream in = new SequenceInputStream(headerIn, fileIn);
+			}catch(final FileNotFoundException e){
 
-				ret = request.createResponse(in);
+				ret = ErrorResponseBuilder.create(request, Status.NotFound);
 
-				in.close();
-				headerIn.close();
-				fileIn.close();
-
-			} catch (FileNotFoundException e) {
-
-				LOGGER.warning(e.getLocalizedMessage());
-
-			} catch (IOException e) {
-
-				LOGGER.warning(e.getLocalizedMessage());
-
-			} catch (HttpError e) {
-				// TODO 自動生成された catch ブロック
-				e.printStackTrace();
 			}
 
 		}
@@ -269,7 +238,7 @@ public class FileResource extends Resource{
 	public String getName(){
 		LOGGER.entering(FileResource.class.getName(), "getName");
 
-		final String ret = this._name;
+		final String ret = this.name;
 
 		LOGGER.exiting(FileResource.class.getName(), "getName", ret);
 		return ret;

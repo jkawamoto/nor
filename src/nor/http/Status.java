@@ -43,6 +43,9 @@ public enum Status{
 	MultiStatus(207, "Multi-Status"),
 	IMUsed(226, "IM Used"),
 
+	ConnectionEstablished(200, "Connection established"),
+
+
 	MultipleChoices(300, "Multiple Choices"),
 	MovedPermanently(301, "Moved Permanently"),
 	Found(302, "Found"),

@@ -17,7 +17,6 @@
  */
 package nor.http.server.ssl;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,9 +29,10 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-import nor.http.HttpError;
+import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
+import nor.http.Status;
 
 public class TunnellingHandler implements ConnectHandler{
 
@@ -66,56 +66,48 @@ public class TunnellingHandler implements ConnectHandler{
 				// TODO: プロキシの設定は認証が必要な場合もあるので、BASIC認証設定も追加する
 
 				// TODO: さらに外側にプロキシがいる場合、CONNECTメソッドを呼ぶ必要がある
-				final StringBuilder header = new StringBuilder();
-				header.append("HTTP/1.1 200 Connection established\n");
-				header.append("Proxy-agent: arthra/1.0\n");
-				header.append("\n");
+				final HttpResponse ret = request.createResponse(Status.ConnectionEstablished);
+				final HttpHeader header = ret.getHeader();
+				header.add("Proxy-agent", "not/1.0\n");
 
-				try{
-					final HttpResponse ret = request.createResponse(new ByteArrayInputStream(header.toString().getBytes()));
-					ret.writeOut(output);
 
-					InputStream netIn = socket.getInputStream();
-					OutputStream netOut = socket.getOutputStream();
+				ret.writeOut(output);
 
-					while(true){
+				InputStream netIn = socket.getInputStream();
+				OutputStream netOut = socket.getOutputStream();
 
-						byte[] buf = new byte[1024];
+				while(true){
 
-						// TODO: 書き換え
-						int inRes = input.read(buf);
-						while(inRes != 0 || inRes != -1){
+					byte[] buf = new byte[1024];
 
-							netOut.write(buf);
-							inRes = input.read(buf);
+					// TODO: 書き換え
+					int inRes = input.read(buf);
+					while(inRes != 0 || inRes != -1){
 
-						}
-
-						int outRes = netIn.read(buf);
-						while(outRes != 0 || outRes != -1){
-
-							output.write(buf);
-							outRes = netIn.read(buf);
-
-						}
-
-						if(inRes == -1 || outRes == -1){
-
-							socket.shutdownInput();
-							socket.shutdownOutput();
-
-							break;
-
-						}
+						netOut.write(buf);
+						inRes = input.read(buf);
 
 					}
 
-				} catch (HttpError e) {
-					// TODO 自動生成された catch ブロック
-					e.printStackTrace();
-				}finally{
+					int outRes = netIn.read(buf);
+					while(outRes != 0 || outRes != -1){
+
+						output.write(buf);
+						outRes = netIn.read(buf);
+
+					}
+
+					if(inRes == -1 || outRes == -1){
+
+						socket.shutdownInput();
+						socket.shutdownOutput();
+
+						break;
+
+					}
 
 				}
+
 			} catch (NoSuchAlgorithmException e) {
 				// TODO 自動生成された catch ブロック
 				e.printStackTrace();

@@ -20,6 +20,7 @@ package nor.http;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -404,16 +405,34 @@ public class HttpRequest extends HttpMessage{
 	}
 
 	/**
+	 *
+	 * @param status
+	 * @param body 圧縮されていないデータストリーム
+	 * @return
+	 */
+	public HttpResponse createResponse(final Status status, final InputStream body){
+
+		final HttpResponse ret = new HttpResponse(this, status, body);
+		return ret;
+
+	}
+
+	/**
 	 * ステータスコードのみからレスポンスを作成する
 	 *
 	 * @param status
 	 * @return
 	 * @throws HttpError
 	 */
-	public HttpResponse createResponse(final Status status) throws HttpError{
+	public HttpResponse createResponse(final Status status){
 
-		final HttpResponse ret = new HttpResponse(this, status);
-		return ret;
+		return this.createResponse(status, "");
+
+	}
+
+	public HttpResponse createResponse(final Status status, final String body){
+
+		return this.createResponse(status, new ByteArrayInputStream(body.getBytes()));
 
 	}
 

@@ -17,74 +17,33 @@
  */
 package nor.http.server.rest;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.logging.Logger;
 
+import nor.http.ContentType;
 import nor.http.HeaderName;
-import nor.http.HttpError;
+import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
+import nor.http.Status;
 
 public class SimpleResponseBuilder {
 
 	// ロガー
-	private static final Logger LOGGER = Logger.getLogger(SimpleResponseBuilder.class.getName());
+	// private static final Logger LOGGER = Logger.getLogger(SimpleResponseBuilder.class.getName());
 
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss zzz", java.util.Locale.US);
 
-	public static HttpResponse create(final HttpRequest request, final String body, final String contentType){
+	public static HttpResponse create(final HttpRequest request, final String body, final ContentType contentType){
 
-		HttpResponse ret = null;
+		final HttpResponse ret = request.createResponse(Status.OK, body);
 
-		final StringBuilder header = new StringBuilder();
-		header.append("HTTP/1.1 200 OK\n");
-
-		// コンテンツタイプ
-		header.append("Content-Type: ");
-		header.append(contentType);
-		header.append("\n");
-
-		header.append("Last-Modified: ");
-		header.append(DATE_FORMAT.format(Calendar.getInstance().getTime()));
-		header.append("\n");
-
-		// アプリケーション名
-		header.append("Server: ");
-		header.append(System.getProperty("app.name"));
-		header.append("\n");
-
-		header.append("Content-Length: ");
-		header.append(body.getBytes().length);
-		header.append("\n");
-		header.append("Date: ");
-		header.append(DATE_FORMAT.format(Calendar.getInstance().getTime()));
-		header.append("\n\n");
-
-		try {
-
-			final InputStream in = new SequenceInputStream(new ByteArrayInputStream(header.toString().getBytes()), new ByteArrayInputStream(body.getBytes()));
-
-			ret = request.createResponse(in);
-			in.close();
-
-		} catch (FileNotFoundException e) {
-
-			LOGGER.warning(e.getLocalizedMessage());
-
-		} catch (IOException e) {
-
-			LOGGER.warning(e.getLocalizedMessage());
-
-		} catch (HttpError e) {
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
-		}
+		final HttpHeader header = ret.getHeader();
+		header.add(HeaderName.ContentType, contentType.toString());
+		header.add(HeaderName.LastModified, DATE_FORMAT.format(Calendar.getInstance().getTime()));
+		header.add(HeaderName.Server, System.getProperty("app.name"));
+		header.add(HeaderName.ContentLength, Integer.toString(body.getBytes().length));
+		header.add(HeaderName.Date, DATE_FORMAT.format(Calendar.getInstance().getTime()));
 
 		return ret;
 
@@ -92,44 +51,13 @@ public class SimpleResponseBuilder {
 
 	public static HttpResponse create(final HttpRequest request){
 
-		HttpResponse ret = null;
+		final HttpResponse ret = request.createResponse(Status.OK);
 
-		final StringBuilder header = new StringBuilder();
-		header.append("HTTP/1.1 200 OK\n");
-		header.append("Last-Modified: ");
-		header.append(DATE_FORMAT.format(Calendar.getInstance().getTime()));
-		header.append("\n");
-
-		// アプリケーション名
-		header.append("Server: ");
-		header.append(System.getProperty("app.name"));
-		header.append("\n");
-
-		header.append("Date: ");
-		header.append(DATE_FORMAT.format(Calendar.getInstance().getTime()));
-		header.append("\n\n");
-
-		header.append(String.format("%s:%s", HeaderName.Connection, "close"));
-
-		try {
-
-			final InputStream in = new ByteArrayInputStream(header.toString().getBytes());
-
-			ret = request.createResponse(in);
-			in.close();
-
-		} catch (FileNotFoundException e) {
-
-			LOGGER.warning(e.getLocalizedMessage());
-
-		} catch (IOException e) {
-
-			LOGGER.warning(e.getLocalizedMessage());
-
-		} catch (HttpError e) {
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
-		}
+		final HttpHeader header = ret.getHeader();
+		header.add(HeaderName.LastModified, DATE_FORMAT.format(Calendar.getInstance().getTime()));
+		header.add(HeaderName.Server, System.getProperty("app.name"));
+		header.add(HeaderName.Date, DATE_FORMAT.format(Calendar.getInstance().getTime()));
+		header.add(HeaderName.Connection, "close");
 
 		return ret;
 

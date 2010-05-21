@@ -17,11 +17,11 @@
  */
 package nor.http.error;
 
-import java.io.ByteArrayInputStream;
-
-import nor.http.HttpError;
+import nor.http.HeaderName;
+import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
+import nor.http.Status;
 
 /**
  * @author KAWAMOTO Junpei
@@ -33,8 +33,6 @@ public class HttpException extends RuntimeException{
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
-
-	private static final String StatusLine = "HTTP/1.1 %d %s";
 
 	protected final int code;
 	protected final String reason;
@@ -64,28 +62,11 @@ public class HttpException extends RuntimeException{
 		assert request != null;
 		assert exception != null;
 
-		HttpResponse ret = null;
+		final HttpResponse ret = request.createResponse(Status.valueOf(exception.code));
 
-		final StringBuilder header = new StringBuilder();
-		header.append(String.format(StatusLine, exception.code , exception.reason));
-		header.append("\n");
-		header.append("Content-Type: text/html; charset=utf-8\n");
-		header.append("Content-Length: 0\n");
-		header.append("Server: nor\n");
-		header.append("\n");
-
-
-		try {
-
-			ret = request.createResponse(new ByteArrayInputStream(header.toString().getBytes()));
-
-		} catch (HttpError e) {
-
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
-
-		}
-
+		final HttpHeader header = ret.getHeader();
+		header.add(HeaderName.ContentLength, "0");
+		header.add(HeaderName.Server, "nor");
 
 		assert ret != null;
 		return ret;

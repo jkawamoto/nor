@@ -42,7 +42,6 @@ import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.proxyserver.ProxyRequestHandler;
-import nor.util.Matchable;
 import nor.util.log.EasyLogger;
 
 /**
@@ -312,7 +311,7 @@ class ProxyHandler implements HttpRequestHandler{
 	//====================================================================
 	// private static メソッド
 	//====================================================================
-	private static <Message extends HttpMessage, Filter extends MessageFilter<Message> & Matchable> void doFiltering(final Message msg, final Collection<Filter> filters){
+	private static <Message extends HttpMessage, Filter extends MessageFilter<Message>> void doFiltering(final Message msg, final Collection<Filter> filters){
 
 		// 文字コードの取得
 		Charset charset = null;

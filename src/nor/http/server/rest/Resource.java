@@ -17,18 +17,16 @@
  */
 package nor.http.server.rest;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import nor.http.HttpError;
+import nor.http.HeaderName;
+import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.Method;
+import nor.http.Status;
 
 /**
  * Resourceインタフェースの実装を補助するクラス．
@@ -53,7 +51,7 @@ public abstract class Resource{
 	/**
 	 * オーバーライドされたメソッド
 	 */
-	private final Method[] _allowd;
+	private final Method[] allowd;
 
 
 	//====================================================================
@@ -103,8 +101,8 @@ public abstract class Resource{
 
 		}
 
-		this._allowd = new Method[allowd.size()];
-		allowd.toArray(this._allowd);
+		this.allowd = new Method[allowd.size()];
+		allowd.toArray(this.allowd);
 
 		LOGGER.exiting(Resource.class.getName(), "<init>");
 	}
@@ -206,48 +204,25 @@ public abstract class Resource{
 	 */
 	private HttpResponse createErrorResponse(final HttpRequest request){
 
-		HttpResponse ret = null;
 		final String body = "405 Method Not Allowed";
+		final HttpResponse ret = request.createResponse(Status.MethodNotAllowed, body);
 
-		final StringBuilder header = new StringBuilder();
-		header.append("HTTP/1.1 405 Method Not Allowed\n");
-		header.append("Content-Type: text/javascript; charset=utf-8\n");
-		header.append("\n");
-		// アプリケーション名
-		header.append("Server: ");
-		header.append(System.getProperty("app.name"));
-		header.append("\n");
-		header.append("Content-Length: ");
-		header.append(body.getBytes().length);
-		header.append("\n");
-		header.append("Allow: ");
-		for(final Method m : this._allowd){
+		final HttpHeader header = ret.getHeader();
+		header.add(HeaderName.ContentType, "text/javascript; charset=utf-8\n");
+		header.add(HeaderName.Server, System.getProperty("app.name"));
+		header.add(HeaderName.ContentLength, Integer.toString(body.getBytes().length));
 
-			header.append(m);
-			header.append(", ");
+		if(this.allowd.length != 0){
 
-		}
-		header.replace(header.length() - 2, header.length(), "\n\n");
+			String allow = new String();
+			for(final Method m : this.allowd){
 
-		try {
+				allow += m.toString();
+				allow += ", ";
 
-			final InputStream headerIn = new ByteArrayInputStream(header.toString().getBytes());
-			final InputStream bodyIn = new ByteArrayInputStream(body.getBytes());
-			final InputStream in = new SequenceInputStream(headerIn, bodyIn);
+			}
+			header.add(HeaderName.Allow, allow.substring(0, allow.length()-2));
 
-			ret = request.createResponse(in);
-			in.close();
-			bodyIn.close();
-			headerIn.close();
-
-		} catch (IOException e) {
-
-			LOGGER.warning(e.getLocalizedMessage());
-
-
-		} catch (HttpError e) {
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
 		}
 
 		return ret;

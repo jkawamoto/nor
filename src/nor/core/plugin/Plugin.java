@@ -18,15 +18,36 @@
 package nor.core.plugin;
 
 import java.io.Closeable;
+import java.io.IOException;
 
 import nor.core.proxy.filter.MessageHandler;
 import nor.core.proxy.filter.RequestFilter;
 import nor.core.proxy.filter.ResponseFilter;
 
-public interface Plugin extends Closeable{
+public abstract class Plugin implements Closeable{
 
-	public MessageHandler[] messageHandlers();
-	public RequestFilter[] requestFilters();
-	public ResponseFilter[] responseFilters();
+	// TODO: プラグイン設定管理用オブジェクトを追加
+
+	public MessageHandler[] messageHandlers(){
+
+		return new MessageHandler[0];
+
+	}
+
+	public RequestFilter[] requestFilters(){
+
+		return new RequestFilter[0];
+
+	}
+
+	public ResponseFilter[] responseFilters(){
+
+		return new ResponseFilter[0];
+
+	}
+
+	public void close() throws IOException{
+
+	}
 
 }

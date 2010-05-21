@@ -74,22 +74,11 @@ public class ErrorResponseBuilder {
 		assert request != null;
 		assert status != null;
 
-		HttpResponse ret = null;
-
-		try{
-
-			ret = request.createResponse(status);
-
-			final HttpHeader header = ret.getHeader();
-			header.add(HeaderName.ContentType, "text/html; charset=utf-8");
-			header.add(HeaderName.Connection, "close");
-			header.add(HeaderName.Server, serverName);
-
-		}catch (final HttpError e){
-
-			throw new RuntimeException(e);
-
-		}
+		final HttpResponse ret = request.createResponse(status);
+		final HttpHeader header = ret.getHeader();
+		header.add(HeaderName.ContentType, "text/html; charset=utf-8");
+		header.add(HeaderName.Connection, "close");
+		header.add(HeaderName.Server, serverName);
 
 		LOGGER.exiting("create", ret);
 		assert ret != null;
@@ -113,25 +102,14 @@ public class ErrorResponseBuilder {
 		assert status != null;
 		assert body != null;
 
-		HttpResponse ret = null;
+		final HttpResponse ret = request.createResponse(status);
+		final HttpHeader header = ret.getHeader();
+		header.add(HeaderName.ContentType, "text/html; charset=utf-8");
+		header.add(HeaderName.Connection, "close");
+		header.add(HeaderName.Server, serverName);
+		header.add(HeaderName.ContentLength, Integer.toString(body.getBytes().length));
 
-		try{
-
-			ret = request.createResponse(status);
-
-			final HttpHeader header = ret.getHeader();
-			header.add(HeaderName.ContentType, "text/html; charset=utf-8");
-			header.add(HeaderName.Connection, "close");
-			header.add(HeaderName.Server, serverName);
-			header.add(HeaderName.ContentLength, Integer.toString(body.getBytes().length));
-
-			ret.getBody().setStream(new ByteArrayInputStream(body.getBytes()));
-
-		}catch (final HttpError e){
-
-			throw new RuntimeException(e);
-
-		}
+		ret.getBody().setStream(new ByteArrayInputStream(body.getBytes()));
 
 		LOGGER.exiting("create", ret);
 		return ret;
