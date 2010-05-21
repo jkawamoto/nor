@@ -18,7 +18,6 @@
 package nor.core.proxy.filter;
 
 import java.io.Closeable;
-import java.io.IOException;
 
 public interface MessageBodyFilter<Type> extends Closeable{
 
@@ -33,6 +32,6 @@ public interface MessageBodyFilter<Type> extends Closeable{
 	public Type update(final Type in);
 
 
-	public void close() throws IOException;
+	public void close();
 
 }

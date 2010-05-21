@@ -29,6 +29,12 @@ public abstract class MessageHandlerAdapter implements MessageHandler{
 
 	}
 
+	public MessageHandlerAdapter(final String regex){
+
+		this.pat = Pattern.compile(regex);
+
+	}
+
 	/* (非 Javadoc)
 	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.nor.proxy.Matchable#getPattern()
 	 */

@@ -17,7 +17,6 @@
  */
 package nor.core.proxy.filter;
 
-import java.io.IOException;
 
 
 public abstract class ReadonlyTextBodyFilterAdapter implements TextBodyFilter{
@@ -49,7 +48,7 @@ public abstract class ReadonlyTextBodyFilterAdapter implements TextBodyFilter{
 	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.arthra.lotte.StreamFilter#close(jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage, boolean)
 	 */
 	@Override
-	public void close() throws IOException{
+	public void close(){
 
 	}
 

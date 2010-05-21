@@ -23,103 +23,103 @@ public enum HeaderName {
 
 	ContentType("content-type"),
 
-	 ContentEncoding("content-encoding"),
+	ContentEncoding("content-encoding"),
 
-	 CacheControl("cache-control"),
+	CacheControl("cache-control"),
 
-	 Connection("connection"),
+	Connection("connection"),
 
-	 Date("date"),
+	Date("date"),
 
-	 Pragma("pragma"),
+	Pragma("pragma"),
 
-	 Trailer("trailer"),
+	Trailer("trailer"),
 
-	 TransferEncoding("transfer-encoding"),
+	TransferEncoding("transfer-encoding"),
 
-	 Upgrade("upgrade"),
+	Upgrade("upgrade"),
 
-	 Via ("via"),
+	Via ("via"),
 
-	 Warning("warning"),
+	Warning("warning"),
 
-	 Accept("accept"),
+	Accept("accept"),
 
-	 AcceptCharset("accept-charset"),
+	AcceptCharset("accept-charset"),
 
-	 AcceptEncoding("accept-encoding"),
+	AcceptEncoding("accept-encoding"),
 
-	 AcceptLanguage("accept-language"),
+	AcceptLanguage("accept-language"),
 
-	 Authorization("authorization"),
+	Authorization("authorization"),
 
-	 Expect("expect"),
+	Expect("expect"),
 
-	 From("from"),
+	From("from"),
 
-	 Host("host"),
+	Host("host"),
 
-	 IfMatch("if-match"),
+	IfMatch("if-match"),
 
-	 IfModifiedSince("if-modified-since"),
+	IfModifiedSince("if-modified-since"),
 
-	 IfNoneMatch("if-none-match"),
+	IfNoneMatch("if-none-match"),
 
-	 IfRange("if-range"),
+	IfRange("if-range"),
 
-	 IfUnmodifiedSince("if-unmodified-since"),
+	IfUnmodifiedSince("if-unmodified-since"),
 
-	 MaxForwards("max-forwards"),
+	MaxForwards("max-forwards"),
 
-	 ProxyAuthorization("proxy-authorization"),
+	ProxyAuthorization("proxy-authorization"),
 
-	 Range("range"),
+	Range("range"),
 
-	 Referer("referer"),
+	Referer("referer"),
 
-	 TE("te"),
+	TE("te"),
 
-	 UserAgent("user-agent"),
+	UserAgent("user-agent"),
 
-	 AcceptRanges("accept-ranges"),
+	AcceptRanges("accept-ranges"),
 
-	 Age("age"),
+	Age("age"),
 
-	 ETag("etag"),
+	ETag("etag"),
 
-	 Location("location"),
+	Location("location"),
 
-	 ProxyAuthenticate("proxy-authenticate"),
+	ProxyAuthenticate("proxy-authenticate"),
 
-	 RetryAfter("retry-after"),
+	RetryAfter("retry-after"),
 
-	 Server("server"),
+	Server("server"),
 
-	 Vary("vary"),
+	Vary("vary"),
 
-	 WWWAuthenticate("www-authenticate"),
+	WWWAuthenticate("www-authenticate"),
 
-	 Allow("allow"),
+	Allow("allow"),
 
-	 ContentLanguage("content-language"),
+	ContentLanguage("content-language"),
 
-	 ContentLocation("content-location"),
+	ContentLocation("content-location"),
 
-	 ContentMD5("content-md5"),
+	ContentMD5("content-md5"),
 
-	 ContentRange("content-range"),
+	ContentRange("content-range"),
 
-	 Expires("expires"),
+	Expires("expires"),
 
-	 LastModified("last-modified"),
+	LastModified("last-modified"),
 
-	 KeepAlive("keep-alive"),
+	KeepAlive("keep-alive"),
 
-	 Cookie("cookie"),
+	Cookie("cookie"),
 
-	 SetCookie("set-cookie"),
+	SetCookie("set-cookie"),
 
-	 ProxyConnection("proxy-connection");
+	ProxyConnection("proxy-connection");
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////

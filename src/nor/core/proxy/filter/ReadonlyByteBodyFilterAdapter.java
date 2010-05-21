@@ -17,7 +17,6 @@
  */
 package nor.core.proxy.filter;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public abstract class ReadonlyByteBodyFilterAdapter implements ByteBodyFilter{
@@ -49,7 +48,7 @@ public abstract class ReadonlyByteBodyFilterAdapter implements ByteBodyFilter{
 	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.arthra.lotte.StreamFilter#close(jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage, boolean)
 	 */
 	@Override
-	public void close() throws IOException{
+	public void close(){
 
 	}
 

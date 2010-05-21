@@ -29,6 +29,12 @@ public abstract class RequestFilterAdapter implements RequestFilter{
 
 	}
 
+	public RequestFilterAdapter(final String regex){
+
+		this.pattern = Pattern.compile(regex);
+
+	}
+
 	/* (非 Javadoc)
 	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.arthra.lotte.Matchable#getPattern()
 	 */
