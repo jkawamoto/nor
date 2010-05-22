@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.nserver;
+package nor.http.server.nserver;
 
 import java.io.IOException;
 import java.io.OutputStream;

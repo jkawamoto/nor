@@ -15,31 +15,47 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.nserver;
+//$Id: HttpTServer.java 471 2010-04-03 10:25:20Z kawamoto $
+package nor.http.server.tserver;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.HttpServer;
 import nor.util.log.EasyLogger;
 
-public class HttpNServer implements HttpServer{
-
-	public static final String VERSION = "1.1";
+/**
+ * Httpサーバ
+ *
+ * @version $Rev: 471 $
+ * @author KAWAMOTO Junpei
+ *
+ */
+public class HttpTServer implements HttpServer{
 
 	/**
 	 * Httpリクエストに答えるハンドラ
 	 */
 	private final HttpRequestHandler handler;
 
-	private ListenWorker listener;
+	/**
+	 * Connectメソッドに答えるハンドラ
+	 */
+//	private final ConnectHandler _connect = new DecryptHandler();
+
+	/**
+	 * ポートリスニング用スレッド
+	 */
 	private Thread listenThread;
 
-	private final int minThreads = 4;
-	private final int queueSize = 3;
-	private final int waitTime = 6000;
+	/**
+	 * ポートリスニング用スレッドワーカー
+	 */
+	private ListenWorker listener = null;
 
-	private static final EasyLogger LOGGER =  EasyLogger.getLogger(HttpNServer.class);
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpTServer.class);
 
 
 	//============================================================================
@@ -54,7 +70,7 @@ public class HttpNServer implements HttpServer{
 	 * @see #start(String, int, int)
 	 * @see #close()
 	 */
-	public HttpNServer(final HttpRequestHandler handler){
+	public HttpTServer(final HttpRequestHandler handler){
 		LOGGER.entering("<init>", handler);
 		assert handler != null;
 
@@ -80,8 +96,19 @@ public class HttpNServer implements HttpServer{
 	public void start(final String hostname, final int port) throws IOException{
 		LOGGER.entering("start", hostname, (Object)port);
 
-		this.listener = new ListenWorker(hostname, port, this.handler, this.minThreads, this.queueSize, this.waitTime);
+		// ソケットの作成
+		final ServerSocket socket = new ServerSocket();
+		socket.setReuseAddress(true);
+		LOGGER.info("Create new socket.");
+
+		socket.bind(new InetSocketAddress(hostname, port));
+		LOGGER.info("Bind the socket to port " + port);
+
+		this.listener = new ListenWorker(socket, this.handler, 0);
+		LOGGER.info("Start listening.");
+
 		this.listenThread = new Thread(this.listener);
+		this.listenThread.setName("ListenWorker");
 		this.listenThread.start();
 
 		LOGGER.exiting("service");
@@ -105,11 +132,14 @@ public class HttpNServer implements HttpServer{
 
 				this.listenThread.join();
 
-			} catch (final InterruptedException e) {
+			} catch (InterruptedException e) {
 
-				LOGGER.throwing("close", e);
+				// TODO 自動生成された catch ブロック
+				e.printStackTrace();
 
 			}
+
+			LOGGER.info("End.");
 
 		}
 

@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.tserver;
+package nor.http.server.tserver;
 
 import static nor.http.HeaderName.Connection;
 

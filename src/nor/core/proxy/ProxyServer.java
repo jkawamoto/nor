@@ -24,8 +24,8 @@ import java.net.URL;
 import java.util.regex.Pattern;
 
 import nor.core.plugin.Plugin;
-import nor.http.nserver.HttpNServer;
 import nor.http.server.HttpServer;
+import nor.http.server.nserver.HttpNServer;
 import nor.util.log.EasyLogger;
 
 /**
