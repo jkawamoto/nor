@@ -46,8 +46,6 @@ import nor.util.log.EasyLogger;
  */
 public class HttpHeader{
 
-	// set & add
-
 	/**
 	 * 親HTTPメッセージ
 	 */
@@ -65,21 +63,6 @@ public class HttpHeader{
 	private final Map<String, String> elements = new HashMap<String, String>();
 
 	// TODO: ヘッダ要素はリストを使用する：ヘッダ要素のtoStringはマージした文字列を返す
-
-//	/**
-//	 * Cookie
-//	 */
-//	private final Cookie _cookie = new Cookie();
-//
-//	/**
-//	 * Set-Cookie
-//	 */
-//	private final List<SetCookie> _setCookies = new ArrayList<SetCookie>();
-//
-//	/**
-//	 * ContentTypeは別に管理する
-//	 */
-//	private final ContentType contentType = new ContentType();
 
 	/**
 	 * ロガー
@@ -153,26 +136,6 @@ public class HttpHeader{
 		assert key != null;
 		assert value != null;
 
-//		if(HeaderName.Cookie.equalsIgnoreCase(key)){
-//
-//			// Cookieヘッダの場合
-//			this._cookie.parse(value);
-//
-//		}else if(HeaderName.ContentType.equalsIgnoreCase(key)){
-//
-//			// Content-Typeヘッダの場合
-//			this.contentType.setContentType(value);
-//
-//		}else if(HeaderName.SetCookie.equalsIgnoreCase(key)){
-//
-//			// Set-Cookieヘッダの場合
-//			final SetCookie c = new SetCookie();
-//			c.parse(value);
-//
-//			this._setCookies.add(c);
-//
-//		}else{
-
 			if(this.elements.containsKey(key)){
 
 				this.elements.remove(key);
@@ -181,8 +144,6 @@ public class HttpHeader{
 			this.elements.put(key.toLowerCase(), value);
 
 			LOGGER.fine(String.format("ヘッダ項目を追加[%s : %s]", key, value));
-
-//		}
 
 		LOGGER.exiting("set");
 	}
@@ -220,26 +181,7 @@ public class HttpHeader{
 		LOGGER.entering("remove", key);
 		assert key != null;
 
-//		if(HeaderName.Cookie.equalsIgnoreCase(key)){
-//
-//			// Cookieヘッダの場合
-//			this._cookie.clear();
-//
-//		}else if(HeaderName.ContentType.equalsIgnoreCase(key)){
-//
-//			// Content-Typeヘッダの場合
-//			this.contentType.clear();
-//
-//		}else if(HeaderName.SetCookie.equalsIgnoreCase(key)){
-//
-//			// Set-Cookieヘッダの場合
-//			this._setCookies.clear();
-//
-//		}else{
-
-			this.elements.remove(key);
-
-//		}
+		this.elements.remove(key);
 
 		LOGGER.exiting("remove");
 
@@ -253,9 +195,6 @@ public class HttpHeader{
 	public void clear(){
 		LOGGER.entering("clear");
 
-//		this._cookie.clear();
-//		this._setCookies.clear();
-//		this.contentType.clear();
 		this.elements.clear();
 
 		LOGGER.exiting("clear");
@@ -272,27 +211,7 @@ public class HttpHeader{
 		LOGGER.entering("getValue", key);
 		assert key != null;
 
-		String ret = null;
-//		if(HeaderName.Cookie.equalsIgnoreCase(key)){
-//
-//			// Cookieヘッダの場合
-//			ret = this._cookie.toString();
-//
-//		}else if(HeaderName.ContentType.equalsIgnoreCase(key)){
-//
-//			// Content-Typeヘッダの場合
-//			ret = this.contentType.toString();
-//
-//		}else if(HeaderName.SetCookie.equalsIgnoreCase(key)){
-//
-//			// Set-Cookieヘッダの場合
-//			ret = this._setCookies.toString();
-//
-//		}else{
-
-			ret = this.elements.get(key);
-
-//		}
+		final String ret = this.elements.get(key);
 
 		LOGGER.exiting("getValues", ret);
 		return ret;
@@ -361,7 +280,6 @@ public class HttpHeader{
 	public int getKeySize(){
 		LOGGER.entering("getKeySize");
 
-		// TODO: Cookieの場合
 		final int ret = this.elements.size();
 
 		LOGGER.exiting("getKeySize", ret);
@@ -389,40 +307,6 @@ public class HttpHeader{
 			writer.newLine();
 
 		}
-
-		// Cookieを追加
-//		if(this._cookie.isAvailable()){
-//
-//			writer.append(HeaderName.Cookie.toString());
-//			writer.append(": ");
-//			writer.append(this._cookie.toString());
-//			writer.newLine();
-//
-//		}
-
-		// Set-Cookieを追加
-//		for(final SetCookie c : this._setCookies){
-//
-//			if(c.isAvailable()){
-//
-//				writer.append(HeaderName.SetCookie.toString());
-//				writer.append(": ");
-//				writer.append(c.toString());
-//				writer.newLine();
-//
-//			}
-//
-//		}
-
-		// ContentTypeを追加
-//		if(this.contentType.isAvailable()){
-//
-//			writer.append(HeaderName.ContentType.toString());
-//			writer.append(": ");
-//			writer.append(this.contentType.toString());
-//			writer.newLine();
-//
-//		}
 
 		writer.flush();
 
@@ -456,52 +340,6 @@ public class HttpHeader{
 		return ret;
 
 	}
-
-//	/**
-//	 * Cookieを取得する．
-//	 *
-//	 * @return このオブジェクトに関連するCookie
-//	 */
-//	public Cookie getCookie(){
-//		LOGGER.entering(HttpHeader.class.getName(), "getCookie");
-//
-//		final Cookie ret = this._cookie;
-//
-//		LOGGER.exiting(HttpHeader.class.getName(), "getCookie", ret);
-//		return ret;
-//
-//	}
-//
-//	/**
-//	 * Set-Cookieヘッダの値を取得する．
-//	 *
-//	 * @return Set-Cookieヘッダの値
-//	 */
-//	public List<SetCookie> getSetCookies(){
-//		LOGGER.entering(HttpHeader.class.getName(), "getSetCookie");
-//
-//		final List<SetCookie> ret = this._setCookies;
-//
-//		LOGGER.exiting(HttpHeader.class.getName(), "getSetCookie", ret);
-//		return ret;
-//
-//	}
-//
-//	/**
-//	 * ContentTypeを得る．
-//	 * ヘッダにContentTypeが指定されていない場合，nullを返す．
-//	 *
-//	 * @return ContentTypeオブジェクト
-//	 */
-//	public ContentType getContentType(){
-//		LOGGER.entering(HttpHeader.class.getName(), "getContentType");
-//
-//		final ContentType ret = this.contentType;
-//
-//		LOGGER.exiting(HttpHeader.class.getName(), "getContentType", ret);
-//		return ret;
-//
-//	}
 
 	//----------------------------------------------------------------------------
 	//  HeaderName用のアダプタメソッド

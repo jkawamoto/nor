@@ -49,6 +49,8 @@ public class Nor{
 	 */
 	private ProxyServer proxy;
 
+	private final File confDir;
+
 	/**
 	 * 設定
 	 */
@@ -80,15 +82,14 @@ public class Nor{
 	private Nor(){
 		LOGGER.entering("<init>");
 
-		final File dir = new File("./config");
-		if(!dir.exists()){
+		this.confDir = new File(String.format("./config/%s/", this.context.getMAC()));
+		if(!this.confDir.exists()){
 
-			dir.mkdirs();
+			this.confDir.mkdirs();
 
 		}
 
-		this.config = new Config(new File(dir, String.format("%s.conf", this.context.getMAC())));
-
+		this.config = new Config(new File(this.confDir, this.getClass().getCanonicalName() + ".conf"));
 
 		LOGGER.exiting("<init>");
 	}
@@ -135,6 +136,7 @@ public class Nor{
 			final Class<?> c = Class.forName(classname);
 			final Plugin p = (Plugin)c.newInstance();
 
+			p.load(this.confDir);
 			this.proxy.attach(p);
 			this.plugins.add(p);
 
@@ -193,6 +195,7 @@ public class Nor{
 			try{
 
 				p.close();
+				p.save(this.confDir);
 
 			}catch(final IOException e){
 
