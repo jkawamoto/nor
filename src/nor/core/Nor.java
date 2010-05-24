@@ -20,9 +20,12 @@ package nor.core;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.regex.Pattern;
 
 import nor.core.plugin.Plugin;
 import nor.core.proxy.ProxyServer;
@@ -240,8 +243,9 @@ public class Nor{
 	/**
 	 * アプリケーションのエントリポイント．
 	 * @param args 強制的に読み込むプラグインの完全修飾名リスト
+	 * @throws MalformedURLException
 	 */
-	public static void main(final String[] args) {
+	public static void main(final String[] args) throws MalformedURLException {
 		LOGGER.entering("main", args);
 
 		// ロギング設定ファイルがVM引数で与えられていなかった場合デフォルトを設定する
@@ -257,16 +261,29 @@ public class Nor{
 		// 初期化
 		nor.init();
 
-		// コマンドライン引数で与えられたプラグインをロード
-		for(final String classname : args){
+		// コマンドライン引数の解釈
+		for(int i = 1; i != args.length; ++i){
 
-			try{
+			if(args[i].equals("-r") && ++i != args.length){
 
-				nor.loadPlugin(classname);
+				nor.proxy.addRouting(Pattern.compile(".*"), new URL(args[i]));
 
-			}catch(final IllegalArgumentException e){
+			}else if(args[i].equals("-p") && ++i != args.length){
 
-				e.printStackTrace();
+				// プラグインの読み込み
+				for(final String classname : args[i].split(";")){
+
+					try{
+
+						nor.loadPlugin(classname);
+
+					}catch(final IllegalArgumentException e){
+
+						e.printStackTrace();
+
+					}
+
+				}
 
 			}
 

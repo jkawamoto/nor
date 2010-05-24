@@ -301,10 +301,25 @@ public class HttpHeader{
 		// ヘッダを追加
 		for(final String key : this.elements.keySet()){
 
-			writer.append(key);
-			writer.append(": ");
-			writer.append(this.get(key));
-			writer.newLine();
+			if(key.equals(HeaderName.SetCookie)){
+
+				for(final String v : this.get(key).split(",")){
+
+					writer.append(key);
+					writer.append(": ");
+					writer.append(v.trim());
+					writer.newLine();
+
+				}
+
+			}else{
+
+				writer.append(key);
+				writer.append(": ");
+				writer.append(this.get(key));
+				writer.newLine();
+
+			}
 
 		}
 
