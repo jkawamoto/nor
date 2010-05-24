@@ -112,7 +112,7 @@ class ProxyHandler implements HttpRequestHandler{
 		for(final MessageHandler h : this.handlers){
 
 			final Matcher m = h.pattern().matcher(path);
-			if(m.matches()){
+			if(m.find()){
 
 				response = h.doRequest(request, m);
 				if(response != null){
@@ -345,8 +345,12 @@ class ProxyHandler implements HttpRequestHandler{
 		final String path = msg.getPath();
 		for(final MessageFilter<Message> f : filters){
 
+			if(header.containsKey("x-nor-nofilter")){
+				break;
+			}
+
 			final Matcher m = f.pattern().matcher(path);
-			if(m.matches()){
+			if(m.find()){
 
 				f.update(msg, m, container, isChar);
 
@@ -396,7 +400,7 @@ class ProxyHandler implements HttpRequestHandler{
 
 			if(header.containsKey(HeaderName.ContentLength)){
 
-				header.set("x-arthra-old-datasize", header.get(HeaderName.ContentLength));
+				header.set("x-nor-old-datasize", header.get(HeaderName.ContentLength));
 				header.remove(HeaderName.ContentLength);
 				header.set(HeaderName.TransferEncoding, "chunked");
 

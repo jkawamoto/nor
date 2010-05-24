@@ -17,10 +17,11 @@
  */
 package nor.http;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Cookieヘッダを表すクラス．
@@ -31,65 +32,51 @@ import java.util.regex.Pattern;
  */
 public class Cookie{
 
-	/**
-	 * Cookieのペアを表すクラス
-	 *
-	 * @author KAWAMOTO Junpei
-	 *
-	 */
-	private class Pair{
-
-		/**
-		 * データのキー
-		 */
-		private String _key;
-
-		/**
-		 * データの値
-		 */
-		private String _value;
-
-		public Pair(final String key, final String value){
-
-			this._key = key;
-			this._value = value;
-
-		}
-
-		public String getKey(){
-
-			return this._key;
-
-		}
-
-		public String getValue(){
-
-			return this._value;
-
-		}
-
-//		public void setValue(final String value){
-//
-//			this._value = value;
-//
-//		}
-
-	}
-
-	private final List<Pair> _pairs = new ArrayList<Pair>();
-
-	private static final String EQ = "=";
-	private static final String SP = ";";
-
-	/**
-	 * Cookie解析のための正規表現
-	 */
-	private static final Pattern ENTRY = Pattern.compile("([^=^;^\\s^,]+)=([^;^,]+)");
+	private final HttpHeader header;
+	private final Map<String, List<String>> entries = new HashMap<String, List<String>>();
 
 	/**
 	 * ロガー
 	 */
 	private static final Logger LOGGER = Logger.getLogger(Cookie.class.getName());
+
+	//============================================================================
+	//  コンストラクタ
+	//============================================================================
+	private Cookie(final HttpHeader header){
+
+		this.header = header;
+
+		if(this.header.containsKey(HeaderName.Cookie)){
+
+			for(final String entry : this.header.get(HeaderName.Cookie).split(";|,")){
+
+				final int index = entry.indexOf("=");
+				if(index != -1){
+
+					final String key = entry.substring(0, index);
+					final String value = entry.substring(index+1);
+
+					if(this.entries.containsKey(key)){
+
+						this.entries.get(key).add(value);
+
+					}else{
+
+						final List<String> list = new ArrayList<String>();
+						list.add(value);
+						this.entries.put(key, list);
+
+					}
+
+				}
+
+			}
+
+		}
+
+	}
+
 
 	//============================================================================
 	//  public メソッド
@@ -101,24 +88,10 @@ public class Cookie{
 	public void clear(){
 		LOGGER.entering(Cookie.class.getName(), "clear");
 
-		this._pairs.clear();
+		this.entries.clear();
+		this.header.remove(HeaderName.Cookie);
 
 		LOGGER.exiting(Cookie.class.getName(), "clear");
-
-	}
-
-	/**
-	 * SetCookieヘッダが有効かどうか．
-	 *
-	 * @return 有効な場合trueを返す
-	 */
-	public boolean isAvailable() {
-		LOGGER.entering(Cookie.class.getName(), "isAvailable");
-
-		final boolean ret = !this._pairs.isEmpty();
-
-		LOGGER.exiting(Cookie.class.getName(), "isAvailable", ret);
-		return ret;
 
 	}
 
@@ -133,9 +106,32 @@ public class Cookie{
 		assert key != null;
 		assert value != null;
 
-		this._pairs.add(new Pair(key, value));
+		if(this.entries.containsKey(key)){
+
+			this.entries.get(key).add(value);
+
+		}else{
+
+			final List<String> list = new ArrayList<String>();
+			list.add(value);
+			this.entries.put(key, list);
+
+		}
+
+		this.header.set(HeaderName.Cookie, this.toString());
 
 		LOGGER.exiting(Cookie.class.getName(), "add");
+	}
+
+	public void set(final String key, final String value){
+		LOGGER.entering(Cookie.class.getName(), "set", new Object[]{key, value});
+		assert key != null;
+		assert value != null;
+
+		this.entries.remove(key);
+		this.add(key, value);
+
+		LOGGER.exiting(Cookie.class.getName(), "set");
 	}
 
 	/**
@@ -147,17 +143,8 @@ public class Cookie{
 		LOGGER.entering(Cookie.class.getName(), "remove", key);
 		assert key != null;
 
-		final Iterator<Pair> iter = this._pairs.iterator();
-		while(iter.hasNext()){
-
-			final Pair pair = iter.next();
-			if(key.equals(pair.getKey())){
-
-				iter.remove();
-
-			}
-
-		}
+		this.entries.remove(key);
+		this.header.set(HeaderName.Cookie, this.toString());
 
 		LOGGER.exiting(Cookie.class.getName(), "remove");
 	}
@@ -168,20 +155,11 @@ public class Cookie{
 	 * @param key 取得するキー
 	 * @return キーに関連付けられている値
 	 */
-	public String get(final String key){
+	public String[] get(final String key){
 		LOGGER.entering(Cookie.class.getName(), "get", key);
 		assert key != null;
 
-		String ret = null;
-		for(final Pair pair : this._pairs){
-
-			if(key.equals(pair.getKey())){
-
-				ret = pair.getValue();
-
-			}
-
-		}
+		final String[] ret = this.entries.get(key).toArray(new String[0]);
 
 		LOGGER.exiting(Cookie.class.getName(), "get", ret);
 		return ret;
@@ -195,14 +173,7 @@ public class Cookie{
 	public String[] keys() {
 		LOGGER.entering(Cookie.class.getName(), "keys");
 
-		final String[] ret = new String[this._pairs.size()];
-
-		int i = 0;
-		for(final Pair pair : this._pairs){
-
-			ret[i++] = pair.getKey();
-
-		}
+		final String[] ret = this.entries.keySet().toArray(new String[0]);
 
 		LOGGER.exiting(Cookie.class.getName(), "keys", ret);
 		return ret;
@@ -218,13 +189,22 @@ public class Cookie{
 		LOGGER.entering(Cookie.class.getName(), "toString");
 
 		final StringBuilder builder = new StringBuilder();
-		for(final Pair pair : this._pairs){
+		for(final String key : this.entries.keySet()){
 
-			builder.append(pair.getKey());
-			builder.append(EQ);
-			builder.append(pair.getValue());
-			builder.append(SP);
-			builder.append(" ");
+			for(final String value : this.entries.get(key)){
+
+				builder.append(key);
+				builder.append("=");
+				builder.append(value);
+				builder.append(";");
+
+			}
+
+		}
+
+		if(builder.length() != 0){
+
+			builder.setLength(builder.length()-2);
 
 		}
 
@@ -237,33 +217,13 @@ public class Cookie{
 	}
 
 	//====================================================================
-	//  package private メソッド
+	//  public static メソッド
 	//====================================================================
-	/**
-	 * Cookieの各エントリを解析する．
-	 *
-	 * @param cookie 解析するCookie文字列
-	 */
-	void parse(final String cookie){
-		LOGGER.entering(Cookie.class.getName(), "parse", cookie);
-		assert cookie != null;
-		LOGGER.config(String.format("解析対象Cookieの受信[%s]", cookie));
+	public static Cookie get(final HttpHeader header){
 
-		// 初期化
-		this._pairs.clear();
-
-		final Matcher m = ENTRY.matcher(cookie);
-		while(m.find()){
-
-			final String key = m.group(1);
-			final String value = m.group(2);
-
-			this._pairs.add(new Pair(key, value));
-
-		}
-
-		LOGGER.exiting(Cookie.class.getName(), "parse");
+		return new Cookie(header);
 
 	}
+
 
 }

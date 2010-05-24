@@ -62,8 +62,6 @@ public class HttpHeader{
 	 */
 	private final Map<String, String> elements = new HashMap<String, String>();
 
-	// TODO: ヘッダ要素はリストを使用する：ヘッダ要素のtoStringはマージした文字列を返す
-
 	/**
 	 * ロガー
 	 */
