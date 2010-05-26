@@ -42,15 +42,21 @@ public abstract class Plugin implements Closeable{
 
 				this.properties.load(new FileInputStream(conf));
 
-			} catch (FileNotFoundException e) {
+			} catch (final FileNotFoundException e) {
+
 				// TODO 自動生成された catch ブロック
 				e.printStackTrace();
-			} catch (IOException e) {
+
+			} catch (final IOException e) {
+
 				// TODO 自動生成された catch ブロック
 				e.printStackTrace();
+
 			}
 
 		}
+
+		this.init();
 
 	}
 
@@ -61,22 +67,27 @@ public abstract class Plugin implements Closeable{
 
 			this.properties.store(new FileOutputStream(conf), "");
 
-		} catch (FileNotFoundException e) {
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
-		}
+		} catch (final FileNotFoundException e) {
 
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+
+		} catch (final IOException e) {
+
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+
+		}
 
 	}
 
+	public void init(){
 
+	}
 
+	public void close() throws IOException{
 
-
-
+	}
 
 	public MessageHandler[] messageHandlers(){
 
@@ -95,10 +106,5 @@ public abstract class Plugin implements Closeable{
 		return new ResponseFilter[0];
 
 	}
-
-	public void close() throws IOException{
-
-	}
-
 
 }

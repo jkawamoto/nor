@@ -114,6 +114,7 @@ public class Nor{
 
 			if(this.config.isEnable(p)){
 
+				p.load(this.confDir);
 				this.proxy.attach(p);
 				this.plugins.add(p);
 
@@ -262,7 +263,7 @@ public class Nor{
 		nor.init();
 
 		// コマンドライン引数の解釈
-		for(int i = 1; i < args.length; ++i){
+		for(int i = 0; i < args.length; ++i){
 
 			if(args[i].equals("-r") && ++i != args.length){
 
