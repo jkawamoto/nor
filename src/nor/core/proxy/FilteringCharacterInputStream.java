@@ -91,6 +91,12 @@ class FilteringCharacterInputStream extends SequentialInputStream{
 	@Override
 	public void close() throws IOException {
 
+		for(final ReadonlyStringFilter f : this.readonlyFilters){
+
+			f.close();
+
+		}
+
 		for(final EditingStringFilter f : this.editingFilters){
 
 			f.close();

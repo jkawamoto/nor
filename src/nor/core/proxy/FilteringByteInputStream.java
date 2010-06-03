@@ -80,6 +80,12 @@ class FilteringByteInputStream extends InputStream{
 	public void close() throws IOException {
 
 		// 転送が完了しているか
+		for(final ReadonlyByteFilter f : this.readonlyFilters){
+
+			f.close();
+
+		}
+
 		for(final EditingByteFilter f: this.editingFilters){
 
 			f.close();
