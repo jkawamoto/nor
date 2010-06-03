@@ -354,10 +354,18 @@ class ProxyHandler implements HttpRequestHandler{
 			final Matcher url = f.getFilteringURL().matcher(path);
 			if(url.find()){
 
-				final Matcher cType = f.getFilteringContentType().matcher(header.get(HeaderName.ContentType));
-				if(cType.matches()){
+				if(header.containsKey(HeaderName.ContentType)){
 
-					f.update(msg, url, cType, container, isChar);
+					final Matcher cType = f.getFilteringContentType().matcher(header.get(HeaderName.ContentType));
+					if(cType.matches()){
+
+						f.update(msg, url, cType, container, isChar);
+
+					}
+
+				}else{
+
+					f.update(msg, url, null, container, isChar);
 
 				}
 
