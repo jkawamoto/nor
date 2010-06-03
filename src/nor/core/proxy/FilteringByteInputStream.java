@@ -24,22 +24,26 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.List;
 
-import nor.core.proxy.filter.ByteBodyFilter;
+import nor.core.proxy.filter.EditingByteFilter;
+import nor.core.proxy.filter.ReadonlyByteFilter;
 
 class FilteringByteInputStream extends InputStream{
 
 	private final ReadableByteChannel in;
-	private final List<ByteBodyFilter> filters;
+
+	private final List<EditingByteFilter> editingFilters;
+	private final List<ReadonlyByteFilter> readonlyFilters;
 
 	private ByteBuffer buffer;
 
 	private boolean isEOF = false;
 
-	public FilteringByteInputStream(final InputStream in,final List<ByteBodyFilter> filters){
+	public FilteringByteInputStream(final InputStream in,final List<EditingByteFilter> editingFilters, final List<ReadonlyByteFilter> readonlyFilters){
 
 		this.in = Channels.newChannel(in);
 
-		this.filters = filters;
+		this.editingFilters = editingFilters;
+		this.readonlyFilters = readonlyFilters;
 
 		this.buffer = ByteBuffer.allocate(1024*64);
 		this.buffer.limit(0);
@@ -76,7 +80,7 @@ class FilteringByteInputStream extends InputStream{
 	public void close() throws IOException {
 
 		// 転送が完了しているか
-		for(final ByteBodyFilter f: this.filters){
+		for(final EditingByteFilter f: this.editingFilters){
 
 			f.close();
 
@@ -161,19 +165,19 @@ class FilteringByteInputStream extends InputStream{
 		}
 
 		this.buffer.flip();
-		for(final ByteBodyFilter f : this.filters){
 
-			if(f.readonly()){
 
-				f.update(this.buffer);
-				this.buffer.rewind();
+		for(final ReadonlyByteFilter f : this.readonlyFilters){
 
-			}else{
+			f.update(this.buffer);
+			this.buffer.rewind();
 
-				this.buffer = f.update(this.buffer);
-				this.buffer.flip();
+		}
 
-			}
+		for(final EditingByteFilter f : this.editingFilters){
+
+			this.buffer = f.update(this.buffer);
+			this.buffer.flip();
 
 		}
 

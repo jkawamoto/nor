@@ -17,10 +17,19 @@
  */
 package nor.core.proxy.filter;
 
+import java.io.IOException;
 
 
-public interface TextBodyFilter extends MessageBodyFilter<String>{
+
+public abstract class ReadonlyStringFilterAdapter implements ReadonlyStringFilter{
+
+	/* (非 Javadoc)
+	 * @see java.io.Closeable#close()
+	 */
+	@Override
+	public void close() throws IOException {
+
+	}
+
 
 }
-
-

@@ -18,20 +18,16 @@
 package nor.core.proxy.filter;
 
 import java.io.Closeable;
+import java.nio.ByteBuffer;
 
-public interface MessageBodyFilter<Type> extends Closeable{
-
-	public boolean readonly();
-
-	/**
-	 *
-	 * @param msg
-	 * @param in
-	 * @return
-	 */
-	public Type update(final Type in);
+/**
+ *
+ * @author KAWAMOTO Junpei
+ *
+ */
+public interface EditingByteFilter extends Closeable{
 
 
-	public void close();
+	public ByteBuffer update(final ByteBuffer in);
 
 }

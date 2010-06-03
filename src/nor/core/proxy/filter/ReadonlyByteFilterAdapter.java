@@ -17,18 +17,16 @@
  */
 package nor.core.proxy.filter;
 
-import java.nio.ByteBuffer;
+import java.io.IOException;
 
+public abstract class ReadonlyByteFilterAdapter implements ReadonlyByteFilter{
 
-/**
- *
- * @author KAWAMOTO Junpei
- *
- */
-public interface ByteBodyFilter extends MessageBodyFilter<ByteBuffer>{
+	/* (非 Javadoc)
+	 * @see java.io.Closeable#close()
+	 */
+	@Override
+	public void close() throws IOException {
 
-
-
-
+	}
 
 }

@@ -25,12 +25,14 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import nor.core.proxy.filter.TextBodyFilter;
+import nor.core.proxy.filter.EditingStringFilter;
+import nor.core.proxy.filter.ReadonlyStringFilter;
 import nor.util.SequentialInputStream;
 
 class FilteringCharacterInputStream extends SequentialInputStream{
 
-	private final List<TextBodyFilter> filters;
+	private final List<EditingStringFilter> editingFilters;
+	private final List<ReadonlyStringFilter> readonlyFilters;
 
 	private final Charset charset;
 	private final BufferedReader rin;
@@ -41,10 +43,9 @@ class FilteringCharacterInputStream extends SequentialInputStream{
 
 
 
-	protected FilteringCharacterInputStream(final InputStream in, final Charset charset, final List<TextBodyFilter> filters){
+	protected FilteringCharacterInputStream(final InputStream in, final Charset charset, final List<EditingStringFilter> editingFilters, final List<ReadonlyStringFilter> readonlyFilters){
 		super(in);
 
-		this.filters = filters;
 		this.charset = charset;
 		if(this.charset == null){
 
@@ -55,6 +56,10 @@ class FilteringCharacterInputStream extends SequentialInputStream{
 			this.rin = new BufferedReader(new InputStreamReader(in, charset));
 
 		}
+
+		this.editingFilters = editingFilters;
+		this.readonlyFilters = readonlyFilters;
+
 
 	}
 
@@ -86,7 +91,7 @@ class FilteringCharacterInputStream extends SequentialInputStream{
 	@Override
 	public void close() throws IOException {
 
-		for(final TextBodyFilter f : this.filters){
+		for(final EditingStringFilter f : this.editingFilters){
 
 			f.close();
 
@@ -177,17 +182,15 @@ class FilteringCharacterInputStream extends SequentialInputStream{
 
 		}
 
-		for(final TextBodyFilter f : this.filters){
+		for(final ReadonlyStringFilter f : this.readonlyFilters){
 
-			if(f.readonly()){
+			f.update(line);
 
-				f.update(line);
+		}
 
-			}else{
+		for(final EditingStringFilter f : this.editingFilters){
 
-				line = f.update(line);
-
-			}
+			line = f.update(line);
 
 		}
 

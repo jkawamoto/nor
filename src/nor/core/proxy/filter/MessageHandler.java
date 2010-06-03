@@ -26,7 +26,8 @@ import nor.http.HttpResponse;
 
 public interface MessageHandler{
 
-	public Pattern pattern();
-	public HttpResponse doRequest(final HttpRequest request, final MatchResult m);
+	public Pattern getFilteringURL();
+
+	public HttpResponse doRequest(final HttpRequest request, final MatchResult url);
 
 }

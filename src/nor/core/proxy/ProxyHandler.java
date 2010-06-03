@@ -28,12 +28,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import nor.core.proxy.filter.ByteBodyFilter;
+import nor.core.proxy.filter.EditingByteFilter;
 import nor.core.proxy.filter.MessageFilter;
 import nor.core.proxy.filter.MessageHandler;
+import nor.core.proxy.filter.ReadonlyByteFilter;
+import nor.core.proxy.filter.ReadonlyStringFilter;
 import nor.core.proxy.filter.RequestFilter;
 import nor.core.proxy.filter.ResponseFilter;
-import nor.core.proxy.filter.TextBodyFilter;
+import nor.core.proxy.filter.EditingStringFilter;
 import nor.http.HeaderName;
 import nor.http.HttpBody;
 import nor.http.HttpHeader;
@@ -111,10 +113,10 @@ class ProxyHandler implements HttpRequestHandler{
 		final String path = request.getPath();
 		for(final MessageHandler h : this.handlers){
 
-			final Matcher m = h.pattern().matcher(path);
-			if(m.find()){
+			final Matcher url = h.getFilteringURL().matcher(path);
+			if(url.find()){
 
-				response = h.doRequest(request, m);
+				response = h.doRequest(request, url);
 				if(response != null){
 
 					break;
@@ -341,7 +343,7 @@ class ProxyHandler implements HttpRequestHandler{
 		}
 
 		// メッセージフィルタに対してメッセージボディフィルタが必要か尋ねる
-		final FilterContainer container = new FilterContainer();
+		final FilterRegister container = new FilterRegister();
 		final String path = msg.getPath();
 		for(final MessageFilter<Message> f : filters){
 
@@ -349,10 +351,15 @@ class ProxyHandler implements HttpRequestHandler{
 				break;
 			}
 
-			final Matcher m = f.pattern().matcher(path);
-			if(m.find()){
+			final Matcher url = f.getFilteringURL().matcher(path);
+			if(url.find()){
 
-				f.update(msg, m, container, isChar);
+				final Matcher cType = f.getFilteringContentType().matcher(header.get(HeaderName.ContentType));
+				if(cType.matches()){
+
+					f.update(msg, url, cType, container, isChar);
+
+				}
 
 			}
 
@@ -363,15 +370,17 @@ class ProxyHandler implements HttpRequestHandler{
 		InputStream in = body.getStream();
 
 
-		final List<ByteBodyFilter> bFilters = container.getByteBodyFilters();
-		if(bFilters.size() != 0){
+		final List<EditingByteFilter> editingByteFilters = container.getEditingByteFilters();
+		final List<ReadonlyByteFilter> readonlyByteFilters = container.getReadonlyByteFilters();
+		if(editingByteFilters.size() != 0 || readonlyByteFilters.size() != 0){
 
-			in = new FilteringByteInputStream(body.getStream(), bFilters);
+			in = new FilteringByteInputStream(body.getStream(), editingByteFilters, readonlyByteFilters);
 
 		}
 
-		final List<TextBodyFilter> cFilters = container.getTextBodyFilters();
-		if(cFilters.size() != 0){
+		final List<EditingStringFilter> editingStringFilters = container.getEditingStringFilters();
+		final List<ReadonlyStringFilter> readonlyStringFilters = container.getReadonlyStringFilters();
+		if(editingStringFilters.size() != 0 || readonlyStringFilters.size() != 0){
 
 			if(charset == null){
 
@@ -390,13 +399,13 @@ class ProxyHandler implements HttpRequestHandler{
 
 			}
 
-			in = new FilteringCharacterInputStream(in, charset, cFilters);
+			in = new FilteringCharacterInputStream(in, charset, editingStringFilters, readonlyStringFilters);
 
 		}
 		msg.getBody().setStream(in);
 
 		// 書き込みを行うフィルタがあった場合，ContentLengthは分からなくなる
-		if(!container.isReadonly()){
+		if(!container.readonly()){
 
 			if(header.containsKey(HeaderName.ContentLength)){
 

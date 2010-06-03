@@ -20,7 +20,7 @@ package nor.core.proxy.filter;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
-import nor.core.proxy.FilterContainer;
+import nor.core.proxy.FilterRegister;
 import nor.http.HttpMessage;
 
 /**
@@ -29,15 +29,14 @@ import nor.http.HttpMessage;
  */
 public interface MessageFilter<Message extends HttpMessage>{
 
-	public Pattern pattern();
+	public Pattern getFilteringURL();
+
+	public Pattern getFilteringContentType();
 
 	/**
 	 * 新しいメッセージが届いたことを通知します．
 	 *
-	 * @param msg 新しいメッセージ
-	 * @param container ストリームフィルタの登録先
-	 * @param isCharacter テキストメッセージの場合 true
 	 */
-	public void update(final Message msg, final MatchResult m, final FilterContainer container, final boolean isCharacter);
+	public void update(final Message msg, final MatchResult url, final MatchResult cType, final FilterRegister register, final boolean isCharacter);
 
 }

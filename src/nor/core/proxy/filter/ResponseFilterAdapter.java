@@ -21,28 +21,43 @@ import java.util.regex.Pattern;
 
 public abstract class ResponseFilterAdapter implements ResponseFilter{
 
-	protected Pattern pattern;
+	final private Pattern url;
+	final private Pattern cType;
 
-	public ResponseFilterAdapter(final Pattern pat){
+	public ResponseFilterAdapter(final Pattern url, final Pattern cType){
 
-		this.pattern = pat;
+		this.url = url;
+		this.cType = cType;
 
 	}
 
-	public ResponseFilterAdapter(final String regex){
+	public ResponseFilterAdapter(final String urlRegex, final String cTypeRegex){
 
-		this.pattern = Pattern.compile(regex);
+		this.url = Pattern.compile(urlRegex);
+		this.cType = Pattern.compile(cTypeRegex);
 
 	}
 
 	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.arthra.lotte.Matchable#getPattern()
+	 * @see nor.core.proxy.filter.MessageFilter#getFilteringURL()
 	 */
 	@Override
-	public Pattern pattern() {
+	public Pattern getFilteringURL() {
 
-		return this.pattern;
+		return this.url;
 
 	}
+
+	/* (非 Javadoc)
+	 * @see nor.core.proxy.filter.MessageFilter#getFilteringContentType()
+	 */
+	@Override
+	public Pattern getFilteringContentType() {
+
+		return this.cType;
+
+	}
+
+
 
 }

@@ -17,32 +17,18 @@
  */
 package nor.core.proxy.filter;
 
-import java.util.regex.Pattern;
+import java.io.Closeable;
 
-public abstract class MessageHandlerAdapter implements MessageHandler{
+public interface EditingStringFilter extends Closeable{
 
-	private final Pattern pat;
-
-	public MessageHandlerAdapter(final Pattern pat){
-
-		this.pat = pat;
-
-	}
-
-	public MessageHandlerAdapter(final String regex){
-
-		this.pat = Pattern.compile(regex);
-
-	}
-
-	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.nor.proxy.Matchable#getPattern()
+	/**
+	 *
+	 * @param msg
+	 * @param in
+	 * @return
 	 */
-	@Override
-	public Pattern getFilteringURL() {
-
-		return this.pat;
-
-	}
+	public String update(final String in);
 
 }
+
+
