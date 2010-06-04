@@ -343,7 +343,7 @@ class ProxyHandler implements HttpRequestHandler{
 		}
 
 		// メッセージフィルタに対してメッセージボディフィルタが必要か尋ねる
-		final FilterRegister container = new FilterRegister();
+		final FilterRegister register = new FilterRegister();
 		final String path = msg.getPath();
 		for(final MessageFilter<Message> f : filters){
 
@@ -359,13 +359,13 @@ class ProxyHandler implements HttpRequestHandler{
 					final Matcher cType = f.getFilteringContentType().matcher(header.get(HeaderName.ContentType));
 					if(cType.matches()){
 
-						f.update(msg, url, cType, container, isChar);
+						f.update(msg, url, cType, register, isChar);
 
 					}
 
 				}else{
 
-					f.update(msg, url, null, container, isChar);
+					f.update(msg, url, null, register, isChar);
 
 				}
 
@@ -378,16 +378,16 @@ class ProxyHandler implements HttpRequestHandler{
 		InputStream in = body.getStream();
 
 
-		final List<EditingByteFilter> editingByteFilters = container.getEditingByteFilters();
-		final List<ReadonlyByteFilter> readonlyByteFilters = container.getReadonlyByteFilters();
+		final List<EditingByteFilter> editingByteFilters = register.getEditingByteFilters();
+		final List<ReadonlyByteFilter> readonlyByteFilters = register.getReadonlyByteFilters();
 		if(editingByteFilters.size() != 0 || readonlyByteFilters.size() != 0){
 
 			in = new FilteringByteInputStream(body.getStream(), editingByteFilters, readonlyByteFilters);
 
 		}
 
-		final List<EditingStringFilter> editingStringFilters = container.getEditingStringFilters();
-		final List<ReadonlyStringFilter> readonlyStringFilters = container.getReadonlyStringFilters();
+		final List<EditingStringFilter> editingStringFilters = register.getEditingStringFilters();
+		final List<ReadonlyStringFilter> readonlyStringFilters = register.getReadonlyStringFilters();
 		if(editingStringFilters.size() != 0 || readonlyStringFilters.size() != 0){
 
 			if(charset == null){
@@ -413,7 +413,7 @@ class ProxyHandler implements HttpRequestHandler{
 		msg.getBody().setStream(in);
 
 		// 書き込みを行うフィルタがあった場合，ContentLengthは分からなくなる
-		if(!container.readonly()){
+		if(!register.readonly()){
 
 			if(header.containsKey(HeaderName.ContentLength)){
 

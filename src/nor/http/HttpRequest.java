@@ -18,7 +18,6 @@
 // $Id: HttpRequest.java 471 2010-04-03 10:25:20Z kawamoto $
 package nor.http;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -303,7 +302,14 @@ public class HttpRequest extends HttpMessage{
 				con.setDoOutput(true);
 				con.connect();
 
-				this.getBody().writeOut(new BufferedOutputStream(con.getOutputStream()));
+				this.getBody().writeOut(con.getOutputStream());
+
+			}else if(header.containsKey(HeaderName.TransferEncoding)){
+
+				con.setDoOutput(true);
+				con.connect();
+
+				this.getBody().writeOut(con.getOutputStream());
 
 			}else{
 

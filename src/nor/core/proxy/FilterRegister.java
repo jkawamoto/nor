@@ -84,7 +84,7 @@ public class FilterRegister {
 
 	boolean readonly(){
 
-		return (this.editingByteFilters.size() != 0) && (this.editingStringFilters.size() != 0);
+		return (this.editingByteFilters.size() == 0) && (this.editingStringFilters.size() == 0);
 
 	}
 
