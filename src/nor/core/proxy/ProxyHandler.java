@@ -318,10 +318,7 @@ class ProxyHandler implements HttpRequestHandler{
 		// 文字コードの取得
 		Charset charset = null;
 		final HttpHeader header = msg.getHeader();
-		boolean isChar = false;
 		if(header.containsKey(HeaderName.ContentType)){
-
-			isChar = header.get(HeaderName.ContentType).contains("text");
 
 			final Pattern pat = Pattern.compile("charset=(\\S+)");
 			final Matcher m = pat.matcher(header.get(HeaderName.ContentType));
@@ -359,13 +356,13 @@ class ProxyHandler implements HttpRequestHandler{
 					final Matcher cType = f.getFilteringContentType().matcher(header.get(HeaderName.ContentType));
 					if(cType.matches()){
 
-						f.update(msg, url, cType, register, isChar);
+						f.update(msg, url, cType, register);
 
 					}
 
 				}else{
 
-					f.update(msg, url, null, register, isChar);
+					f.update(msg, url, null, register);
 
 				}
 

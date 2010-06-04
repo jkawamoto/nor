@@ -37,6 +37,6 @@ public interface MessageFilter<Message extends HttpMessage>{
 	 * 新しいメッセージが届いたことを通知します．
 	 *
 	 */
-	public void update(final Message msg, final MatchResult url, final MatchResult cType, final FilterRegister register, final boolean isCharacter);
+	public void update(final Message msg, final MatchResult url, final MatchResult cType, final FilterRegister register);
 
 }
