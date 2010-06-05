@@ -51,7 +51,7 @@ class SocketChannelOutputStream extends OutputStream{
 
 		if(this.isAlive){
 
-			if(this.available() == 0){
+			while(this.available() == 0){
 
 				this.flush();
 
@@ -70,7 +70,7 @@ class SocketChannelOutputStream extends OutputStream{
 
 			while(len != 0){
 
-				if(this.available() == 0){
+				while(this.available() == 0){
 
 					this.flush();
 
