@@ -82,13 +82,6 @@ public class ProxyServer implements Closeable{
 		assert hostname != null && hostname.length() != 0;
 		assert port > 0;
 
-		// サーバが既に稼働中の場合停止する
-		if(this.server != null){
-
-			this.close();
-
-		}
-
 		// サービスの開始
 		this.server.start(hostname, port);
 

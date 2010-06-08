@@ -19,6 +19,7 @@ package nor.http.server.nserver;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.SelectionKey;
@@ -57,7 +58,15 @@ class SocketChannelOutputStream extends OutputStream{
 
 			}
 
+			try{
+
 			this.buffer.put((byte)b);
+
+			}catch(final BufferOverflowException e){
+
+				LOGGER.severe(e.getMessage() + " pos " + this.buffer.position() + ", lim " + this.buffer.limit() + ", cap " + this.buffer.capacity());
+
+			}
 
 		}
 

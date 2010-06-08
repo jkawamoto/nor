@@ -35,7 +35,7 @@ class ListenWorker implements Runnable, Closeable{
 	private final String hostname;
 	private final int port;
 
-	private final ThreadManager tmanager;;
+	private final ThreadManager tmanager;
 
 	private Selector selector;
 	private boolean running = true;
@@ -70,8 +70,8 @@ class ListenWorker implements Runnable, Closeable{
 			while (this.running) {
 
 				// セレクタにイベントが発生するまでブロック
-				final int nc = selector.select();
-				LOGGER.finest("Begins a selection (" + nc + ")");
+				final int nc = selector.selectNow();
+				LOGGER.finest("Begins a selection (" + nc + " selected keys, " + selector.keys().size() + " registrated keys)");
 
 				// 獲得したイベントごとに処理を実行
 				final Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
@@ -157,6 +157,7 @@ class ListenWorker implements Runnable, Closeable{
 
 				}
 
+				this.selector.selectedKeys().clear();
 				LOGGER.finest("Ends the selection");
 
 			}
@@ -192,10 +193,16 @@ class ListenWorker implements Runnable, Closeable{
 		// サーバソケットチャネルの作成
 		final ServerSocketChannel serverChannel = ServerSocketChannel.open();
 		serverChannel.configureBlocking(false);
-		serverChannel.socket().bind(new InetSocketAddress(this.hostname, this.port));
-		LOGGER.info("Bind socket to port: " + this.port);
+
+		final InetSocketAddress addr = new InetSocketAddress(this.hostname, this.port);
+		serverChannel.socket().bind(addr);
+		LOGGER.info("Bind socket to " + addr);
 
 		// セレクタにサーバソケットチャンネルを登録
+		SelectionKey key = serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+		key.cancel();
+		selector.selectNow();
+
 		serverChannel.register(selector, SelectionKey.OP_ACCEPT);
 
 	}
