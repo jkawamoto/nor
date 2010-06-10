@@ -1,6 +1,5 @@
 package nor.core.proxy.filter;
 
-import java.io.IOException;
 
 public abstract class EditingByteFilterAdapter implements EditingByteFilter{
 
@@ -8,7 +7,7 @@ public abstract class EditingByteFilterAdapter implements EditingByteFilter{
 	 * @see java.io.Closeable#close()
 	 */
 	@Override
-	public void close() throws IOException {
+	public void close(){
 
 	}
 

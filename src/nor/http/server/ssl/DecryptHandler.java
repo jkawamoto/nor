@@ -45,7 +45,7 @@ public class DecryptHandler implements ConnectHandler{
 		header.add("Proxy-agent", "nor/1.0");
 
 
-		ret.writeOut(output);
+		ret.output(output);
 
 		// なぜかこいつを使いまわすと落ちる
 		SecureManager m = new SecureManager();

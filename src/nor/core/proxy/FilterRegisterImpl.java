@@ -22,34 +22,47 @@ import java.util.List;
 
 import nor.core.proxy.filter.EditingByteFilter;
 import nor.core.proxy.filter.EditingStringFilter;
+import nor.core.proxy.filter.FilterRegister;
 import nor.core.proxy.filter.ReadonlyByteFilter;
 import nor.core.proxy.filter.ReadonlyStringFilter;
 
-public class FilterRegister {
+class FilterRegisterImpl implements FilterRegister {
 
 	private final List<EditingByteFilter> editingByteFilters = new ArrayList<EditingByteFilter>();
 	private final List<EditingStringFilter> editingStringFilters = new ArrayList<EditingStringFilter>();
 	private final List<ReadonlyByteFilter> readonlyByteFilters = new ArrayList<ReadonlyByteFilter>();
 	private final List<ReadonlyStringFilter> readonlyStringFilters = new ArrayList<ReadonlyStringFilter>();
 
+	/* (非 Javadoc)
+	 * @see nor.core.proxy.FilterRegister#add(nor.core.proxy.filter.EditingByteFilter)
+	 */
 	public void add(final EditingByteFilter filter){
 
 		this.editingByteFilters.add(filter);
 
 	}
 
+	/* (非 Javadoc)
+	 * @see nor.core.proxy.FilterRegister#add(nor.core.proxy.filter.EditingStringFilter)
+	 */
 	public void add(final EditingStringFilter filter){
 
 		this.editingStringFilters.add(filter);
 
 	}
 
+	/* (非 Javadoc)
+	 * @see nor.core.proxy.FilterRegister#add(nor.core.proxy.filter.ReadonlyByteFilter)
+	 */
 	public void add(final ReadonlyByteFilter filter){
 
 		this.readonlyByteFilters.add(filter);
 
 	}
 
+	/* (非 Javadoc)
+	 * @see nor.core.proxy.FilterRegister#add(nor.core.proxy.filter.ReadonlyStringFilter)
+	 */
 	public void add(final ReadonlyStringFilter filter){
 
 		this.readonlyStringFilters.add(filter);

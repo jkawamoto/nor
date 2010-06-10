@@ -155,7 +155,7 @@ final class ServiceWorker implements Runnable{
 
 					// レスポンスの書き出し
 					this.socket.setSoTimeout(5000);
-					response.writeOut(output);
+					response.output(output);
 					this.socket.setSoTimeout(0);
 
 					this.socket.getOutputStream().flush();

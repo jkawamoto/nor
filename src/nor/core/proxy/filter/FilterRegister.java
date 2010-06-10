@@ -17,21 +17,15 @@
  */
 package nor.core.proxy.filter;
 
-import java.io.Closeable;
 
-public interface EditingStringFilter extends Closeable{
+public interface FilterRegister {
 
-	/**
-	 *
-	 * @param msg
-	 * @param in
-	 * @return
-	 */
-	public String update(final String in);
+	public abstract void add(final EditingByteFilter filter);
 
-	@Override
-	public void close();
+	public abstract void add(final EditingStringFilter filter);
+
+	public abstract void add(final ReadonlyByteFilter filter);
+
+	public abstract void add(final ReadonlyStringFilter filter);
 
 }
-
-

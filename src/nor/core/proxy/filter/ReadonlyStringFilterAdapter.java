@@ -17,7 +17,6 @@
  */
 package nor.core.proxy.filter;
 
-import java.io.IOException;
 
 
 
@@ -27,7 +26,7 @@ public abstract class ReadonlyStringFilterAdapter implements ReadonlyStringFilte
 	 * @see java.io.Closeable#close()
 	 */
 	@Override
-	public void close() throws IOException {
+	public void close(){
 
 	}
 

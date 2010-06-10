@@ -47,6 +47,8 @@ public class Stream {
 
 		final ByteBuffer buf = ByteBuffer.allocate(bufSize);
 
+		long c = 0;
+
 		while(true){
 
 			buf.clear();
@@ -58,6 +60,7 @@ public class Stream {
 			buf.flip();
 
 			int len = buf.limit() - buf.position();
+			c += len;
 			while(len != 0){
 
 				len -= out.write(buf);
@@ -65,8 +68,6 @@ public class Stream {
 			}
 
 		}
-
-		out.close();
 
 	}
 

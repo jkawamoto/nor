@@ -12,4 +12,7 @@ public interface ReadonlyStringFilter extends Closeable{
 	 */
 	public void update(final String in);
 
+	@Override
+	public void close();
+
 }

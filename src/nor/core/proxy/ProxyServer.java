@@ -24,6 +24,9 @@ import java.net.URL;
 import java.util.regex.Pattern;
 
 import nor.core.plugin.Plugin;
+import nor.core.proxy.filter.MessageHandler;
+import nor.core.proxy.filter.RequestFilter;
+import nor.core.proxy.filter.ResponseFilter;
 import nor.http.server.HttpServer;
 import nor.http.server.nserver.HttpNServer;
 import nor.util.log.EasyLogger;
@@ -110,9 +113,38 @@ public class ProxyServer implements Closeable{
 
 		LOGGER.info("Loading a plugin (" + plugin.getClass().getName() + ")");
 
-		this.handler.attach(plugin.messageHandlers());
-		this.handler.attach(plugin.requestFilters());
-		this.handler.attach(plugin.responseFilters());
+		final MessageHandler[] hs = plugin.messageHandlers();
+		if(hs != null){
+
+			for(final MessageHandler h: hs){
+
+				this.handler.attach(h);
+
+			}
+
+		}
+
+		final RequestFilter[] rqs = plugin.requestFilters();
+		if(rqs != null){
+
+			for(final RequestFilter f: rqs){
+
+				this.handler.attach(f);
+
+			}
+
+		}
+
+		final ResponseFilter[] res = plugin.responseFilters();
+		if(res != null){
+
+			for(final ResponseFilter f: res){
+
+				this.handler.attach(f);
+
+			}
+
+		}
 
 		LOGGER.exiting("attach");
 	}
@@ -120,9 +152,38 @@ public class ProxyServer implements Closeable{
 	public void detach(final Plugin plugin){
 		LOGGER.entering("detach", plugin);
 
-		this.handler.detach(plugin.messageHandlers());
-		this.handler.detach(plugin.requestFilters());
-		this.handler.detach(plugin.responseFilters());
+		final MessageHandler[] hs = plugin.messageHandlers();
+		if(hs != null){
+
+			for(final MessageHandler h: hs){
+
+				this.handler.detach(h);
+
+			}
+
+		}
+
+		final RequestFilter[] rqs = plugin.requestFilters();
+		if(rqs != null){
+
+			for(final RequestFilter f: rqs){
+
+				this.handler.detach(f);
+
+			}
+
+		}
+
+		final ResponseFilter[] res = plugin.responseFilters();
+		if(res != null){
+
+			for(final ResponseFilter f: res){
+
+				this.handler.detach(f);
+
+			}
+
+		}
 
 		LOGGER.exiting("detach");
 	}

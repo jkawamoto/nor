@@ -152,16 +152,12 @@ class ProxyHandler implements HttpRequestHandler{
 	 *
 	 * @param handlers 追加するメッセージハンドラ
 	 */
-	public void attach(final MessageHandler[] handlers){
-		LOGGER.entering("attach", handlers);
+	public void attach(final MessageHandler handler){
+		LOGGER.entering("attach", handler);
 
-		if(handlers != null){
+		if(handler != null){
 
-			for(final MessageHandler h : handlers){
-
-				this.handlers.add(h);
-
-			}
+			this.handlers.add(handler);
 
 		}
 
@@ -173,16 +169,12 @@ class ProxyHandler implements HttpRequestHandler{
 	 *
 	 * @param handlers 削除するメッセージハンドラ
 	 */
-	public void detach(final MessageHandler[] handlers){
-		LOGGER.entering("detach", handlers);
+	public void detach(final MessageHandler handler){
+		LOGGER.entering("detach", handler);
 
-		if(handlers != null){
+		if(handler != null){
 
-			for(final MessageHandler h : handlers){
-
-				this.handlers.remove(h);
-
-			}
+			this.handlers.remove(handler);
 
 		}
 
@@ -197,16 +189,12 @@ class ProxyHandler implements HttpRequestHandler{
 	 *
 	 * @param observers 追加するリクエストフィルタ
 	 */
-	public void attach(final RequestFilter[] observers) {
-		LOGGER.entering("attach", observers);
+	public void attach(final RequestFilter filter) {
+		LOGGER.entering("attach", filter);
 
-		if(observers != null){
+		if(filter != null){
 
-			for(final RequestFilter f : observers){
-
-				this.requestFilters.add(f);
-
-			}
+			this.requestFilters.add(filter);
 
 		}
 
@@ -216,18 +204,14 @@ class ProxyHandler implements HttpRequestHandler{
 	/**
 	 * リクエストフィルタを削除する．
 	 *
-	 * @param observers 削除するリクエストフィルタ
+	 * @param filter 削除するリクエストフィルタ
 	 */
-	public void detach(final RequestFilter[] observers) {
-		LOGGER.entering("detach", observers);
+	public void detach(final RequestFilter filter) {
+		LOGGER.entering("detach", filter);
 
-		if(observers != null){
+		if(filter != null){
 
-			for(final RequestFilter f : observers){
-
-				this.requestFilters.remove(f);
-
-			}
+			this.requestFilters.remove(filter);
 
 		}
 
@@ -240,18 +224,14 @@ class ProxyHandler implements HttpRequestHandler{
 	/**
 	 * レスポンスフィルタを追加する．
 	 *
-	 * @param observers 追加するレスポンスフィルタ
+	 * @param filter 追加するレスポンスフィルタ
 	 */
-	public void attach(final ResponseFilter[] observers) {
-		LOGGER.entering("attach", observers);
+	public void attach(final ResponseFilter filter) {
+		LOGGER.entering("attach", filter);
 
-		if(observers != null){
+		if(filter != null){
 
-			for(final ResponseFilter f : observers){
-
-				this.responseFilters.add(f);
-
-			}
+			this.responseFilters.add(filter);
 
 		}
 
@@ -261,18 +241,14 @@ class ProxyHandler implements HttpRequestHandler{
 	/**
 	 * レスポンスフィルタを削除する．
 	 *
-	 * @param observers 削除するレスポンスフィルタ
+	 * @param filter 削除するレスポンスフィルタ
 	 */
-	public void detach(final ResponseFilter[] observers) {
-		LOGGER.entering("detach", observers);
+	public void detach(final ResponseFilter filter) {
+		LOGGER.entering("detach", filter);
 
-		if(observers != null){
+		if(filter != null){
 
-			for(final ResponseFilter f : observers){
-
-				this.responseFilters.remove(f);
-
-			}
+			this.responseFilters.remove(filter);
 
 		}
 
@@ -340,7 +316,7 @@ class ProxyHandler implements HttpRequestHandler{
 		}
 
 		// メッセージフィルタに対してメッセージボディフィルタが必要か尋ねる
-		final FilterRegister register = new FilterRegister();
+		final FilterRegisterImpl register = new FilterRegisterImpl();
 		final String path = msg.getPath();
 		for(final MessageFilter<Message> f : filters){
 
@@ -354,7 +330,7 @@ class ProxyHandler implements HttpRequestHandler{
 				if(header.containsKey(HeaderName.ContentType)){
 
 					final Matcher cType = f.getFilteringContentType().matcher(header.get(HeaderName.ContentType));
-					if(cType.matches()){
+					if(cType.find()){
 
 						f.update(msg, url, cType, register);
 

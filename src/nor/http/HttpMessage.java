@@ -44,7 +44,7 @@ public abstract class HttpMessage{
 	 * @param output 書き出し先のストリーム
 	 * @throws IOException ストリームの書き出しにエラーが発生した場合
 	 */
-	public void writeOut(final OutputStream output) throws IOException{
+	public void output(final OutputStream output) throws IOException{
 		LOGGER.entering("writeMessage", output);
 		assert output != null;
 
@@ -65,7 +65,7 @@ public abstract class HttpMessage{
 		writer.close();
 
 		// ボディの書き出し
-		this.getBody().writeOut(output);
+		this.getBody().output(output, this.getHeader());
 
 		output.close();
 
@@ -87,7 +87,6 @@ public abstract class HttpMessage{
 		ret.append("\n");
 		ret.append(this.getHeader());
 		ret.append("\n");
-		//ret.append(this._body);
 
 		LOGGER.exiting("toString", ret.toString());
 		return ret.toString();

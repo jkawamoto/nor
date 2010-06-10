@@ -8,4 +8,8 @@ public interface ReadonlyByteFilter extends Closeable{
 
 	public void update(final ByteBuffer in);
 
+	@Override
+	public void close();
+
+
 }

@@ -302,14 +302,14 @@ public class HttpRequest extends HttpMessage{
 				con.setDoOutput(true);
 				con.connect();
 
-				this.getBody().writeOut(con.getOutputStream());
+				this.getBody().output(con.getOutputStream(), this.header);
 
 			}else if(header.containsKey(HeaderName.TransferEncoding)){
 
 				con.setDoOutput(true);
 				con.connect();
 
-				this.getBody().writeOut(con.getOutputStream());
+				this.getBody().output(con.getOutputStream(), this.header);
 
 			}else{
 
@@ -324,7 +324,7 @@ public class HttpRequest extends HttpMessage{
 		}
 
 
-		// リクエストの作成
+		// レスポンスの作成
 		HttpResponse ret;
 		try {
 
@@ -379,21 +379,6 @@ public class HttpRequest extends HttpMessage{
 					}
 
 					resHeader.set(key, v.toString());
-
-				}
-
-			}
-
-			// HttpURLConnection は転送コーディングを自動でデコードする
-			resHeader.remove(HeaderName.TransferEncoding);
-			resHeader.remove(HeaderName.Trailer);
-
-			// 出力用にヘッダを修正する(読み込み時は転送コーディングを自動デコードするが書き出し時には必要)
-			if(!resHeader.containsKey(HeaderName.ContentLength)){
-
-				if(!resHeader.containsKey(HeaderName.TransferEncoding)){
-
-					resHeader.set(HeaderName.TransferEncoding, "chunked");
 
 				}
 
@@ -537,45 +522,19 @@ public class HttpRequest extends HttpMessage{
 	//====================================================================
 	private HttpBody readBody(final InputStream input) throws IOException{
 
+		// TODO: コネクトについて
 		if(Method.TRACE.equalsIgnoreCase(this.getMethod())){
 
 			this.getHeader().set(HeaderName.ContentLength, "0");
 
 		}
 
-		return new HttpBody(this, input);
-
+		return new HttpBody(input, this.header);
 
 		/*
 		 * Max-Forwards リクエストヘッダフィールドは、リクエスト連鎖中で特定のプロクシを目標に使われるであろう。プロクシは、転送が許可されたリクエストのための absoluteURI と共に OPTIONS リクエストを受けとった時には、Max-Forwards フィールドをチェックしなければならない。もし、Max-Forwards フィールドの値がゼロ ("0") ならば、プロクシはそのメッセージを転送してはならない。その代わりに、プロクシ自身のコミュニケーションオプションを返すべきである。もし、Max-Forwards フィールドの値がゼロより大きな整数値ならば、プロクシはリクエストを転送する際にその値を一つ減らさなければならない。リクエストの中に Max-Forwards フィールドが存在していなければ、転送するリクエストに Max-Forwards フィールドを含めてはならない。
 		 *
 		 */
-
-
-		//	    * GET
-		//	    * HEAD
-		//	    * POST
-		//	    * PUT
-		//	    * DELETE
-		//	    * OPTIONS
-		//	    * TRACE
-		//	    * CONNECT
-		//	    * PATCH
-		//	    * LINK, UNLINK
-
-		// テキストボディ -> ノーマル or チャンク, バイナリボディ -> ノーマル or チャンク
-
-
-		// TODO: コネクトについてはまた考える
-		//		if("CONNECT".equalsIgnoreCase(this.getMethod())){
-		//
-		//			return new BinaryBody(this, input);
-		//
-		//		}else{
-		//
-		//			return BodyBuilder.getInstance().create(this, input);
-		//
-		//		}
 
 	}
 

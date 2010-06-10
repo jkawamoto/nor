@@ -28,6 +28,7 @@ import java.util.zip.GZIPOutputStream;
 import nor.http.io.ChunkedInputStream;
 import nor.http.io.ChunkedOutputStream;
 import nor.util.LimitedInputStream;
+import nor.util.LimitedOutputStream;
 import nor.util.Stream;
 import nor.util.log.EasyLogger;
 
@@ -46,11 +47,6 @@ import nor.util.log.EasyLogger;
  */
 public class HttpBody{
 
-	/**
-	 * このメッセージボディを所有するHTTPメッセージ
-	 */
-	protected final HttpMessage parent;
-
 	protected InputStream in;
 
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpBody.class);
@@ -61,19 +57,14 @@ public class HttpBody{
 	/**
 	 * 入力ストリームを指定してメッセージボディを作成する．
 	 *
-	 * @param parent メッセージボディを持つHttpメッセージ
 	 * @param input 入力ストリーム
+	 * @param parent メッセージボディを持つHttpメッセージ
 	 * @throws IOException I/Oエラーが発生した場合
 	 */
-	HttpBody(final HttpMessage parent, final InputStream in) throws IOException{
-		LOGGER.entering("<init>", parent, in);
-		assert parent != null;
+	HttpBody(final InputStream in, final HttpHeader header) throws IOException{
 		assert in != null;
 
-		this.parent = parent;
 		this.in = in;
-
-		final HttpHeader header = this.parent.getHeader();
 
 		// 転送エンコーディングの解決
 		if(header.containsKey(HeaderName.TransferEncoding)){
@@ -103,31 +94,29 @@ public class HttpBody{
 
 		}
 
-		LOGGER.exiting("<init>");
+	}
+
+	HttpBody(final InputStream in){
+
+		this.in = in;
+
 	}
 
 	//====================================================================
 	//  public メソッド
 	//====================================================================
-//	/**
-//	 * ContentTypeを取得する．
-//	 *
-//	 * @return このオブジェクトを持つメッセージのContentType
-//	 */
-//	public ContentType getContentType(){
-//
-//		return this.parent.getHeader().getContentType();
-//
-//	}
+	public void output(final OutputStream out, final HttpHeader header) throws IOException{
 
-	public void writeOut(OutputStream out) throws IOException{
-
-		final HttpHeader header = this.parent.getHeader();
+		OutputStream cout = out;
 
 		// Content-lengthが指定されていればそのまま，指定されていなければchunkで送る．
-		if(!header.containsKey(HeaderName.ContentLength)){
+		if(header.containsKey(HeaderName.ContentLength)){
 
-			out = new ChunkedOutputStream(out);
+			cout = new LimitedOutputStream(cout, Integer.parseInt(header.get(HeaderName.ContentLength)));
+
+		}else{
+
+			cout = new ChunkedOutputStream(cout);
 
 		}
 
@@ -137,11 +126,11 @@ public class HttpBody{
 			final String encode = header.get(HeaderName.ContentEncoding);
 			if("gzip".equalsIgnoreCase(encode)){
 
-				out = new GZIPOutputStream(out, Stream.DEFAULT_BUFFER_SIZE);
+				cout = new GZIPOutputStream(cout, Stream.DEFAULT_BUFFER_SIZE);
 
 			}else if("deflate".equalsIgnoreCase(encode)){
 
-				out = new DeflaterOutputStream(out);
+				cout = new DeflaterOutputStream(cout);
 
 			}
 
@@ -149,10 +138,10 @@ public class HttpBody{
 
 		// TODO: Length-requiredの場合はここで全データを受信する．
 		final InputStream body = this.in;
-		Stream.copy(body, out);
+		Stream.copy(body, cout);
 
-		out.flush();
-		out.close();
+		cout.flush();
+		cout.close();
 		this.in.close();
 
 	}

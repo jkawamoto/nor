@@ -71,6 +71,17 @@ public class LimitedOutputStream extends FilterOutputStream{
 
 	}
 
+	public void close() throws IOException{
+
+		while(this.remains-- > 0){
+
+			this.out.write(0);
+
+		}
+
+		super.close();
+
+	}
 
 	public int remains(){
 

@@ -60,7 +60,7 @@ class SocketChannelOutputStream extends OutputStream{
 
 			try{
 
-			this.buffer.put((byte)b);
+				this.buffer.put((byte)b);
 
 			}catch(final BufferOverflowException e){
 
@@ -132,7 +132,7 @@ class SocketChannelOutputStream extends OutputStream{
 
 			if(!this.isAlive){
 
-				throw new IOException();
+				throw new IOException("Connection is closed");
 
 			}
 

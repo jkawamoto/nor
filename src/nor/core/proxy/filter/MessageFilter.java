@@ -20,7 +20,6 @@ package nor.core.proxy.filter;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
-import nor.core.proxy.FilterRegister;
 import nor.http.HttpMessage;
 
 /**

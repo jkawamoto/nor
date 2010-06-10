@@ -30,4 +30,7 @@ public interface EditingByteFilter extends Closeable{
 
 	public ByteBuffer update(final ByteBuffer in);
 
+	@Override
+	public void close();
+
 }

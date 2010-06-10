@@ -194,16 +194,12 @@ class ListenWorker implements Runnable, Closeable{
 		final ServerSocketChannel serverChannel = ServerSocketChannel.open();
 		serverChannel.configureBlocking(false);
 
+		// セレクタにサーバソケットチャンネルを登録
 		final InetSocketAddress addr = new InetSocketAddress(this.hostname, this.port);
 		serverChannel.socket().bind(addr);
-		LOGGER.info("Bind socket to " + addr);
-
-		// セレクタにサーバソケットチャンネルを登録
-		SelectionKey key = serverChannel.register(selector, SelectionKey.OP_ACCEPT);
-		key.cancel();
-		selector.selectNow();
-
 		serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+
+		LOGGER.info("Bind socket to " + addr);
 
 	}
 

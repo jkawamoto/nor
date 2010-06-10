@@ -71,7 +71,7 @@ public class TunnellingHandler implements ConnectHandler{
 				header.add("Proxy-agent", "not/1.0\n");
 
 
-				ret.writeOut(output);
+				ret.output(output);
 
 				InputStream netIn = socket.getInputStream();
 				OutputStream netOut = socket.getOutputStream();

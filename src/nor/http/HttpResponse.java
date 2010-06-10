@@ -112,7 +112,19 @@ public class HttpResponse extends HttpMessage{
 			this.header = new HttpHeader(this, in);
 
 			// ボディの読み取り
-			this.body = this.readBody(input);
+			if(Method.HEAD.equalsIgnoreCase(this.getRequest().getMethod())){
+
+				// HEADリクエストへのレスポンスはメッセージボディを含んではならない
+				this.getHeader().set(HeaderName.ContentLength, "0");
+
+			}else if((100 <= this.code && this.code < 200) || this.code == 204 || this.code == 304){
+
+				// 100番台，204, 304のレスポンスはメッセージボディを含んではならない
+				this.getHeader().set(HeaderName.ContentLength, "0");
+
+			}
+			this.body = new HttpBody(input, this.header);
+
 
 		}catch(final IOException e){
 
@@ -123,7 +135,13 @@ public class HttpResponse extends HttpMessage{
 		LOGGER.exiting("<init>");
 	}
 
-	HttpResponse(final HttpRequest request, final Status status, final InputStream input){
+	/**
+	 *
+	 * @param request
+	 * @param status
+	 * @param body 内容コーディング，転送コーディングともに解決済みの入力ストリーム
+	 */
+	HttpResponse(final HttpRequest request, final Status status, final InputStream body){
 
 		this.request = request;
 		this.code = status.getCode();
@@ -131,17 +149,7 @@ public class HttpResponse extends HttpMessage{
 		this.version = HttpVersion.VERSION;
 
 		this.header = new HttpHeader(this);
-
-		HttpBody b = null;
-		try {
-
-			b = this.readBody(input);
-
-		} catch (IOException e) {
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
-		}
-		this.body = b;
+		this.body = new HttpBody(body);
 
 	}
 
@@ -247,29 +255,6 @@ public class HttpResponse extends HttpMessage{
 	public HttpBody getBody() {
 
 		return this.body;
-
-	}
-
-	//====================================================================
-	//	private メソッド
-	//====================================================================
-	private HttpBody readBody(final InputStream input) throws IOException {
-
-		// HEADリクエストへのレスポンスはメッセージボディを含んではならない
-		if(Method.HEAD.equalsIgnoreCase(this.getRequest().getMethod())){
-
-			this.getHeader().set(HeaderName.ContentLength, "0");
-
-		}
-
-		// 100番台，204, 304のレスポンスはメッセージボディを含んではならない
-		if((100 <= this.code && this.code < 200) || this.code == 204 || this.code == 304){
-
-			this.getHeader().set(HeaderName.ContentLength, "0");
-
-		}
-
-		return new HttpBody(this, input);
 
 	}
 

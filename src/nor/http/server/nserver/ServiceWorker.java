@@ -98,7 +98,7 @@ class ServiceWorker implements Runnable, Closeable{
 					keepAlive &= this.isKeepingAlive(response);
 
 					// レスポンスの書き出し
-					response.writeOut(output);
+					response.output(output);
 					output.flush();
 
 				}
