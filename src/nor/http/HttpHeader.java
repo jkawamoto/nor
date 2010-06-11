@@ -47,12 +47,6 @@ import nor.util.log.EasyLogger;
 public class HttpHeader{
 
 	/**
-	 * 親HTTPメッセージ
-	 */
-	@SuppressWarnings("unused")
-	private final HttpMessage parent;
-
-	/**
 	 * ヘッダ解析用の正規表現
 	 */
 	private static final Pattern HEADER = Pattern.compile("^([^:]+):\\s*(.*)$");
@@ -73,13 +67,9 @@ public class HttpHeader{
 	/**
 	 * 空のHTTPヘッダオブジェクトを作成する．
 	 *
-	 * @param parent
 	 */
-	HttpHeader(final HttpMessage parent){
-		LOGGER.entering("<init>", parent);
-		assert parent != null;
-
-		this.parent = parent;
+	HttpHeader(){
+		LOGGER.entering("<init>");
 
 		LOGGER.exiting("<init>");
 	}
@@ -91,12 +81,10 @@ public class HttpHeader{
 	 * @param reader ヘッダ情報を読み取るストリーム
 	 * @throws IOException ストリーム処理中にI/Oエラーが発生した場合
 	 */
-	HttpHeader(final HttpMessage parent, final BufferedReader reader) throws IOException{
-		LOGGER.entering("<init>", parent, reader);
-		assert parent != null;
+	HttpHeader(final BufferedReader reader) throws IOException{
+		LOGGER.entering("<init>", reader);
 		assert reader != null;
 
-		this.parent = parent;
 		this.readHeader(reader);
 
 		LOGGER.exiting("<init>");
@@ -110,12 +98,10 @@ public class HttpHeader{
 	 * @param parent
 	 * @param elements このオブジェクトに持たせるヘッダ要素
 	 */
-	HttpHeader(final HttpMessage parent, final Map<String, String> elements){
-		LOGGER.entering("<init>", parent, elements);
-		assert parent != null;
+	HttpHeader(final Map<String, String> elements){
+		LOGGER.entering("<init>", new Object[]{elements});
 		assert elements != null;
 
-		this.parent = parent;
 		this.setAll(elements);
 
 		LOGGER.exiting("<init>");

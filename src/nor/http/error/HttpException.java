@@ -69,6 +69,8 @@ public class HttpException extends RuntimeException{
 		header.add(HeaderName.ContentLength, "0");
 		header.add(HeaderName.Server, Http.SERVERNAME);
 
+		// TODO: Throwable を受け取ってスタックトレースを表示させる
+
 		assert ret != null;
 		return ret;
 

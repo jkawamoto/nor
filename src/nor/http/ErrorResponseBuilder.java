@@ -67,7 +67,6 @@ public class ErrorResponseBuilder {
 
 		final HttpResponse ret = request.createResponse(status);
 		final HttpHeader header = ret.getHeader();
-		header.add(HeaderName.ContentType, "text/html; charset=utf-8");
 		header.add(HeaderName.Connection, "close");
 		header.add(HeaderName.Server, Http.SERVERNAME);
 

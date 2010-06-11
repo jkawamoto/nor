@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import java.util.zip.DeflaterInputStream;
 import java.util.zip.GZIPInputStream;
 
+import nor.http.error.HttpException;
 import nor.http.io.HeaderInputStream;
 import nor.util.log.EasyLogger;
 
@@ -51,9 +52,8 @@ public class HttpRequest extends HttpMessage{
 	/**
 	 * HTTPリクエストライン解析のための正規表現
 	 */
-	private static final Pattern Command = Pattern.compile("^(\\w+)\\s+(.+?)\\s+HTTP/([\\d.]+)$");
+	private static final Pattern Command = Pattern.compile(Http.REQPONSE_LINE_PATTERN);
 
-	private static final String HeadLine = "%s %s HTTP/%s";
 
 	/**
 	 * HTTPリクエストメソッド
@@ -119,10 +119,10 @@ public class HttpRequest extends HttpMessage{
 		}
 
 		// ヘッダの読み取り
-		this.header = new HttpHeader(this, in);
+		this.header = new HttpHeader(in);
 
 		// ボディの読み取り
-		this.body = this.readBody(input);
+		this.body = new HttpBody(input, this.header);
 
 		LOGGER.exiting("<init>");
 	}
@@ -259,7 +259,7 @@ public class HttpRequest extends HttpMessage{
 	 * @param input レスポンスを含むストリーム
 	 * @throws HttpError
 	 */
-	public HttpResponse createResponse(final InputStream input) throws HttpError{
+	public HttpResponse createResponse(final InputStream input) throws HttpException{
 		LOGGER.entering("createResponse", input);
 		assert input != null;
 
@@ -338,11 +338,11 @@ public class HttpRequest extends HttpMessage{
 				final String encode = con.getHeaderField(HeaderName.ContentEncoding.toString());
 				if(encode != null){
 
-					if("gzip".equalsIgnoreCase(encode)){
+					if(Http.GZIP.equalsIgnoreCase(encode)){
 
 						resStream = new GZIPInputStream(resStream);
 
-					}else if("deflate".equalsIgnoreCase(encode)){
+					}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
 
 						resStream = new DeflaterInputStream(resStream);
 
@@ -465,7 +465,7 @@ public class HttpRequest extends HttpMessage{
 	public String getHeadLine() {
 		LOGGER.entering("getHeadLine");
 
-		final String ret = String.format(HttpRequest.HeadLine, this.method, this.path, this.version);
+		final String ret = String.format(Http.REQUEST_LINE_TEMPLATE, this.method, this.path, this.version);
 
 		LOGGER.exiting("getHeadLine", ret);
 		return ret;
@@ -514,27 +514,6 @@ public class HttpRequest extends HttpMessage{
 			return null;
 
 		}
-
-	}
-
-	//====================================================================
-	//	private メソッド
-	//====================================================================
-	private HttpBody readBody(final InputStream input) throws IOException{
-
-		// TODO: コネクトについて
-		if(Method.TRACE.equalsIgnoreCase(this.getMethod())){
-
-			this.getHeader().set(HeaderName.ContentLength, "0");
-
-		}
-
-		return new HttpBody(input, this.header);
-
-		/*
-		 * Max-Forwards リクエストヘッダフィールドは、リクエスト連鎖中で特定のプロクシを目標に使われるであろう。プロクシは、転送が許可されたリクエストのための absoluteURI と共に OPTIONS リクエストを受けとった時には、Max-Forwards フィールドをチェックしなければならない。もし、Max-Forwards フィールドの値がゼロ ("0") ならば、プロクシはそのメッセージを転送してはならない。その代わりに、プロクシ自身のコミュニケーションオプションを返すべきである。もし、Max-Forwards フィールドの値がゼロより大きな整数値ならば、プロクシはリクエストを転送する際にその値を一つ減らさなければならない。リクエストの中に Max-Forwards フィールドが存在していなければ、転送するリクエストに Max-Forwards フィールドを含めてはならない。
-		 *
-		 */
 
 	}
 

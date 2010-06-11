@@ -24,6 +24,8 @@ import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import nor.http.error.HttpException;
+import nor.http.error.InternalServerErrorException;
 import nor.http.io.HeaderInputStream;
 import nor.util.log.EasyLogger;
 
@@ -58,9 +60,7 @@ public class HttpResponse extends HttpMessage{
 	/**
 	 *
 	 */
-	private static final Pattern StatusLine = Pattern.compile("^HTTP/(\\S{3})\\s+(\\d{3})\\s*(.*)$");
-
-	private static final String HeadLine = "HTTP/%s %d %s";
+	private static final Pattern StatusLine = Pattern.compile(Http.REQPONSE_LINE_PATTERN);
 
 	//====================================================================
 	//  コンストラクタ
@@ -74,7 +74,7 @@ public class HttpResponse extends HttpMessage{
 	 * @throws IOException I/Oエラーが発生した場合
 	 * @throws InvalidRequest 無効なレスポンスの場合
 	 */
-	HttpResponse(final HttpRequest request, final InputStream input) throws HttpError{
+	HttpResponse(final HttpRequest request, final InputStream input) throws HttpException{
 		LOGGER.entering("<init>", request, input);
 		assert request != null;
 		assert input != null;
@@ -101,7 +101,7 @@ public class HttpResponse extends HttpMessage{
 			}
 			if(this.code == 0){
 
-				throw new HttpError(Status.InternalServerError);
+				throw new InternalServerErrorException();
 
 			}
 
@@ -109,7 +109,7 @@ public class HttpResponse extends HttpMessage{
 			this.request = request;
 
 			// ヘッダの読み取り
-			this.header = new HttpHeader(this, in);
+			this.header = new HttpHeader(in);
 
 			// ボディの読み取り
 			if(Method.HEAD.equalsIgnoreCase(this.getRequest().getMethod())){
@@ -128,7 +128,7 @@ public class HttpResponse extends HttpMessage{
 
 		}catch(final IOException e){
 
-			throw new HttpError(Status.InternalServerError, e);
+			throw new InternalServerErrorException();
 
 		}
 
@@ -148,7 +148,7 @@ public class HttpResponse extends HttpMessage{
 		this.message = status.getMessage();
 		this.version = Http.VERSION;
 
-		this.header = new HttpHeader(this);
+		this.header = new HttpHeader();
 		this.body = new HttpBody(body);
 
 	}
@@ -234,7 +234,7 @@ public class HttpResponse extends HttpMessage{
 	@Override
 	public String getHeadLine() {
 
-		return String.format(HttpResponse.HeadLine, version, code, message);
+		return String.format(Http.RESPONSE_LINE_TEMPLATE, version, code, message);
 
 	}
 

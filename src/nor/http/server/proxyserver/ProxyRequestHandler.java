@@ -73,6 +73,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 	private final Router router = new Router();
 
 	private static final String Close = "close";
+	private static final String VIA_FORMAT = "%s %s";
 
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(ProxyRequestHandler.class);
 
@@ -237,7 +238,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		}
 
 		// プロキシ通過スタンプ
-		header.add(Via, String.format("%s %s", this.version, this.name));
+		header.add(Via, String.format(VIA_FORMAT, this.version, this.name));
 
 		LOGGER.exiting("cleanHeader");
 	}
@@ -292,7 +293,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		}
 
 		// プロキシ通過スタンプ
-		header.add(Via, String.format("%s %s", this.version, this.name));
+		header.add(Via, String.format(VIA_FORMAT, this.version, this.name));
 
 		LOGGER.exiting("cleanHeader");
 	}

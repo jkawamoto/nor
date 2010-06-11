@@ -82,11 +82,11 @@ public class HttpBody{
 		if(header.containsKey(HeaderName.ContentEncoding)){
 
 			final String encode = header.get(HeaderName.ContentEncoding);
-			if("gzip".equalsIgnoreCase(encode)){
+			if(Http.GZIP.equalsIgnoreCase(encode)){
 
 				this.in = new GZIPInputStream(this.in);
 
-			}else if("deflate".equalsIgnoreCase(encode)){
+			}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
 
 				this.in = new DeflaterInputStream(this.in);
 
@@ -109,13 +109,14 @@ public class HttpBody{
 
 		OutputStream cout = out;
 
-		// Content-lengthが指定されていればそのまま，指定されていなければchunkで送る．
 		if(header.containsKey(HeaderName.ContentLength)){
 
+			// ContentLengthが指定されていればそのサイズだけ送る
 			cout = new LimitedOutputStream(cout, Integer.parseInt(header.get(HeaderName.ContentLength)));
 
-		}else{
+		}else if(Http.CHUNKED.equalsIgnoreCase(header.get(HeaderName.TransferEncoding))){
 
+			// TransferEncodingにchunkが指定されていればChunk形式で送る
 			cout = new ChunkedOutputStream(cout);
 
 		}
@@ -124,11 +125,11 @@ public class HttpBody{
 		if(header.containsKey(HeaderName.ContentEncoding)){
 
 			final String encode = header.get(HeaderName.ContentEncoding);
-			if("gzip".equalsIgnoreCase(encode)){
+			if(Http.GZIP.equalsIgnoreCase(encode)){
 
 				cout = new GZIPOutputStream(cout, Stream.DEFAULT_BUFFER_SIZE);
 
-			}else if("deflate".equalsIgnoreCase(encode)){
+			}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
 
 				cout = new DeflaterOutputStream(cout);
 
