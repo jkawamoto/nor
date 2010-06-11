@@ -28,7 +28,6 @@ import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.DeflaterInputStream;
 import java.util.zip.GZIPInputStream;
 
@@ -48,12 +47,6 @@ import nor.util.log.EasyLogger;
  *
  */
 public class HttpRequest extends HttpMessage{
-
-	/**
-	 * HTTPリクエストライン解析のための正規表現
-	 */
-	private static final Pattern Command = Pattern.compile(Http.REQPONSE_LINE_PATTERN);
-
 
 	/**
 	 * HTTPリクエストメソッド
@@ -105,7 +98,7 @@ public class HttpRequest extends HttpMessage{
 		String buf;
 		while((buf = in.readLine()) != null){
 
-			final Matcher m = Command.matcher(buf);
+			final Matcher m = Http.REQUEST_LINE_PATTERN.matcher(buf);
 			if(m.matches()){
 
 				this.method = m.group(1);

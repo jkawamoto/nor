@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import nor.http.error.HttpException;
 import nor.http.error.InternalServerErrorException;
@@ -56,12 +55,6 @@ public class HttpResponse extends HttpMessage{
 	private final HttpHeader header;
 	private final HttpBody body;
 
-
-	/**
-	 *
-	 */
-	private static final Pattern StatusLine = Pattern.compile(Http.REQPONSE_LINE_PATTERN);
-
 	//====================================================================
 	//  コンストラクタ
 	//====================================================================
@@ -87,7 +80,7 @@ public class HttpResponse extends HttpMessage{
 			while((buf = in.readLine()) != null){
 
 				// ステータスコードの取得
-				final Matcher m = StatusLine.matcher(buf);
+				final Matcher m = Http.RESONSE_LINE_PATTERN.matcher(buf);
 				if(m.matches()){
 
 					this.version = m.group(1);
@@ -234,7 +227,7 @@ public class HttpResponse extends HttpMessage{
 	@Override
 	public String getHeadLine() {
 
-		return String.format(Http.RESPONSE_LINE_TEMPLATE, version, code, message);
+		return String.format(Http.RESONSE_LINE_TEMPLATE, version, code, message);
 
 	}
 
