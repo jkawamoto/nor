@@ -18,6 +18,7 @@
 package nor.http.error;
 
 import nor.http.HeaderName;
+import nor.http.Http;
 import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
@@ -66,7 +67,7 @@ public class HttpException extends RuntimeException{
 
 		final HttpHeader header = ret.getHeader();
 		header.add(HeaderName.ContentLength, "0");
-		header.add(HeaderName.Server, "nor");
+		header.add(HeaderName.Server, Http.SERVERNAME);
 
 		assert ret != null;
 		return ret;

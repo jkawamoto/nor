@@ -146,7 +146,7 @@ public class HttpResponse extends HttpMessage{
 		this.request = request;
 		this.code = status.getCode();
 		this.message = status.getMessage();
-		this.version = HttpVersion.VERSION;
+		this.version = Http.VERSION;
 
 		this.header = new HttpHeader(this);
 		this.body = new HttpBody(body);

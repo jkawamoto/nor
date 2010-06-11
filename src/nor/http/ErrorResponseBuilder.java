@@ -51,15 +51,6 @@ public class ErrorResponseBuilder {
 	 */
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(ErrorResponseBuilder.class);
 
-	private static String serverName;
-
-	public static void setServerName(final String serverName){
-
-		ErrorResponseBuilder.serverName = serverName;
-
-	}
-
-
 	/**
 	 * エラーステータスに対応するエラーレスポンスオブジェクトを生成する．
 	 * この実装では，エラーレスポンスオブジェクトは毎回生成し，再利用は行わない．
@@ -78,7 +69,7 @@ public class ErrorResponseBuilder {
 		final HttpHeader header = ret.getHeader();
 		header.add(HeaderName.ContentType, "text/html; charset=utf-8");
 		header.add(HeaderName.Connection, "close");
-		header.add(HeaderName.Server, serverName);
+		header.add(HeaderName.Server, Http.SERVERNAME);
 
 		LOGGER.exiting("create", ret);
 		assert ret != null;
@@ -106,7 +97,7 @@ public class ErrorResponseBuilder {
 		final HttpHeader header = ret.getHeader();
 		header.add(HeaderName.ContentType, "text/html; charset=utf-8");
 		header.add(HeaderName.Connection, "close");
-		header.add(HeaderName.Server, serverName);
+		header.add(HeaderName.Server, Http.SERVERNAME);
 		header.add(HeaderName.ContentLength, Integer.toString(body.getBytes().length));
 
 		ret.getBody().setStream(new ByteArrayInputStream(body.getBytes()));

@@ -67,7 +67,6 @@ import nor.util.log.EasyLogger;
 public class ProxyRequestHandler implements HttpRequestHandler{
 
 	// このクラスはスレッドセーフ
-
 	private final String name;
 	private final String version;
 
