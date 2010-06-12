@@ -67,11 +67,11 @@ class ServiceWorker implements Runnable, Closeable{
 			}
 
 			LOGGER.finest(Thread.currentThread().getName() + " begins to handle the " + con);
+			// ストリームの取得
+			final InputStream input = new BufferedInputStream(con.getInputStream());
+			final OutputStream output = new BufferedOutputStream(new NoExceptionOutputStreamFilter(con.getOutputStream()));
 			try{
 
-				// ストリームの取得
-				final InputStream input = new BufferedInputStream(con.getInputStream());
-				final OutputStream output = new BufferedOutputStream(new NoExceptionOutputStreamFilter(con.getOutputStream()));
 
 				// 切断要求が来るまで持続接続する
 				boolean keepAlive = true;
@@ -120,11 +120,29 @@ class ServiceWorker implements Runnable, Closeable{
 
 			}catch(final ClosedChannelException e){
 
-				LOGGER.throwing("run", e);
+				e.printStackTrace();
+
+				try {
+					input.close();
+					output.close();
+					con.close();
+				} catch (IOException e1) {
+					// TODO 自動生成された catch ブロック
+					e1.printStackTrace();
+				}
 
 			}catch(final IOException e){
 
-				LOGGER.throwing("run", e);
+				e.printStackTrace();
+
+				try {
+					input.close();
+					output.close();
+					con.close();
+				} catch (IOException e1) {
+					// TODO 自動生成された catch ブロック
+					e1.printStackTrace();
+				}
 
 			}
 

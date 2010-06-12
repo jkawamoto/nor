@@ -36,10 +36,11 @@ import java.net.Proxy.Type;
 import java.util.regex.Pattern;
 
 import nor.http.ErrorResponseBuilder;
-import nor.http.Status;
+import nor.http.HeaderName;
 import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
+import nor.http.Status;
 import nor.http.server.HttpRequestHandler;
 import nor.util.log.EasyLogger;
 
@@ -135,7 +136,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		// ヘッダの整理
 		this.cleanHeader(response);
 
-		LOGGER.info(request.getHeadLine() + " > " + response.getHeadLine());
+		LOGGER.info(request.getHeadLine() + " > " + response.getHeadLine() + " (" + response.getHeader().get(HeaderName.ContentLength) + " bytes)");
 
 		LOGGER.exiting("doRequest", response);
 		return response;

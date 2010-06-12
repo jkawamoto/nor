@@ -48,6 +48,16 @@ public abstract class HttpMessage{
 		LOGGER.entering("writeMessage", output);
 		assert output != null;
 
+		final HttpHeader header = this.getHeader();
+
+		// 内容コーディングが指定されている場合，最終的なデータサイズが不明のためチャンク形式にする
+		if(header.containsKey(HeaderName.ContentEncoding) && header.containsKey(HeaderName.ContentLength)){
+
+			header.remove(HeaderName.ContentLength);
+			header.add(HeaderName.TransferEncoding, Http.CHUNKED);
+
+		}
+
 		// ヘッドラインの書き出し
 		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output));
 		writer.append(this.getHeadLine());
@@ -56,7 +66,7 @@ public abstract class HttpMessage{
 		writer.flush();
 
 		// ヘッダの書き出し
-		this.getHeader().writeHeader(writer);
+		header.writeHeader(writer);
 
 		// バッファのフラッシュ
 		writer.append('\r');
@@ -66,6 +76,7 @@ public abstract class HttpMessage{
 
 		// ボディの書き出し
 		this.getBody().output(output, this.getHeader());
+		this.getBody().close();
 
 		output.close();
 

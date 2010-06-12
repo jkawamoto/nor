@@ -17,6 +17,7 @@
  */
 package nor.http;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -45,7 +46,7 @@ import nor.util.log.EasyLogger;
  * @author KAWAMOTO Junpei
  *
  */
-public class HttpBody{
+public class HttpBody implements Closeable{
 
 	protected InputStream in;
 
@@ -54,6 +55,12 @@ public class HttpBody{
 	//====================================================================
 	//  コンストラクタ
 	//====================================================================
+	HttpBody(final InputStream in){
+
+		this.in = in;
+
+	}
+
 	/**
 	 * 入力ストリームを指定してメッセージボディを作成する．
 	 *
@@ -62,9 +69,7 @@ public class HttpBody{
 	 * @throws IOException I/Oエラーが発生した場合
 	 */
 	HttpBody(final InputStream in, final HttpHeader header) throws IOException{
-		assert in != null;
-
-		this.in = in;
+		this(in);
 
 		// 転送エンコーディングの解決
 		if(header.containsKey(HeaderName.TransferEncoding)){
@@ -96,15 +101,20 @@ public class HttpBody{
 
 	}
 
-	HttpBody(final InputStream in){
-
-		this.in = in;
-
-	}
-
 	//====================================================================
 	//  public メソッド
 	//====================================================================
+	public void output(final OutputStream out) throws IOException{
+
+		if(this.in != null){
+
+			Stream.copy(this.in, out);
+
+		}
+		out.flush();
+
+	}
+
 	public void output(final OutputStream out, final HttpHeader header) throws IOException{
 
 		OutputStream cout = out;
@@ -137,13 +147,8 @@ public class HttpBody{
 
 		}
 
-		// TODO: Length-requiredの場合はここで全データを受信する．
-		final InputStream body = this.in;
-		Stream.copy(body, cout);
-
-		cout.flush();
+		this.output(cout);
 		cout.close();
-		this.in.close();
 
 	}
 
@@ -170,6 +175,13 @@ public class HttpBody{
 		this.in = in;
 
 		LOGGER.exiting("setStream");
+	}
+
+	@Override
+	public void close() throws IOException {
+
+		this.in.close();
+
 	}
 
 }

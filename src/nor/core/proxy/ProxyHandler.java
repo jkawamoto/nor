@@ -138,7 +138,6 @@ class ProxyHandler implements HttpRequestHandler{
 		// レスポンスのフィルタリング
 		ProxyHandler.doFiltering(response, this.responseFilters);
 
-
 		LOGGER.exiting("doRequest", response);
 		return response;
 
@@ -395,6 +394,13 @@ class ProxyHandler implements HttpRequestHandler{
 				header.set(HeaderName.TransferEncoding, "chunked");
 
 			}
+
+		}
+
+		//
+		if(header.containsKey(HeaderName.TransferEncoding)){
+
+			header.add(HeaderName.ContentEncoding, "chunked");
 
 		}
 
