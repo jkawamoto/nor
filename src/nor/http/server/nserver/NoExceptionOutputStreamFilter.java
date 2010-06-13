@@ -23,7 +23,7 @@ import java.io.OutputStream;
 
 class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
-	private boolean isAlive = true;
+	private boolean alive = true;
 
 	public NoExceptionOutputStreamFilter(OutputStream out) {
 
@@ -31,10 +31,13 @@ class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 	}
 
+	/* (非 Javadoc)
+	 * @see java.io.FilterOutputStream#flush()
+	 */
 	@Override
 	public void flush() throws IOException {
 
-		if(this.isAlive){
+		if(this.alive){
 
 			try{
 
@@ -42,17 +45,20 @@ class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 			}catch(final IOException e){
 
-				this.isAlive = false;
+				this.alive = false;
 
 			}
 
 		}
 	}
 
+	/* (非 Javadoc)
+	 * @see java.io.FilterOutputStream#write(byte[], int, int)
+	 */
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
 
-		if(this.isAlive){
+		if(this.alive){
 
 			try{
 
@@ -60,17 +66,20 @@ class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 			}catch(final IOException e){
 
-				this.isAlive = false;
+				this.alive = false;
 
 			}
 
 		}
 	}
 
+	/* (非 Javadoc)
+	 * @see java.io.FilterOutputStream#write(byte[])
+	 */
 	@Override
 	public void write(byte[] b) throws IOException {
 
-		if(this.isAlive){
+		if(this.alive){
 
 			try{
 
@@ -78,17 +87,20 @@ class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 			}catch(final IOException e){
 
-				this.isAlive = false;
+				this.alive = false;
 
 			}
 
 		}
 	}
 
+	/* (非 Javadoc)
+	 * @see java.io.FilterOutputStream#write(int)
+	 */
 	@Override
 	public void write(int b) throws IOException {
 
-		if(this.isAlive){
+		if(this.alive){
 
 			try{
 
@@ -96,11 +108,17 @@ class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 			}catch(final IOException e){
 
-				this.isAlive = false;
+				this.alive = false;
 
 			}
 
 		}
+	}
+
+	public boolean alive(){
+
+		return this.alive;
+
 	}
 
 }

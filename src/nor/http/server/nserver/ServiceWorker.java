@@ -97,9 +97,19 @@ class ServiceWorker implements Runnable, Closeable{
 					// レスポンスに切断要求が含まれているか
 					keepAlive &= this.isKeepingAlive(response);
 
-					// レスポンスの書き出し
-					response.output(output);
-					output.flush();
+					try{
+
+						// レスポンスの書き出し
+						response.output(output);
+						output.flush();
+
+					}catch(final IOException e){
+
+						e.printStackTrace();
+						System.out.println(response.getHeadLine());
+						System.out.println(response.getHeader().toString());
+
+					}
 
 				}
 

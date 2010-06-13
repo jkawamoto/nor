@@ -50,14 +50,6 @@ public abstract class HttpMessage{
 
 		final HttpHeader header = this.getHeader();
 
-		// 内容コーディングが指定されている場合，最終的なデータサイズが不明のためチャンク形式にする
-		if(header.containsKey(HeaderName.ContentEncoding) && header.containsKey(HeaderName.ContentLength)){
-
-			header.remove(HeaderName.ContentLength);
-			header.add(HeaderName.TransferEncoding, Http.CHUNKED);
-
-		}
-
 		// ヘッドラインの書き出し
 		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output));
 		writer.append(this.getHeadLine());

@@ -29,13 +29,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import nor.core.proxy.filter.EditingByteFilter;
+import nor.core.proxy.filter.EditingStringFilter;
 import nor.core.proxy.filter.MessageFilter;
 import nor.core.proxy.filter.MessageHandler;
 import nor.core.proxy.filter.ReadonlyByteFilter;
 import nor.core.proxy.filter.ReadonlyStringFilter;
 import nor.core.proxy.filter.RequestFilter;
 import nor.core.proxy.filter.ResponseFilter;
-import nor.core.proxy.filter.EditingStringFilter;
 import nor.http.HeaderName;
 import nor.http.HttpBody;
 import nor.http.HttpHeader;
@@ -381,26 +381,40 @@ class ProxyHandler implements HttpRequestHandler{
 
 			in = new FilteringCharacterInputStream(in, charset, editingStringFilters, readonlyStringFilters);
 
-		}
-		msg.getBody().setStream(in);
-
-		// 書き込みを行うフィルタがあった場合，ContentLengthは分からなくなる
-		if(!register.readonly()){
-
+			// テキストフィルタリングを行った場合，データサイズは不明になる
 			if(header.containsKey(HeaderName.ContentLength)){
 
-				header.set("x-nor-old-datasize", header.get(HeaderName.ContentLength));
+				header.set("x-nor-old-content-length", header.get(HeaderName.ContentLength));
 				header.remove(HeaderName.ContentLength);
-				header.set(HeaderName.TransferEncoding, "chunked");
+				header.add(HeaderName.TransferEncoding, "chunked");
+				header.set(HeaderName.ContentEncoding, "gzip");
 
 			}
 
 		}
+		msg.getBody().setStream(in);
 
-		//
-		if(header.containsKey(HeaderName.TransferEncoding)){
 
-			header.add(HeaderName.ContentEncoding, "chunked");
+		if(header.containsKey(HeaderName.ContentLength)){
+
+			// 書き込みを行うフィルタがあった場合，ContentLengthは分からなくなる
+			if(!register.readonly()){
+
+					header.set("x-nor-old-content-length", header.get(HeaderName.ContentLength));
+					header.remove(HeaderName.ContentLength);
+					header.set(HeaderName.TransferEncoding, "chunked");
+					header.set(HeaderName.ContentEncoding, "gzip");
+
+			}
+
+			// 内容コーディングが指定されている場合，最終的なデータサイズが不明のためチャンク形式にする
+			if(header.containsKey(HeaderName.ContentEncoding)){
+
+				header.set("x-nor-old-content-length", header.get(HeaderName.ContentLength));
+				header.remove(HeaderName.ContentLength);
+				header.add(HeaderName.TransferEncoding, "chunked");
+
+			}
 
 		}
 

@@ -504,6 +504,7 @@ public class HttpRequest extends HttpMessage{
 
 		}catch(final IOException e){
 
+			e.printStackTrace();
 			return null;
 
 		}

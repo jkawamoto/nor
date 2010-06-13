@@ -33,7 +33,7 @@ class SocketChannelOutputStream extends OutputStream{
 	private final ByteBuffer buffer;
 	private int timeout = 1000;
 
-	private boolean isAlive = true;
+	private boolean alive = true;
 
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(SocketChannelOutputStream.class);
 
@@ -50,7 +50,7 @@ class SocketChannelOutputStream extends OutputStream{
 	@Override
 	public void write(int b) throws IOException {
 
-		if(this.isAlive){
+		if(this.alive){
 
 			while(this.available() == 0){
 
@@ -75,7 +75,7 @@ class SocketChannelOutputStream extends OutputStream{
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
 
-		if(this.isAlive){
+		if(this.alive){
 
 			while(len != 0){
 
@@ -109,7 +109,7 @@ class SocketChannelOutputStream extends OutputStream{
 	@Override
 	public synchronized void flush() throws IOException {
 
-		if(this.isAlive){
+		if(this.alive){
 
 			try {
 
@@ -120,17 +120,19 @@ class SocketChannelOutputStream extends OutputStream{
 
 			}catch(final InterruptedException e){
 
+				this.alive = false;
 				LOGGER.warning(e.getMessage());
 				throw new IOException(e);
 
 			}catch(final CancelledKeyException e){
 
+				this.alive = false;
 				LOGGER.throwing("flush", e);
 				throw new IOException(e);
 
 			}
 
-			if(!this.isAlive){
+			if(!this.alive){
 
 				throw new IOException("Connection is closed");
 
@@ -163,7 +165,7 @@ class SocketChannelOutputStream extends OutputStream{
 
 		}catch(final IOException e){
 
-			this.isAlive = false;
+			this.alive = false;
 			LOGGER.throwing("storeToChannel", e);
 
 		}finally{

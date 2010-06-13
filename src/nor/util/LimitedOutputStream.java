@@ -23,16 +23,18 @@ import java.io.OutputStream;
 
 public class LimitedOutputStream extends FilterOutputStream{
 
+	private final int limit;
 	private int remains;
+
+	private static final String EXCEPTION_MSG = "Over size limit (limit: %d bytes, trying: %d bytes).";
 
 	public LimitedOutputStream(final OutputStream out, final int size) {
 
 		super(out);
+		this.limit = size;
 		this.remains = size;
 
 	}
-
-
 
 	/* (non-Javadoc)
 	 * @see java.io.FilterOutputStream#write(byte[], int, int)
@@ -42,7 +44,7 @@ public class LimitedOutputStream extends FilterOutputStream{
 
 		if(len > this.remains){
 
-			throw new IOException("書き込み可能サイズを超えています");
+			throw new IOException(String.format(EXCEPTION_MSG, this.limit, this.limit - this.remains + len));
 
 		}
 
@@ -61,8 +63,7 @@ public class LimitedOutputStream extends FilterOutputStream{
 
 		if(this.remains == 0){
 
-			throw new IOException("これ以上書き込めません");
-
+			throw new IOException(String.format(EXCEPTION_MSG, this.limit, this.limit+1));
 
 		}
 
@@ -71,6 +72,10 @@ public class LimitedOutputStream extends FilterOutputStream{
 
 	}
 
+	/* (非 Javadoc)
+	 * @see java.io.FilterOutputStream#close()
+	 */
+	@Override
 	public void close() throws IOException{
 
 		while(this.remains-- > 0){
