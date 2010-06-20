@@ -15,14 +15,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http;
 
-public final class Chars {
 
-	public static final int CR = '\r';
-	public static final int LF = '\n';
-	public static final int ZERO = '0';
-
-	public static final int EOF = -1;
-
-}
+/**
+ *	プラグインの基となる抽象クラスを提供します．
+ *
+ *	@since 0.1
+ *	@version 0.1
+ */
+package nor.core.plugin;

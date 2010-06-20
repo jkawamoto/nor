@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,38 +15,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.error;
+package nor.http.io;
 
-import nor.http.Status;
+public final class Chars {
 
-/**
- * @author KAWAMOTO Junpei
- *
- */
-public class BadRequestException extends HttpException{
+	static final int CR = '\r';
+	static final int LF = '\n';
+	static final int ZERO = '0';
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1L;
-
-	public static final Status status = Status.BadRequest;
-
-	public BadRequestException(){
-		this(null, null);
-	}
-
-	public BadRequestException(final String message){
-		this(message, null);
-	}
-
-
-	public BadRequestException(final Throwable cause){
-		this(null, cause);
-	}
-
-	public BadRequestException(final String message, final Throwable cause){
-		super(status, message, cause);
-	}
+	static final int EOF = -1;
 
 }

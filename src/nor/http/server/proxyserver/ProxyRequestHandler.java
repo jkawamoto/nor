@@ -31,16 +31,15 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
-import java.net.URL;
 import java.net.Proxy.Type;
+import java.net.URL;
 import java.util.regex.Pattern;
 
-import nor.http.ErrorResponseBuilder;
 import nor.http.HeaderName;
 import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
-import nor.http.Status;
+import nor.http.error.HttpException;
 import nor.http.server.HttpRequestHandler;
 import nor.util.log.EasyLogger;
 
@@ -129,7 +128,11 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 			final StringWriter body = new StringWriter();
 			e.printStackTrace(new PrintWriter(body));
-			response = ErrorResponseBuilder.create(request, Status.InternalServerError, body.toString());
+			//response = ErrorResponseBuilder.create(request, Status.InternalServerError, body.toString());
+
+		} catch (final HttpException e) {
+
+			response = e.createResponse(request);
 
 		}
 

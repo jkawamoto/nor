@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+ *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,38 +15,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.error;
 
-import nor.http.Status;
 
 /**
- * @author KAWAMOTO Junpei
+ *	Httpプロトコル(ver. 1.1)におけるエラーレスポンスを抽象化したクラスを提供します．
+ *	このパッケージが提供するクラスを使用することで，簡単にエラーレスポンスを作成することができます．
  *
+ *	@since 0.1
+ *	@version 0.1
  */
-public class BadRequestException extends HttpException{
-
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1L;
-
-	public static final Status status = Status.BadRequest;
-
-	public BadRequestException(){
-		this(null, null);
-	}
-
-	public BadRequestException(final String message){
-		this(message, null);
-	}
-
-
-	public BadRequestException(final Throwable cause){
-		this(null, cause);
-	}
-
-	public BadRequestException(final String message, final Throwable cause){
-		super(status, message, cause);
-	}
-
-}
+package nor.http.error;

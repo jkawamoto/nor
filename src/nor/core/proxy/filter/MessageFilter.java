@@ -23,18 +23,33 @@ import java.util.regex.Pattern;
 import nor.http.HttpMessage;
 
 /**
+ * HTTPメッセージのフィルタが実装すべきインタフェース．
+ *
  * @author Junpei
  *
  */
 public interface MessageFilter<Message extends HttpMessage>{
 
+	/**
+	 * フィルタを適用するURLにマッチするパターンオブジェクトを取得する．
+	 * フレームワークは，このメソッドが返すパターンオブジェクトを使用して update メソッドを呼び出すか判断します．
+	 *
+	 * @return パターンオブジェクト
+	 */
 	public Pattern getFilteringURL();
 
+	/**
+	 *
+	 * @return
+	 */
 	public Pattern getFilteringContentType();
 
 	/**
-	 * 新しいメッセージが届いたことを通知します．
 	 *
+	 * @param msg
+	 * @param url
+	 * @param cType
+	 * @param register
 	 */
 	public void update(final Message msg, final MatchResult url, final MatchResult cType, final FilterRegister register);
 

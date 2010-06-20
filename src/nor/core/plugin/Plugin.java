@@ -29,10 +29,31 @@ import nor.core.proxy.filter.MessageHandler;
 import nor.core.proxy.filter.RequestFilter;
 import nor.core.proxy.filter.ResponseFilter;
 
+/**
+ * すべてのプラグインの規程クラス．
+ *
+ *
+ * プラグインは，メッセージハンドラ，リクエストフィルタ，レスポンスフィルタの三つの機能を提供することができます．
+ *
+ *
+ * @author Junpei Kawamoto
+ */
 public abstract class Plugin implements Closeable{
 
+	/**
+	 *
+	 */
 	protected final Properties properties = new Properties();
 
+	/**
+	 * 設定ファイルを読み込む．
+	 * このメソッドはフレームワークから呼び出され，プラグイン開発者が使用する必要はありません．
+	 * また，オーバーライドすることもできません．
+	 *
+	 * 読み込まれた設定には，propertiesフィールドを通してアクセスできます．
+	 *
+	 * @param dir 設定ファイルが保管されているフォルダ
+	 */
 	public final void load(final File dir){
 
 		final File conf = new File(dir, String.format("%s.prop", this.getClass().getCanonicalName()));
@@ -60,6 +81,13 @@ public abstract class Plugin implements Closeable{
 
 	}
 
+	/**
+	 * 設定ファイルを保存する．
+	 * このメソッドはフレームワークから呼び出され，プラグイン開発者が使用する必要はありません．
+	 * また，オーバーライドすることもできません．
+	 *
+	 * @param dir 設定ファイルを書き出すフォルダ
+	 */
 	public final void save(final File dir){
 
 		final File conf = new File(dir, String.format("%s.prop", this.getClass().getCanonicalName()));
@@ -81,29 +109,54 @@ public abstract class Plugin implements Closeable{
 
 	}
 
+	/**
+	 * プラグインを初期化する．
+	 * プラグインがロードされ，設定を読み込んだ後に呼び出されます．
+	 */
 	public void init(){
 
 	}
 
-	public void close() throws IOException{
+	/**
+	 * プラグインの終了処理を行う．
+	 * システムが終了プロセスに入った場合に呼び出されます．
+	 * 設定の保存はこのメソッドの終了後に行われます．
+	 * したがって，このメソッド内で properties フィールドへデータを保存することができます．
+	 */
+	public void close(){
 
 	}
 
+	/**
+	 * プラグインが提供する，{@link nor.core.proxy.filter.MessageHandler メッセージハンドラ}の配列を返す．
+	 *
+	 * @return {@link nor.core.proxy.filter.MessageHandler メッセージハンドラ}の配列，メッセージハンドラを提供しない場合は null．
+	 */
 	public MessageHandler[] messageHandlers(){
 
-		return new MessageHandler[0];
+		return null;
 
 	}
 
+	/**
+	 * プラグインが提供する，{@link nor.core.proxy.filter.RequestFilter リクエストフィルタ}の配列を返す．
+	 *
+	 * @return {@link nor.core.proxy.filter.RequestFilter リクエストフィルタ}の配列，リクエストフィルタを提供しない場合は null．
+	 */
 	public RequestFilter[] requestFilters(){
 
-		return new RequestFilter[0];
+		return null;
 
 	}
 
+	/**
+	 * プラグインが提供する，{@link nor.core.proxy.filter.ResponseFilter レスポンスフィルタ}の配列を返す．
+	 *
+	 * @return {@link nor.core.proxy.filter.ResponseFilter レスポンスフィルタ}の配列，レスポンスフィルタを提供しない場合は null．
+	 */
 	public ResponseFilter[] responseFilters(){
 
-		return new ResponseFilter[0];
+		return null;
 
 	}
 

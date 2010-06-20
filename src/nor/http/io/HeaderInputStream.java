@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
 
-import static nor.http.Chars.*;
+import static nor.http.io.Chars.*;
 
 /*
  * CR LF CR LFか LF LFがきたら終了

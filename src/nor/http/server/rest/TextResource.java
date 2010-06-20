@@ -125,9 +125,6 @@ public class TextResource extends Resource{
 	}
 
 
-	/* (non-Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.rest.ResourceAdapter#toGet(java.lang.String, jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.HttpRequest)
-	 */
 	@Override
 	public HttpResponse toGet(final String path, final HttpRequest request){
 		LOGGER.entering(FileResource.class.getName(), "toGet", new Object[]{path, request});
@@ -141,9 +138,6 @@ public class TextResource extends Resource{
 
 	}
 
-	/* (non-Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.rest.Resource#getName()
-	 */
 	@Override
 	public String getName(){
 		LOGGER.entering(FileResource.class.getName(), "getName");

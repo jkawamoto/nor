@@ -196,16 +196,8 @@ public class Nor{
 		// プラグインの終了処理
 		for(final Plugin p : this.plugins){
 
-			try{
-
-				p.close();
-				p.save(this.confDir);
-
-			}catch(final IOException e){
-
-				LOGGER.warning(e.getMessage());
-
-			}
+			p.close();
+			p.save(this.confDir);
 
 		}
 
@@ -310,5 +302,3 @@ public class Nor{
 	}
 
 }
-
-

@@ -17,6 +17,8 @@
  */
 package nor.http.error;
 
+import nor.http.Status;
+
 /**
  * @author KAWAMOTO Junpei
  *
@@ -28,10 +30,23 @@ public class InternalServerErrorException extends HttpException{
 	 */
 	private static final long serialVersionUID = 1L;
 
+	public static final Status status = Status.InternalServerError;
+
 	public InternalServerErrorException(){
+		this(null, null);
+	}
 
-		super(500, "Internal Server Error");
+	public InternalServerErrorException(final String message){
+		this(message, null);
+	}
 
+
+	public InternalServerErrorException(final Throwable cause){
+		this(null, cause);
+	}
+
+	public InternalServerErrorException(final String message, final Throwable cause){
+		super(status, message, cause);
 	}
 
 }

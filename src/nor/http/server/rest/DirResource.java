@@ -24,10 +24,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
-import nor.http.ErrorResponseBuilder;
-import nor.http.Status;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
+import nor.http.error.HttpException;
+import nor.http.error.NotFoundException;
 
 /**
  * リソースディレクトリを表すクラス．
@@ -72,9 +72,6 @@ public class DirResource extends Resource implements Collection<Resource>{
 	//====================================================================
 	//  public メソッド
 	//====================================================================
-	/* (non-Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.rest.Resource#getName()
-	 */
 	@Override
 	public String getName() {
 		LOGGER.entering(DirResource.class.getName(), "getName");
@@ -86,11 +83,8 @@ public class DirResource extends Resource implements Collection<Resource>{
 
 	}
 
-	/* (non-Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.rest.Resource#toDelete(java.lang.String, jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.HttpRequest)
-	 */
 	@Override
-	public HttpResponse toDelete(String path, HttpRequest request) {
+	public HttpResponse toDelete(String path, HttpRequest request) throws HttpException{
 		LOGGER.entering(DirResource.class.getName(), "toDelete");
 
 		HttpResponse ret = null;
@@ -117,7 +111,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 
 		if(ret == null){
 
-			ret = ErrorResponseBuilder.create(request, Status.NotFound);
+			throw new NotFoundException();
 
 		}
 
@@ -125,11 +119,8 @@ public class DirResource extends Resource implements Collection<Resource>{
 		return ret;
 	}
 
-	/* (non-Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.rest.Resource#toGet(java.lang.String, jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.HttpRequest)
-	 */
 	@Override
-	public HttpResponse toGet(String path, HttpRequest request) {
+	public HttpResponse toGet(String path, HttpRequest request) throws HttpException{
 		LOGGER.entering(DirResource.class.getName(), "toGet");
 
 		HttpResponse ret = null;
@@ -156,7 +147,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 
 		if(ret == null){
 
-			ret = ErrorResponseBuilder.create(request, Status.NotFound);
+			throw new NotFoundException();
 
 		}
 
@@ -165,11 +156,8 @@ public class DirResource extends Resource implements Collection<Resource>{
 
 	}
 
-	/* (non-Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.rest.Resource#toPost(java.lang.String, jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.HttpRequest)
-	 */
 	@Override
-	public HttpResponse toPost(String path, HttpRequest request) {
+	public HttpResponse toPost(String path, HttpRequest request) throws HttpException{
 		LOGGER.entering(DirResource.class.getName(), "toPost");
 
 		HttpResponse ret = null;
@@ -196,7 +184,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 
 		if(ret == null){
 
-			ret = ErrorResponseBuilder.create(request, Status.NotFound);
+			throw new NotFoundException();
 
 		}
 
@@ -205,11 +193,8 @@ public class DirResource extends Resource implements Collection<Resource>{
 
 	}
 
-	/* (non-Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.rest.Resource#toPut(java.lang.String, jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.HttpRequest)
-	 */
 	@Override
-	public HttpResponse toPut(String path, HttpRequest request) {
+	public HttpResponse toPut(String path, HttpRequest request) throws HttpException{
 		LOGGER.entering(DirResource.class.getName(), "toPut");
 
 		HttpResponse ret = null;
@@ -236,7 +221,7 @@ public class DirResource extends Resource implements Collection<Resource>{
 
 		if(ret == null){
 
-			ret = ErrorResponseBuilder.create(request, Status.NotFound);
+			throw new NotFoundException();
 
 		}
 

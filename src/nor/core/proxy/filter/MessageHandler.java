@@ -23,11 +23,39 @@ import java.util.regex.Pattern;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 
-
+/**
+ * メッセージハンドラが実装すべきインタフェース．
+ * <p>
+ * メッセージハンドラは，そのハンドラが処理するURLパターンを返す{@link nor.core.proxy.filter.MessageHandler#getHandlingURL メソッド}と，
+ * 実際のリクエスト処理を行う{@link nor.core.proxy.filter.MessageHandler#doRequest メソッド}を提供する必要があります．
+ * </p>
+ * <p>
+ * フレームワークは，{@link nor.core.proxy.filter.MessageHandler#getHandlingURL getHandlingURL}メソッドが返すパターンを用いてリクエストURLを評価し，
+ * マッチする場合，そのマッチング結果とともに{@link nor.core.proxy.filter.MessageHandler#doRequest doRequest}メソッドを呼び出します．
+ * したがって，{@link java.util.regex.MatchResult#group(int) group}メソッドを用いて，URLから情報を取得することができます．
+ * </p>
+ *
+ * @author Junpei Kawamoto
+ *
+ */
 public interface MessageHandler{
 
-	public Pattern getFilteringURL();
+	/**
+	 * ハンドラを適用するURLにマッチするパターンオブジェクトを取得する．
+	 * フレームワークは，このメソッドが返すパターンオブジェクトを使用してメッセージ処理を移譲するか判断します．
+	 *
+	 * @return パターンオブジェクト
+	 */
+	public Pattern getHandlingURL();
 
+	/**
+	 * リクエストを処理する．
+	 * リクエスト URL がパターンにマッチした場合，このメソッドが呼び出されます．
+	 *
+	 * @param request リクエストオブジェクト
+	 * @param url パターンマッチの結果
+	 * @return
+	 */
 	public HttpResponse doRequest(final HttpRequest request, final MatchResult url);
 
 }

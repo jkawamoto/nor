@@ -19,33 +19,29 @@ package nor.http.error;
 
 import nor.http.Status;
 
-/**
- * @author KAWAMOTO Junpei
- *
- */
-public class BadRequestException extends HttpException{
+public class NotFoundException extends HttpException{
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public static final Status status = Status.BadRequest;
+	public static final Status status = Status.NotFound;
 
-	public BadRequestException(){
+	public NotFoundException(){
 		this(null, null);
 	}
 
-	public BadRequestException(final String message){
+	public NotFoundException(final String message){
 		this(message, null);
 	}
 
 
-	public BadRequestException(final Throwable cause){
+	public NotFoundException(final Throwable cause){
 		this(null, cause);
 	}
 
-	public BadRequestException(final String message, final Throwable cause){
+	public NotFoundException(final String message, final Throwable cause){
 		super(status, message, cause);
 	}
 

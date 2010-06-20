@@ -25,7 +25,7 @@ import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import static nor.http.Chars.*;
+import static nor.http.io.Chars.*;
 
 /**
  * チャンク形式で書き出すストリームフィルタ．

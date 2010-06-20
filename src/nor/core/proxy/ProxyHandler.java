@@ -113,7 +113,7 @@ class ProxyHandler implements HttpRequestHandler{
 		final String path = request.getPath();
 		for(final MessageHandler h : this.handlers){
 
-			final Matcher url = h.getFilteringURL().matcher(path);
+			final Matcher url = h.getHandlingURL().matcher(path);
 			if(url.find()){
 
 				response = h.doRequest(request, url);

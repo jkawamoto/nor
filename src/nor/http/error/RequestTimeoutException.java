@@ -17,6 +17,8 @@
  */
 package nor.http.error;
 
+import nor.http.Status;
+
 /**
  * @author KAWAMOTO Junpei
  *
@@ -28,10 +30,23 @@ public class RequestTimeoutException extends HttpException{
 	 */
 	private static final long serialVersionUID = 1L;
 
+	public static final Status status = Status.RequestTimeout;
+
 	public RequestTimeoutException(){
+		this(null, null);
+	}
 
-		super(408, "Request Timeout");
+	public RequestTimeoutException(final String message){
+		this(message, null);
+	}
 
+
+	public RequestTimeoutException(final Throwable cause){
+		this(null, cause);
+	}
+
+	public RequestTimeoutException(final String message, final Throwable cause){
+		super(status, message, cause);
 	}
 
 }

@@ -32,6 +32,7 @@ import java.util.zip.DeflaterInputStream;
 import java.util.zip.GZIPInputStream;
 
 import nor.http.error.HttpException;
+import nor.http.error.InternalServerErrorException;
 import nor.http.io.HeaderInputStream;
 import nor.util.log.EasyLogger;
 
@@ -269,7 +270,7 @@ public class HttpRequest extends HttpMessage{
 	 * @param con
 	 * @return
 	 */
-	public HttpResponse createResponse(final HttpURLConnection con){
+	public HttpResponse createResponse(final HttpURLConnection con) throws HttpException{
 		LOGGER.entering("createResponse", con);
 		assert con != null;
 
@@ -312,7 +313,7 @@ public class HttpRequest extends HttpMessage{
 
 		}catch(final IOException e){
 
-			return ErrorResponseBuilder.create(this, Status.InternalServerError, e);
+			throw new InternalServerErrorException(e);
 
 		}
 
@@ -379,7 +380,7 @@ public class HttpRequest extends HttpMessage{
 
 		}catch(final IOException e){
 
-			ret = ErrorResponseBuilder.create(this, Status.InternalServerError, e);
+			throw new InternalServerErrorException(e);
 
 		}
 

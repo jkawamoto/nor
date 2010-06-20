@@ -27,6 +27,7 @@ import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.Method;
 import nor.http.Status;
+import nor.http.error.HttpException;
 
 /**
  * Resourceインタフェースの実装を補助するクラス．
@@ -132,7 +133,7 @@ public abstract class Resource{
 	 * @param request HTTPリクエスト本体
 	 * @return HTTPレスポンス
 	 */
-	public HttpResponse toDelete(String path, HttpRequest request) {
+	public HttpResponse toDelete(String path, HttpRequest request) throws HttpException{
 		LOGGER.entering(Resource.class.getName(), "toDelete", new Object[]{path, request});
 
 		final HttpResponse ret = createErrorResponse(request);
@@ -149,7 +150,7 @@ public abstract class Resource{
 	 * @param request HTTPリクエスト本体
 	 * @return HTTPレスポンス
 	 */
-	public HttpResponse toGet(String path, HttpRequest request) {
+	public HttpResponse toGet(String path, HttpRequest request) throws HttpException{
 		LOGGER.entering(Resource.class.getName(), "toGet", new Object[]{path, request});
 
 		final HttpResponse ret = createErrorResponse(request);
@@ -166,7 +167,7 @@ public abstract class Resource{
 	 * @param request HTTPリクエスト本体
 	 * @return HTTPレスポンス
 	 */
-	public HttpResponse toPost(String path, HttpRequest request) {
+	public HttpResponse toPost(String path, HttpRequest request) throws HttpException{
 		LOGGER.entering(Resource.class.getName(), "toPost", new Object[]{path, request});
 
 		final HttpResponse ret = createErrorResponse(request);
@@ -183,7 +184,7 @@ public abstract class Resource{
 	 * @param request HTTPリクエスト本体
 	 * @return HTTPレスポンス
 	 */
-	public HttpResponse toPut(String path, HttpRequest request) {
+	public HttpResponse toPut(String path, HttpRequest request) throws HttpException{
 		LOGGER.entering(Resource.class.getName(), "toPut", new Object[]{path, request});
 
 		final HttpResponse ret = createErrorResponse(request);

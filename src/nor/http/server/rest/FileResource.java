@@ -26,12 +26,13 @@ import java.util.Date;
 import java.util.logging.Logger;
 
 import nor.http.ContentType;
-import nor.http.ErrorResponseBuilder;
 import nor.http.HeaderName;
 import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.Status;
+import nor.http.error.HttpException;
+import nor.http.error.NotFoundException;
 
 // TODO: これはRead-onlyファイル。その他の種類も作成する。本来FileResourceはJavaにおけるFileクラスを表したものであるべき。
 /**
@@ -190,11 +191,8 @@ public class FileResource extends Resource{
 	//====================================================================
 	//  public メソッド
 	//====================================================================
-	/* (non-Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.rest.ResourceAdapter#toGet(java.lang.String, jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.HttpRequest)
-	 */
 	@Override
-	public HttpResponse toGet(final String path, final HttpRequest request){
+	public HttpResponse toGet(final String path, final HttpRequest request) throws HttpException{
 		LOGGER.entering(FileResource.class.getName(), "toGet", new Object[]{path, request});
 		assert path != null;
 		assert request != null;
@@ -214,7 +212,7 @@ public class FileResource extends Resource{
 
 			}catch(final FileNotFoundException e){
 
-				ret = ErrorResponseBuilder.create(request, Status.NotFound);
+				throw new NotFoundException();
 
 			}
 
@@ -222,7 +220,7 @@ public class FileResource extends Resource{
 
 		if(ret == null){
 
-			ret = ErrorResponseBuilder.create(request, Status.NotFound);
+			throw new NotFoundException();
 
 		}
 
@@ -231,9 +229,6 @@ public class FileResource extends Resource{
 
 	}
 
-	/* (non-Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.rest.Resource#getName()
-	 */
 	@Override
 	public String getName(){
 		LOGGER.entering(FileResource.class.getName(), "getName");

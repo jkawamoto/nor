@@ -19,11 +19,11 @@ package nor.http.server.rest;
 
 import java.util.logging.Logger;
 
-import nor.http.ErrorResponseBuilder;
-import nor.http.Status;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.Method;
+import nor.http.error.HttpException;
+import nor.http.error.NotFoundException;
 import nor.http.server.HttpRequestHandler;
 
 /**
@@ -61,19 +61,18 @@ public class RESTRequestHandler implements HttpRequestHandler{
 		return ret;
 	}
 
-	/* (non-Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.HttpRequestHandler#doRequest(jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.HttpRequest)
-	 */
 	public HttpResponse doRequest(final HttpRequest request) {
 		LOGGER.entering(RESTRequestHandler.class.getName(), "doRequest", request);
 
 		HttpResponse ret = null;
 
-		// ローカルホストへのリクエストを処理する
-		final String path = request.getPath();
-		if(path.startsWith("/")){
+		try{
 
-			switch(Method.getMethod(request.getMethod())){
+			// ローカルホストへのリクエストを処理する
+			final String path = request.getPath();
+			if(path.startsWith("/")){
+
+				switch(Method.getMethod(request.getMethod())){
 
 				case GET:
 
@@ -95,7 +94,13 @@ public class RESTRequestHandler implements HttpRequestHandler{
 					ret = this.root.toDelete(path, request);
 					break;
 
+				}
+
 			}
+
+		}catch(final HttpException e){
+
+			ret = e.createResponse(request);
 
 		}
 
@@ -126,13 +131,13 @@ public class RESTRequestHandler implements HttpRequestHandler{
 		}
 
 		@Override
-		public HttpResponse toDelete(String path, HttpRequest request) {
+		public HttpResponse toDelete(String path, HttpRequest request) throws HttpException{
 			LOGGER.entering(RootResource.class.getName(), "toDelete");
 
 			HttpResponse ret = super.toDelete(path, request);
 			if(ret == null){
 
-				ret = ErrorResponseBuilder.create(request, Status.NotFound);
+				throw new NotFoundException();
 
 			}
 
@@ -141,13 +146,13 @@ public class RESTRequestHandler implements HttpRequestHandler{
 		}
 
 		@Override
-		public HttpResponse toGet(String path, HttpRequest request) {
+		public HttpResponse toGet(String path, HttpRequest request) throws HttpException{
 			LOGGER.entering(RootResource.class.getName(), "toGet");
 
 			HttpResponse ret =  super.toGet(path, request);
 			if(ret == null){
 
-				ret = ErrorResponseBuilder.create(request, Status.NotFound);
+				throw new NotFoundException();
 
 			}
 
@@ -156,13 +161,13 @@ public class RESTRequestHandler implements HttpRequestHandler{
 		}
 
 		@Override
-		public HttpResponse toPost(String path, HttpRequest request) {
+		public HttpResponse toPost(String path, HttpRequest request) throws HttpException{
 			LOGGER.entering(RootResource.class.getName(), "toPost");
 
 			HttpResponse ret = super.toPost(path, request);
 			if(ret == null){
 
-				ret = ErrorResponseBuilder.create(request, Status.NotFound);
+				throw new NotFoundException();
 
 			}
 
@@ -171,13 +176,13 @@ public class RESTRequestHandler implements HttpRequestHandler{
 		}
 
 		@Override
-		public HttpResponse toPut(String path, HttpRequest request) {
+		public HttpResponse toPut(String path, HttpRequest request) throws HttpException{
 			LOGGER.entering(RootResource.class.getName(), "toPut");
 
 			HttpResponse ret = super.toPut(path, request);
 			if(ret == null){
 
-				ret = ErrorResponseBuilder.create(request, Status.NotFound);
+				throw new NotFoundException();
 
 			}
 

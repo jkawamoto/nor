@@ -35,11 +35,8 @@ public abstract class MessageHandlerAdapter implements MessageHandler{
 
 	}
 
-	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.nor.proxy.Matchable#getPattern()
-	 */
 	@Override
-	public Pattern getFilteringURL() {
+	public Pattern getHandlingURL() {
 
 		return this.pat;
 

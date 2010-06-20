@@ -17,6 +17,8 @@
  */
 package nor.http.error;
 
+import java.io.ByteArrayInputStream;
+
 import nor.http.HeaderName;
 import nor.http.Http;
 import nor.http.HttpHeader;
@@ -28,53 +30,64 @@ import nor.http.Status;
  * @author KAWAMOTO Junpei
  *
  */
-public class HttpException extends RuntimeException{
+public abstract class HttpException extends Exception{
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
-	protected final int code;
-	protected final String reason;
+	protected final Status status;
+	protected final String message;
+	protected final Throwable cause;
 
-	public HttpException(final int code, final String reason){
+	public HttpException(final Status status){
+		this(status, null, null);
+	}
 
-		this.code = code;
-		this.reason = reason;
+	public HttpException(final Status status, final String message){
+		this(status, message, null);
+	}
+
+
+	public HttpException(final Status status, final Throwable cause){
+		this(status, null, cause);
+	}
+
+	public HttpException(final Status status, final String message, final Throwable cause){
+
+		this.status = status;
+		this.message = message;
+		this.cause = cause;
 
 	}
 
 	public HttpResponse createResponse(final HttpRequest request){
 
-		return CreateResponse(request, this);
-
-	}
-
-
-	/**
-	 * 例外インスタンスに対応するレスポンスオブジェクトを生成する．
-	 *
-	 * @param request エラーの原因となったリクエスト
-	 * @param exception 例外インスタンス
-	 * @return 生成されたエラーレスポンス
-	 */
-	public static HttpResponse CreateResponse(final HttpRequest request, final HttpException exception){
-		assert request != null;
-		assert exception != null;
-
-		final HttpResponse ret = request.createResponse(Status.valueOf(exception.code));
+		// TODO: Throwableからスタックトレースをメッセージに追加する
+		final HttpResponse ret = request.createResponse(Status.valueOf(this.status.getCode()));
 
 		final HttpHeader header = ret.getHeader();
-		header.add(HeaderName.ContentLength, "0");
-		header.add(HeaderName.Server, Http.SERVERNAME);
 
-		// TODO: Throwable を受け取ってスタックトレースを表示させる
+		if(this.message != null){
+
+			final byte[] msg = this.message.getBytes();
+
+			header.add(HeaderName.ContentLength, Integer.toString(msg.length));
+			header.add(HeaderName.Server, Http.SERVERNAME);
+
+			ret.getBody().setStream(new ByteArrayInputStream(msg));
+
+		}else{
+
+			header.add(HeaderName.ContentLength, "0");
+			header.add(HeaderName.Server, Http.SERVERNAME);
+
+		}
 
 		assert ret != null;
 		return ret;
 
 	}
-
 
 }

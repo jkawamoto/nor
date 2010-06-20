@@ -30,7 +30,6 @@ import nor.http.Status;
 public class SimpleResponseBuilder {
 
 	// ロガー
-	// private static final Logger LOGGER = Logger.getLogger(SimpleResponseBuilder.class.getName());
 
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss zzz", java.util.Locale.US);
 
