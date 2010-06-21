@@ -22,7 +22,9 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -54,7 +56,7 @@ public class HttpHeader{
 	/**
 	 * ヘッダの要素コレクション
 	 */
-	private final Map<String, String> elements = new HashMap<String, String>();
+	private final Map<String, List<String>> elements = new HashMap<String, List<String>>();
 
 	/**
 	 * ロガー
@@ -85,7 +87,25 @@ public class HttpHeader{
 		LOGGER.entering("<init>", reader);
 		assert reader != null;
 
-		this.readHeader(reader);
+		for(String line = reader.readLine(); line != null; line = reader.readLine()){
+
+			System.out.println(line);
+
+			// ヘッダ記述のシンタクスに合致するか
+			final Matcher m = HEADER.matcher(line);
+			if(m.matches()){
+
+				final String key = m.group(1).toLowerCase();
+				if(key != null){
+
+					final String value = m.group(2);
+					this.set(key, value);
+
+				}
+
+			}
+
+		}
 
 		LOGGER.exiting("<init>");
 	}
@@ -120,14 +140,19 @@ public class HttpHeader{
 		assert key != null;
 		assert value != null;
 
-			if(this.elements.containsKey(key)){
+		final String skey = key.toLowerCase();
+		if(this.elements.containsKey(skey)){
 
-				this.elements.remove(key);
+			this.elements.get(skey).clear();
+			this.elements.get(skey).add(value);
 
-			}
-			this.elements.put(key.toLowerCase(), value);
+		}else{
 
-			LOGGER.fine(String.format("ヘッダ項目を追加[%s : %s]", key, value));
+			final List<String> values = new ArrayList<String>();
+			values.add(value);
+			this.elements.put(skey, values);
+
+		}
 
 		LOGGER.exiting("set");
 	}
@@ -140,15 +165,20 @@ public class HttpHeader{
 	 */
 	public void add(final String key, final String value){
 
-		if(this.elements.containsKey(key)){
+		final String skey = key.toLowerCase();
+		if(this.elements.containsKey(skey)){
 
-			final String nvalue = String.format("%s, %s", this.elements.get(key), value);
-			this.elements.remove(key);
-			this.elements.put(key, nvalue);
+			//			final String nvalue = String.format("%s, %s", this.elements.get(key), value);
+			//			this.elements.remove(key);
+			//			this.elements.put(key, nvalue);
+			this.elements.get(skey).add(value);
 
 		}else{
 
-			this.elements.put(key, value);
+			//			this.elements.put(key, value);
+			final List<String> values = new ArrayList<String>();
+			values.add(value);
+			this.elements.put(skey, values);
 
 		}
 
@@ -165,7 +195,8 @@ public class HttpHeader{
 		LOGGER.entering("remove", key);
 		assert key != null;
 
-		this.elements.remove(key);
+		final String skey = key.toLowerCase();
+		this.elements.remove(skey);
 
 		LOGGER.exiting("remove");
 
@@ -191,11 +222,12 @@ public class HttpHeader{
 	 * @param key 値リストを取得するkey
 	 * @return keyに関連付けられている値のコレクション
 	 */
-	public String get(final String key){
+	public String[] get(final String key){
 		LOGGER.entering("getValue", key);
 		assert key != null;
 
-		final String ret = this.elements.get(key);
+		final String skey = key.toLowerCase();
+		final String[] ret = this.elements.get(skey).toArray(new String[0]);
 
 		LOGGER.exiting("getValues", ret);
 		return ret;
@@ -212,34 +244,34 @@ public class HttpHeader{
 		LOGGER.entering("containsKey", key);
 		assert key != null;
 
-		// TODO: Cookieの場合
-		final boolean ret = this.elements.containsKey(key);
+		final String skey = key.toLowerCase();
+		final boolean ret = this.elements.containsKey(skey);
 
 		LOGGER.exiting("containsKey", ret);
 		return ret;
 
 	}
 
-	public boolean containsValue(final String key, final String value){
-
-		final String v = this.get(key);
-		if(v != null){
-
-			for(final String s : v.split(",")){
-
-				if(s.equals(value)){
-
-					return true;
-
-				}
-
-			}
-
-		}
-
-		return false;
-
-	}
+//	public boolean containsValue(final String key, final String value){
+//
+//		final String v = this.get(key);
+//		if(v != null){
+//
+//			for(final String s : v.split(",")){
+//
+//				if(s.equals(value)){
+//
+//					return true;
+//
+//				}
+//
+//			}
+//
+//		}
+//
+//		return false;
+//
+//	}
 
 	/**
 	 * このヘッダに登録されているキーの集合を返す．
@@ -285,9 +317,9 @@ public class HttpHeader{
 		// ヘッダを追加
 		for(final String key : this.elements.keySet()){
 
-			if(key.equals(HeaderName.SetCookie)){
+//			if(key.equals(HeaderName.SetCookie)){
 
-				for(final String v : this.get(key).split(",")){
+				for(final String v : this.get(key)){
 
 					writer.append(key);
 					writer.append(": ");
@@ -296,14 +328,14 @@ public class HttpHeader{
 
 				}
 
-			}else{
-
-				writer.append(key);
-				writer.append(": ");
-				writer.append(this.get(key));
-				writer.newLine();
-
-			}
+//			}else{
+//
+//				writer.append(key);
+//				writer.append(": ");
+//				writer.append(this.get(key));
+//				writer.newLine();
+//
+//			}
 
 		}
 
@@ -361,7 +393,7 @@ public class HttpHeader{
 
 	}
 
-	public String get(final HeaderName key){
+	public String[] get(final HeaderName key){
 
 		return this.get(key.toString());
 
@@ -373,48 +405,15 @@ public class HttpHeader{
 
 	}
 
-	public boolean containsValue(final HeaderName key, final String value){
-
-		return this.containsValue(key.toString(), value);
-
-	}
+//	public boolean containsValue(final HeaderName key, final String value){
+//
+//		return this.containsValue(key.toString(), value);
+//
+//	}
 
 	//============================================================================
 	//  private メソッド
 	//============================================================================
-	/**
-	 * ストリームからヘッダ情報を読み取る．
-	 * 引数で指定されたストリームからHttpリクエストのヘッダ情報を読み取る．
-	 * また，このメソッドはストリームを閉じない．
-	 *
-	 * @param reader 解析するバッファリングされたストリーム
-	 * @throws IOException ストリーム読み込み時にI/Oエラーが発生した場合
-	 */
-	private void readHeader(final BufferedReader reader) throws IOException{
-		LOGGER.entering("readHeader", reader);
-		assert reader != null;
-
-		for(String line = reader.readLine(); line != null; line = reader.readLine()){
-
-			// ヘッダ記述のシンタクスに合致するか
-			final Matcher m = HEADER.matcher(line);
-			if(m.matches()){
-
-				final String key = m.group(1).toLowerCase();
-				if(key != null){
-
-					final String value = m.group(2);
-					this.set(key, value);
-
-				}
-
-			}
-
-		}
-
-		LOGGER.exiting("readHeader");
-	}
-
 	/**
 	 * コレクションに含まれるヘッダ情報をすべて追加する．
 	 * 既に共通項目がヘッダに存在する場合は上書きする．
@@ -430,6 +429,7 @@ public class HttpHeader{
 			// なぜかConnectionが返すヘッダにはキーがnullのものが含まれる
 			if(key != null){
 
+				System.out.println(">> " + key + " : " + elements.get(key));
 				this.set(key.toLowerCase(), elements.get(key));
 
 			}

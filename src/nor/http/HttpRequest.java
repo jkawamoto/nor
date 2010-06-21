@@ -280,7 +280,11 @@ public class HttpRequest extends HttpMessage{
 		final HttpHeader header = this.getHeader();
 		for(final String key : header.keySet()){
 
-			con.addRequestProperty(key, header.get(key));
+			for(final String value : header.get(key)){
+
+				con.addRequestProperty(key, value);
+
+			}
 
 		}
 
@@ -291,7 +295,7 @@ public class HttpRequest extends HttpMessage{
 			// ボディがある場合は送信
 			if(header.containsKey(HeaderName.ContentLength)){
 
-				final int length = Integer.parseInt(header.get(HeaderName.ContentLength));
+				final int length = Integer.parseInt(header.get(HeaderName.ContentLength)[0]);
 				con.setFixedLengthStreamingMode(length);
 				con.setDoOutput(true);
 				con.connect();
@@ -361,6 +365,8 @@ public class HttpRequest extends HttpMessage{
 
 					final StringBuilder v = new StringBuilder();
 					for(final String a : fields.get(key)){
+
+						System.out.println(">> " + key + " : " + a);
 
 						v.append(a);
 						v.append(", ");
