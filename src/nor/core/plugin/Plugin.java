@@ -30,7 +30,7 @@ import nor.core.proxy.filter.RequestFilter;
 import nor.core.proxy.filter.ResponseFilter;
 
 /**
- * すべてのプラグインの規程クラス．
+ * すべてのプラグインの基底クラス．
  *
  *
  * プラグインは，メッセージハンドラ，リクエストフィルタ，レスポンスフィルタの三つの機能を提供することができます．

@@ -49,7 +49,7 @@ public class Cookie{
 
 		if(this.header.containsKey(HeaderName.Cookie)){
 
-			for(final String entry : this.header.get(HeaderName.Cookie)){
+			for(final String entry : this.header.get(HeaderName.Cookie).split(",")){
 
 				final int index = entry.indexOf("=");
 				if(index != -1){

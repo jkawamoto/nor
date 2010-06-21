@@ -15,16 +15,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-//$Id: HttpHeader.java 471 2010-04-03 10:25:20Z kawamoto $
 package nor.http;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -56,7 +53,7 @@ public class HttpHeader{
 	/**
 	 * ヘッダの要素コレクション
 	 */
-	private final Map<String, List<String>> elements = new HashMap<String, List<String>>();
+	private final Map<String, String> elements = new HashMap<String, String>();
 
 	/**
 	 * ロガー
@@ -89,8 +86,6 @@ public class HttpHeader{
 
 		for(String line = reader.readLine(); line != null; line = reader.readLine()){
 
-			System.out.println(line);
-
 			// ヘッダ記述のシンタクスに合致するか
 			final Matcher m = HEADER.matcher(line);
 			if(m.matches()){
@@ -122,7 +117,16 @@ public class HttpHeader{
 		LOGGER.entering("<init>", new Object[]{elements});
 		assert elements != null;
 
-		this.setAll(elements);
+		for(final String key : elements.keySet()){
+
+			// なぜかConnectionが返すヘッダにはキーがnullのものが含まれる
+			if(key != null){
+
+				this.set(key.toLowerCase(), elements.get(key));
+
+			}
+
+		}
 
 		LOGGER.exiting("<init>");
 	}
@@ -143,16 +147,12 @@ public class HttpHeader{
 		final String skey = key.toLowerCase();
 		if(this.elements.containsKey(skey)){
 
-			this.elements.get(skey).clear();
-			this.elements.get(skey).add(value);
-
-		}else{
-
-			final List<String> values = new ArrayList<String>();
-			values.add(value);
-			this.elements.put(skey, values);
+			this.elements.remove(skey);
 
 		}
+		this.elements.put(skey, value);
+
+		LOGGER.fine(String.format("ヘッダ項目を追加[%s : %s]", skey, value));
 
 		LOGGER.exiting("set");
 	}
@@ -168,17 +168,23 @@ public class HttpHeader{
 		final String skey = key.toLowerCase();
 		if(this.elements.containsKey(skey)){
 
-			//			final String nvalue = String.format("%s, %s", this.elements.get(key), value);
-			//			this.elements.remove(key);
-			//			this.elements.put(key, nvalue);
-			this.elements.get(skey).add(value);
+			if(HeaderName.SetCookie.equals(skey)){
+
+				final String nvalue = String.format("%s\n%s", this.elements.get(skey), value);
+				this.elements.remove(skey);
+				this.elements.put(skey, nvalue);
+
+			}else{
+
+				final String nvalue = String.format("%s, %s", this.elements.get(skey), value);
+				this.elements.remove(skey);
+				this.elements.put(skey, nvalue);
+
+			}
 
 		}else{
 
-			//			this.elements.put(key, value);
-			final List<String> values = new ArrayList<String>();
-			values.add(value);
-			this.elements.put(skey, values);
+			this.elements.put(skey, value);
 
 		}
 
@@ -222,12 +228,12 @@ public class HttpHeader{
 	 * @param key 値リストを取得するkey
 	 * @return keyに関連付けられている値のコレクション
 	 */
-	public String[] get(final String key){
+	public String get(final String key){
 		LOGGER.entering("getValue", key);
 		assert key != null;
 
 		final String skey = key.toLowerCase();
-		final String[] ret = this.elements.get(skey).toArray(new String[0]);
+		final String ret = this.elements.get(skey);
 
 		LOGGER.exiting("getValues", ret);
 		return ret;
@@ -252,26 +258,27 @@ public class HttpHeader{
 
 	}
 
-//	public boolean containsValue(final String key, final String value){
-//
-//		final String v = this.get(key);
-//		if(v != null){
-//
-//			for(final String s : v.split(",")){
-//
-//				if(s.equals(value)){
-//
-//					return true;
-//
-//				}
-//
-//			}
-//
-//		}
-//
-//		return false;
-//
-//	}
+	public boolean containsValue(final String key, final String value){
+
+		final String skey = key.toLowerCase();
+		final String v = this.get(skey);
+		if(v != null){
+
+			for(final String s : v.split(",")){
+
+				if(s.equals(value)){
+
+					return true;
+
+				}
+
+			}
+
+		}
+
+		return false;
+
+	}
 
 	/**
 	 * このヘッダに登録されているキーの集合を返す．
@@ -317,9 +324,9 @@ public class HttpHeader{
 		// ヘッダを追加
 		for(final String key : this.elements.keySet()){
 
-//			if(key.equals(HeaderName.SetCookie)){
+			if(HeaderName.SetCookie.equals(key)){
 
-				for(final String v : this.get(key)){
+				for(final String v : this.get(key).split("\n")){
 
 					writer.append(key);
 					writer.append(": ");
@@ -328,14 +335,14 @@ public class HttpHeader{
 
 				}
 
-//			}else{
-//
-//				writer.append(key);
-//				writer.append(": ");
-//				writer.append(this.get(key));
-//				writer.newLine();
-//
-//			}
+			}else{
+
+				writer.append(key);
+				writer.append(": ");
+				writer.append(this.get(key));
+				writer.newLine();
+
+			}
 
 		}
 
@@ -393,7 +400,7 @@ public class HttpHeader{
 
 	}
 
-	public String[] get(final HeaderName key){
+	public String get(final HeaderName key){
 
 		return this.get(key.toString());
 
@@ -405,38 +412,10 @@ public class HttpHeader{
 
 	}
 
-//	public boolean containsValue(final HeaderName key, final String value){
-//
-//		return this.containsValue(key.toString(), value);
-//
-//	}
+	public boolean containsValue(final HeaderName key, final String value){
 
-	//============================================================================
-	//  private メソッド
-	//============================================================================
-	/**
-	 * コレクションに含まれるヘッダ情報をすべて追加する．
-	 * 既に共通項目がヘッダに存在する場合は上書きする．
-	 *
-	 * @param elements このオブジェクトに追加するコレクション
-	 */
-	private void setAll(final Map<String, String> elements){
-		LOGGER.entering("setAll", (Object)elements);
-		assert elements != null;
+		return this.containsValue(key.toString(), value);
 
-		for(final String key : elements.keySet()){
-
-			// なぜかConnectionが返すヘッダにはキーがnullのものが含まれる
-			if(key != null){
-
-				System.out.println(">> " + key + " : " + elements.get(key));
-				this.set(key.toLowerCase(), elements.get(key));
-
-			}
-
-		}
-
-		LOGGER.exiting("setAll");
 	}
 
 }

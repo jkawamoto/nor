@@ -259,7 +259,7 @@ public class SetCookie implements Iterable<SetCookie.Entry>{
 	private SetCookie(final HttpHeader header){
 
 		this.header = header;
-		for(final String e : header.get(HeaderName.SetCookie)){
+		for(final String e : header.get(HeaderName.SetCookie).split("\n")){
 
 			this.entries.add(new Entry(e));
 

@@ -198,7 +198,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		boolean close = false;
 		if(header.containsKey(KeepAlive)){
 
-			timeout = header.get(KeepAlive)[0];
+			timeout = header.get(KeepAlive);
 
 		}else if(header.containsValue(Connection, Close)){
 

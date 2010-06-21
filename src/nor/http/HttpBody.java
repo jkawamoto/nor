@@ -78,7 +78,7 @@ public class HttpBody implements Closeable{
 
 		}else if(header.containsKey(HeaderName.ContentLength)){
 
-			final String length = header.get(HeaderName.ContentLength)[0];
+			final String length = header.get(HeaderName.ContentLength);
 			this.in = new LimitedInputStream(this.in, Integer.valueOf(length));
 
 		}
@@ -86,7 +86,7 @@ public class HttpBody implements Closeable{
 		// 内容エンコーディングの解決
 		if(header.containsKey(HeaderName.ContentEncoding)){
 
-			final String encode = header.get(HeaderName.ContentEncoding)[0];
+			final String encode = header.get(HeaderName.ContentEncoding);
 			if(Http.GZIP.equalsIgnoreCase(encode)){
 
 				this.in = new GZIPInputStream(this.in);
@@ -122,9 +122,9 @@ public class HttpBody implements Closeable{
 		if(header.containsKey(HeaderName.ContentLength)){
 
 			// ContentLengthが指定されていればそのサイズだけ送る
-			cout = new LimitedOutputStream(cout, Integer.parseInt(header.get(HeaderName.ContentLength)[0]));
+			cout = new LimitedOutputStream(cout, Integer.parseInt(header.get(HeaderName.ContentLength)));
 
-		}else if(Http.CHUNKED.equalsIgnoreCase(header.get(HeaderName.TransferEncoding)[0])){
+		}else if(Http.CHUNKED.equalsIgnoreCase(header.get(HeaderName.TransferEncoding))){
 
 			// TransferEncodingにchunkが指定されていればChunk形式で送る
 			cout = new ChunkedOutputStream(cout);
@@ -134,7 +134,7 @@ public class HttpBody implements Closeable{
 		// 内容コーディングが指定されていれば従う
 		if(header.containsKey(HeaderName.ContentEncoding)){
 
-			final String encode = header.get(HeaderName.ContentEncoding)[0];
+			final String encode = header.get(HeaderName.ContentEncoding);
 			if(Http.GZIP.equalsIgnoreCase(encode)){
 
 				cout = new GZIPOutputStream(cout, Stream.DEFAULT_BUFFER_SIZE);
