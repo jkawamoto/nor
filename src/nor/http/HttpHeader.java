@@ -94,7 +94,7 @@ public class HttpHeader{
 				if(key != null){
 
 					final String value = m.group(2);
-					this.set(key, value);
+					this.add(key, value);
 
 				}
 
@@ -122,7 +122,7 @@ public class HttpHeader{
 			// なぜかConnectionが返すヘッダにはキーがnullのものが含まれる
 			if(key != null){
 
-				this.set(key.toLowerCase(), elements.get(key));
+				this.add(key.toLowerCase(), elements.get(key));
 
 			}
 
@@ -152,7 +152,7 @@ public class HttpHeader{
 		}
 		this.elements.put(skey, value);
 
-		LOGGER.fine(String.format("ヘッダ項目を追加[%s : %s]", skey, value));
+		LOGGER.fine("Header set: " + skey + ": " + value);
 
 		LOGGER.exiting("set");
 	}
@@ -170,7 +170,7 @@ public class HttpHeader{
 
 			if(HeaderName.SetCookie.equals(skey)){
 
-				final String nvalue = String.format("%s\n%s", this.elements.get(skey), value);
+				final String nvalue = String.format("%s\n  %s", this.elements.get(skey), value);
 				this.elements.remove(skey);
 				this.elements.put(skey, nvalue);
 
@@ -187,6 +187,8 @@ public class HttpHeader{
 			this.elements.put(skey, value);
 
 		}
+
+		LOGGER.fine("Header add: " + skey + ": " + value);
 
 	}
 
@@ -321,7 +323,6 @@ public class HttpHeader{
 		LOGGER.entering("writeHeader", writer);
 		assert writer != null;
 
-		// ヘッダを追加
 		for(final String key : this.elements.keySet()){
 
 			if(HeaderName.SetCookie.equals(key)){
@@ -333,6 +334,8 @@ public class HttpHeader{
 					writer.append(v.trim());
 					writer.newLine();
 
+					LOGGER.fine("Header write: " + key + ": " + v.trim());
+
 				}
 
 			}else{
@@ -341,6 +344,8 @@ public class HttpHeader{
 				writer.append(": ");
 				writer.append(this.get(key));
 				writer.newLine();
+
+				LOGGER.fine("Header write: " + key + ": " + this.get(key));
 
 			}
 
