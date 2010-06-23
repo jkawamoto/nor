@@ -39,6 +39,7 @@ import nor.http.HeaderName;
 import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
+import nor.http.Status;
 import nor.http.error.HttpException;
 import nor.http.server.HttpRequestHandler;
 import nor.util.log.EasyLogger;
@@ -109,6 +110,12 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 		HttpResponse response = null;
 		try{
+
+			if("CONNECT".equals(request.getMethod())){
+
+				throw new HttpException(Status.NotImplemented);
+
+			}
 
 			// ヘッダーの書き換え
 			this.cleanHeader(request);

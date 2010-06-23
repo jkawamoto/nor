@@ -30,7 +30,7 @@ import nor.http.Status;
  * @author KAWAMOTO Junpei
  *
  */
-public abstract class HttpException extends Exception{
+public class HttpException extends Exception{
 
 	/**
 	 *
