@@ -105,7 +105,7 @@ public class HttpResponse extends HttpMessage{
 			this.header = new HttpHeader(in);
 
 			// ボディの読み取り
-			if(Method.HEAD.equalsIgnoreCase(this.getRequest().getMethod())){
+			if(Method.HEAD.equals(this.getRequest().getMethod())){
 
 				// HEADリクエストへのレスポンスはメッセージボディを含んではならない
 				this.getHeader().set(HeaderName.ContentLength, "0");
