@@ -1,5 +1,5 @@
-/**
- *  Copyright (C) 2009 KAWAMOTO Junpei
+/*
+ *  Copyright (C) 2009, 2010 KAWAMOTO Junpei
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,33 +27,68 @@ import nor.http.HttpResponse;
 import nor.http.Status;
 
 /**
- * @author KAWAMOTO Junpei
+ *	HTTP/1.1 プロトコルにおけるエラーを表す例外クラス．
+ *	開発者は，このクラスとそのサブクラスを用いて簡単にエラーレスポンスを返すことができます．
+ *	例えば，404 Not Found レスポンスを返す場合，コードは次のようになります．
+ *	<pre>
+ *	  throw new HttpException(Status.NotFound);
+ *	</pre>
+ *	ただし，404 Not Found レスポンスのように頻繁に利用されるレスポンスについては，
+ *	サブクラスを用いたショートカットが用意されています．
+ *	<pre>
+ *	  throw new NotFoundException();
+ *	</pre>
  *
+ * @author Junpei Kawamoto
+ * @since 0.1
  */
 public class HttpException extends Exception{
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 1L;
 
-	protected final Status status;
-	protected final String message;
+	private final Status status;
+	private final String message;
 	protected final Throwable cause;
 
+	//============================================================================
+	//  Constructor
+	//============================================================================
+	/**
+	 * エラーステータスを指定して HttpException を作成する．
+	 *
+	 * @param status エラー内容を表すステータス
+	 */
 	public HttpException(final Status status){
 		this(status, null, null);
 	}
 
+	/**
+	 * エラーステータスとメッセージを指定して HttpException を作成する．
+	 *
+	 * @param status エラー内容を表すステータス
+	 * @param message 追加の文字列情報
+	 */
 	public HttpException(final Status status, final String message){
 		this(status, message, null);
 	}
 
-
+	/**
+	 * エラーステータスとエラーの原因となった例外オブジェクトを指定して HttpException を作成する．
+	 *
+	 * @param status エラー内容を表すステータス
+	 * @param cause エラーの例外となった Throwable オブジェクト
+	 */
 	public HttpException(final Status status, final Throwable cause){
 		this(status, null, cause);
 	}
 
+	/**
+	 * エラーステータスと文字列情報，原因オブジェクトを指定して HttpException を作成する．
+	 *
+	 * @param status エラー内容を表すステータス
+	 * @param message 追加の文字列情報
+	 * @param cause エラーの例外となった Throwable オブジェクト
+	 */
 	public HttpException(final Status status, final String message, final Throwable cause){
 
 		this.status = status;
@@ -62,6 +97,16 @@ public class HttpException extends Exception{
 
 	}
 
+	//============================================================================
+	//  Public methods
+	//============================================================================
+	/**
+	 * レスポンスの作成．
+	 * この例外オブジェクトからレスポンスを作成します．
+	 *
+	 * @param request レスポンス元のリクエスト
+	 * @return エラーレスポンス
+	 */
 	public HttpResponse createResponse(final HttpRequest request){
 
 		// TODO: Throwableからスタックトレースをメッセージに追加する

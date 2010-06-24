@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-// $Id: Query.java 411 2010-01-11 09:51:02Z kawamoto $
 package nor.http;
 
 import java.util.Collection;
@@ -35,15 +34,14 @@ import nor.util.Codec;
  * shema://host:port/path?query#fragment
  * </pre>
  * の形で表わされる．本クラスが扱うのは上記のうち，queryに当たる部分である．
- * 
+ *
  * このquery部分は通常URLエンコードされているが，本クラスで扱うものは，エンコード前の文字列である．
- * 
- * @version $Rev: 411 $
- * @author KAWAMOTO Junpei
+ *
+ * @author Junpei Kawamoto
  *
  */
 public class Query implements Map<String, String>{
-	
+
 	/**
 	 * エントリ
 	 */
@@ -53,17 +51,17 @@ public class Query implements Map<String, String>{
 	 * ロガー
 	 */
 	private static final Logger LOGGER = Logger.getLogger(Query.class.getName());
-	
+
 	/**
 	 * Query解析用正規表現
 	 */
 	private static final Pattern QPAT = Pattern.compile("([^=^&]+)=([^&]+)");
-	
+
 	/**
 	 * 空文字列
-	 */ 
+	 */
 	private static final String NONE = "";
-	
+
 
 	//============================================================================
 	//  コンストラクタ
@@ -73,10 +71,10 @@ public class Query implements Map<String, String>{
 	 */
 	public Query(){
 		LOGGER.entering(Query.class.getName(), "<init>");
-		
+
 		LOGGER.exiting(Query.class.getName(), "<init>");
 	}
-	
+
 	/**
 	 * Query文字列を解析して，エントリ毎に格納する．
 	 * @param query 解析するquery文字列
@@ -84,28 +82,28 @@ public class Query implements Map<String, String>{
 	public Query(final String query){
 		LOGGER.entering(Query.class.getName(), "<init>", query);
 		assert query != null;
-		
+
 		final Matcher m = QPAT.matcher(query);
 		while(m.find()){
-			
+
 			final String key = m.group(1);
-			
+
 			// URLデコード
 			final String value = Codec.urlDecode(m.group(2));
 
 			LOGGER.fine(String.format("Queryエントリを追加[%s : %s]", key, value));
 			this.put(key, value);
-			
+
 		}
-		
+
 		if(this._entry.size() == 0){
-			
+
 			this.put(query, NONE);
-			
+
 		}
-		
+
 		LOGGER.exiting(Query.class.getName(), "<init>");
-		
+
 	}
 
 	//============================================================================
@@ -114,23 +112,23 @@ public class Query implements Map<String, String>{
 	/**
 	 * このインスタンスが保持するQueryの文字列表現を返す．
 	 * このメソッドが返す文字列表現は，URLエンコードされる．
-	 * 
+	 *
 	 * @return このインスタンスが保持するQueryの文字列表現
 	 */
 	@Override
 	public String toString(){
 		LOGGER.entering(Query.class.getName(), "toString");
-		
+
 		final StringBuilder builder = new StringBuilder();
 		for(String key : this.keySet()){
-			
+
 			String value = this.get(key);
 			if(NONE.equals(value)){
-				
+
 				builder.append(key);
-				
+
 			}else{
-				
+
 				// URLエンコード
 				value = Codec.urlEncode(value);
 
@@ -142,20 +140,20 @@ public class Query implements Map<String, String>{
 			}
 
 		}
-		
+
 		// 最後のアンパサンドを削除する
 		final int last = builder.length() - 1;
 		if((last >= 0) && (builder.charAt(last) == '&')){
-			
+
 			builder.deleteCharAt(last);
-			
+
 		}
-	
+
 		final String ret = builder.toString();
-		
+
 		LOGGER.exiting(Query.class.getName(), "toString", ret);
 		return ret;
-		
+
 	}
 
 
@@ -182,7 +180,7 @@ public class Query implements Map<String, String>{
 		assert key != null;
 
 		final boolean ret = this._entry.containsKey(key);
-		
+
 		LOGGER.exiting(Query.class.getName(), "containsKey", ret);
 		return ret;
 	}
@@ -193,9 +191,9 @@ public class Query implements Map<String, String>{
 	 */
 	public boolean containsValue(Object value) {
 		LOGGER.entering(Query.class.getName(), "containsValue", value);
-		
+
 		final boolean ret = this._entry.containsValue(value);
-		
+
 		LOGGER.exiting(Query.class.getName(), "containsValue", ret);
 		return ret;
 	}
@@ -206,9 +204,9 @@ public class Query implements Map<String, String>{
 	 */
 	public Set<Entry<String, String>> entrySet() {
 		LOGGER.entering(Query.class.getName(), "entrySet");
-		
+
 		final Set<Entry<String, String>> ret = this._entry.entrySet();
-		
+
 		LOGGER.exiting(Query.class.getName(), "entrySet", ret);
 		return ret;
 	}
@@ -219,9 +217,9 @@ public class Query implements Map<String, String>{
 	 */
 	public final String get(Object key) {
 		LOGGER.entering(Query.class.getName(), "get", key);
-		
+
 		final String ret = this._entry.get(key);
-		
+
 		LOGGER.exiting(Query.class.getName(), "get", ret);
 		return ret;
 
@@ -232,9 +230,9 @@ public class Query implements Map<String, String>{
 	 */
 	public boolean isEmpty() {
 		LOGGER.entering(Query.class.getName(), "isEmpty");
-		
+
 		final boolean ret = this._entry.isEmpty();
-		
+
 		LOGGER.exiting(Query.class.getName(), "<init>");
 		return ret;
 	}
@@ -245,9 +243,9 @@ public class Query implements Map<String, String>{
 	 */
 	public Set<String> keySet() {
 		LOGGER.entering(Query.class.getName(), "keySet");
-		
+
 		final Set<String> ret = this._entry.keySet();
-		
+
 		LOGGER.exiting(Query.class.getName(), "keySet", ret);
 		return ret;
 	}
@@ -258,9 +256,9 @@ public class Query implements Map<String, String>{
 	 */
 	public String remove(Object key) {
 		LOGGER.entering(Query.class.getName(), "remove", key);
-		
+
 		final String ret = this._entry.remove(key);
-		
+
 		LOGGER.exiting(Query.class.getName(), "remove", ret);
 		return ret;
 	}
@@ -271,9 +269,9 @@ public class Query implements Map<String, String>{
 	 */
 	public Collection<String> values() {
 		LOGGER.entering(Query.class.getName(), "values");
-		
+
 		final Collection<String> ret = this._entry.values();
-		
+
 		LOGGER.exiting(Query.class.getName(), "values", ret);
 		return ret;
 	}
@@ -284,9 +282,9 @@ public class Query implements Map<String, String>{
 	 */
 	public String put(String key, String value) {
 		LOGGER.entering(Query.class.getName(), "put", new Object[]{key, value});
-		
+
 		final String ret = this._entry.put(key, value);
-		
+
 		LOGGER.exiting(Query.class.getName(), "put", ret);
 		return ret;
 	}
@@ -309,9 +307,9 @@ public class Query implements Map<String, String>{
 	 */
 	public int size() {
 		LOGGER.entering(Query.class.getName(), "size");
-		
+
 		final int ret = this._entry.size();
-		
+
 		LOGGER.exiting(Query.class.getName(), "size", ret);
 		return ret;
 	}

@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -29,10 +29,10 @@ import nor.http.io.HeaderInputStream;
 import nor.util.log.EasyLogger;
 
 /**
- * Httpレスポンスオブジェクト．
+ * HTTP レスポンスオブジェクト．
  * 一つのオブジェクトで一つのHttpレスポンスを表す．
  *
- * @author KAWAMOTO Junpei
+ * @author Junpei Kawamoto
  *
  */
 public class HttpResponse extends HttpMessage{
@@ -150,9 +150,9 @@ public class HttpResponse extends HttpMessage{
 	//  public メソッド
 	//====================================================================
 	/**
-	 * レスポンスの元となったリクエストを返す．
+	 * このレスポンスの元となったリクエストを取得します．
 	 *
-	 * @return リクエスト
+	 * @return このレスポンスの元となったリクエスト
 	 */
 	public HttpRequest getRequest(){
 		LOGGER.entering("getRequest");
@@ -165,9 +165,9 @@ public class HttpResponse extends HttpMessage{
 	}
 
 	/**
-	 * HTTPレスポンスコードを返す．
+	 * レスポンスコードを取得します．
 	 *
-	 * @return HTTPレスポンスコード
+	 * @return レスポンスコード
 	 */
 	public int getCode(){
 		LOGGER.entering("getCode");
@@ -180,9 +180,9 @@ public class HttpResponse extends HttpMessage{
 	}
 
 	/**
-	 * HTTPレスポンスメッセージを返す．
+	 * レスポンスメッセージを取得する．
 	 *
-	 * @return HTTPレスポンスメッセージ
+	 * @return レスポンスメッセージ
 	 */
 	public String getMessage(){
 		LOGGER.entering("getMessage");
@@ -198,7 +198,7 @@ public class HttpResponse extends HttpMessage{
 	//	HttpMessage インタフェースの実装
 	//--------------------------------------------------------------------
 	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#getVersion()
+	 * @see nor.http.HttpMessage#getVersion()
 	 */
 	@Override
 	public String getVersion(){
@@ -212,7 +212,7 @@ public class HttpResponse extends HttpMessage{
 	}
 
 	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#getPath()
+	 * @see nor.http.HttpMessage#getPath()
 	 */
 	@Override
 	public String getPath() {
@@ -221,8 +221,8 @@ public class HttpResponse extends HttpMessage{
 
 	}
 
-	/* (non-Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#getHeadLine()
+	/* (非 Javadoc)
+	 * @see nor.http.HttpMessage#getHeadLine()
 	 */
 	@Override
 	public String getHeadLine() {
@@ -232,7 +232,7 @@ public class HttpResponse extends HttpMessage{
 	}
 
 	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#getHeader()
+	 * @see nor.http.HttpMessage#getHeader()
 	 */
 	@Override
 	public HttpHeader getHeader() {
@@ -242,7 +242,7 @@ public class HttpResponse extends HttpMessage{
 	}
 
 	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#getBody()
+	 * @see nor.http.HttpMessage#getBody()
 	 */
 	@Override
 	public HttpBody getBody() {

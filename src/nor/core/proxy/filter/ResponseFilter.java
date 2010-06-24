@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -19,6 +19,13 @@ package nor.core.proxy.filter;
 
 import nor.http.HttpResponse;
 
+/**
+ * HTTP レスポンスのフィルタが実装すべきインタフェース．
+ * 各メソッドの詳細は，{@link nor.core.proxy.filter.MessageFilter MessageFilter} を参照してください．
+ *
+ * @author Junpei Kawamoto
+ * @since 0.1
+ */
 public interface ResponseFilter extends MessageFilter<HttpResponse>{
 
 

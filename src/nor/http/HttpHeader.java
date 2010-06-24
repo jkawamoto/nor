@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -31,16 +31,9 @@ import nor.util.log.EasyLogger;
 
 
 /**
- * Httpヘッダを表すクラス．
- * Httpヘッダは，
- * <pre>
- *   key:value1;value2;value3・・・
- * </pre>
- * というシンタクスで記述される．つまり，一つのkeyに対して複数の値が存在する．
- * このクラスはこれらのヘッダに関してアクセッサを提供するとともに，ストリームへの
- * 入出力メソッドも提供する．
+ * HTTP ヘッダを表すクラス．
  *
- * @author KAWAMOTO Junpei
+ * @author Junpei Kawamoto
  *
  */
 public class HttpHeader{
@@ -61,7 +54,7 @@ public class HttpHeader{
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpHeader.class);
 
 	//============================================================================
-	//  コンストラクタ
+	//  Constructor
 	//============================================================================
 	/**
 	 * 空のHTTPヘッダオブジェクトを作成する．
@@ -132,12 +125,14 @@ public class HttpHeader{
 	}
 
 	//============================================================================
-	//  public メソッド
+	//  Public methods
 	//============================================================================
 	/**
+	 * ヘッダを設定する．
+	 * すでに同じキーを持つヘッダが存在する場合は上書きされます．
 	 *
-	 * @param key 追加するkey
-	 * @param value 追加する値
+	 * @param key 設定するヘッダのキー
+	 * @param value 設定するする値
 	 */
 	public void set(final String key, final String value){
 		LOGGER.entering("set", key, value);
@@ -159,6 +154,8 @@ public class HttpHeader{
 
 
 	/**
+	 * ヘッダに値を追加する．
+	 * すでに同じキーを持つヘッダが存在する場合は，値が追加されます．
 	 *
 	 * @param key 追加するkey
 	 * @param value 追加する値
@@ -194,10 +191,9 @@ public class HttpHeader{
 
 
 	/**
-	 * HTTPヘッダオブジェクトからkeyに対する値をすべて削除する．
-	 * 指定されたkeyに関連付けられている値をすべて削除します．
+	 * 指定されたキーに関連付けられている値をすべて削除します．
 	 *
-	 * @param key 削除するkey
+	 * @param key 削除するヘッダキー
 	 */
 	public void remove(final String key){
 		LOGGER.entering("remove", key);
@@ -210,9 +206,9 @@ public class HttpHeader{
 
 	}
 
+
 	/**
-	 * コレクションを初期化する．
-	 * このオブジェクトが保持していたすべてのkey，valueを削除する．
+	 * すべてのヘッダを削除します．
 	 *
 	 */
 	public void clear(){
@@ -225,10 +221,10 @@ public class HttpHeader{
 
 
 	/**
-	 * keyに関連付けられた値のリストを返す．
+	 * 指定したキーに関連付けられた値を取得します．
 	 *
-	 * @param key 値リストを取得するkey
-	 * @return keyに関連付けられている値のコレクション
+	 * @param key 値を取得するヘッダのキー
+	 * @return キーに関連付けられている値
 	 */
 	public String get(final String key){
 		LOGGER.entering("getValue", key);
@@ -243,10 +239,10 @@ public class HttpHeader{
 	}
 
 	/**
-	 * ヘッダコレクションに指定したkeyが含まれているか調べる．
+	 * 指定したキーに関連付けられた値を取得します．
 	 *
-	 * @param key 含まれているか調べるkey
-	 * @return keyが含まれている場合tureを返す
+	 * @param key 値を取得するヘッダのキー
+	 * @return キーに関連付けられている値
 	 */
 	public boolean containsKey(final String key){
 		LOGGER.entering("containsKey", key);
@@ -260,6 +256,13 @@ public class HttpHeader{
 
 	}
 
+	/**
+	 * 指定したキーに指定した値が含まれているか調べます．
+	 *
+	 * @param key 調査するキー
+	 * @param value 調査する値
+	 * @return キーに値が含まれている場合 true
+	 */
 	public boolean containsValue(final String key, final String value){
 
 		final String skey = key.toLowerCase();
@@ -282,10 +285,11 @@ public class HttpHeader{
 
 	}
 
+
 	/**
-	 * このヘッダに登録されているキーの集合を返す．
+	 * このヘッダに登録されているキーの集合を取得する．
 	 *
-	 * @return このヘッダオブジェクトに登録されているキー集合
+	 * @return このヘッダオブジェクトに登録されているキーの集合
 	 */
 	public Set<String> keySet(){
 		LOGGER.entering("keySet");
@@ -297,8 +301,9 @@ public class HttpHeader{
 
 	}
 
+
 	/**
-	 * このヘッダに登録されているキーの数を返す．
+	 * ヘッダに登録されているキーの数を取得する．
 	 *
 	 * @return このヘッダに登録されているキーの数
 	 */
@@ -314,7 +319,7 @@ public class HttpHeader{
 
 	/**
 	 * ヘッダをストリームに書き出す．
-	 * このメソッドは書き出し先のストリームを閉じないので，呼び出し側で処理する必要がある．
+	 * このメソッドは書き出し先のストリームを閉じないので，呼び出し側で処理する必要があります．
 	 *
 	 * @param writer 書き出し先のストリーム
 	 * @throws IOException I/Oエラーが発生した場合
@@ -387,36 +392,79 @@ public class HttpHeader{
 	//----------------------------------------------------------------------------
 	//  HeaderName用のアダプタメソッド
 	//----------------------------------------------------------------------------
+	/**
+	 * ヘッダを設定する．
+	 * すでに同じキーを持つヘッダが存在する場合は上書きされます．
+	 *
+	 * @param key 設定するヘッダのキー
+	 * @param value 設定するする値
+	 */
 	public void set(final HeaderName key, final String value){
 
 		this.set(key.toString(), value);
 
 	}
 
+
+	/**
+	 * ヘッダに値を追加する．
+	 * すでに同じキーを持つヘッダが存在する場合は，値が追加されます．
+	 *
+	 * @param key 追加するkey
+	 * @param value 追加する値
+	 */
 	public void add(final HeaderName key, final String value){
 
 		this.add(key.toString(), value);
 
 	}
 
+
+	/**
+	 * 指定されたキーに関連付けられている値をすべて削除します．
+	 *
+	 * @param key 削除するヘッダキー
+	 */
 	public void remove(final HeaderName key){
 
 		this.remove(key.toString());
 
 	}
 
+
+	/**
+	 * 指定したキーに関連付けられた値を取得します．
+	 *
+	 * @param key 値を取得するヘッダのキー
+	 * @return キーに関連付けられている値
+	 */
 	public String get(final HeaderName key){
 
 		return this.get(key.toString());
 
 	}
 
+
+	/**
+	 * 指定したキーに関連付けられた値を取得します．
+	 *
+	 * @param key 値を取得するヘッダのキー
+	 * @return キーに関連付けられている値
+	 */
 	public boolean containsKey(final HeaderName key){
 
 		return this.containsKey(key.toString());
 
 	}
 
+
+	/**
+	 * 指定したキーに指定した値が含まれているか調べます．
+	 *
+	 * @param key 調査するキー
+	 * @param value 調査する値
+	 * @return キーに値が含まれている場合 true
+	 */
 	public boolean containsValue(final HeaderName key, final String value){
 
 		return this.containsValue(key.toString(), value);

@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -36,7 +36,7 @@ import nor.http.HttpResponse;
  * </p>
  *
  * @author Junpei Kawamoto
- *
+ * @since 0.1
  */
 public interface MessageHandler{
 

@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2009 KAWAMOTO Junpei
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -19,11 +19,14 @@ package nor.http.error;
 
 import nor.http.Status;
 
+/**
+ * 404 Not Found エラーを表す例外クラス．
+ *
+ * @author Junpei Kawamoto
+ * @since 0.1
+ */
 public class NotFoundException extends HttpException{
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 1L;
 
 	public static final Status status = Status.NotFound;

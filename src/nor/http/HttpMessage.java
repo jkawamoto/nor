@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-// $Id: HttpMessage.java 471 2010-04-03 10:25:20Z kawamoto $
 package nor.http;
 
 import java.io.BufferedWriter;
@@ -27,21 +26,29 @@ import nor.util.log.EasyLogger;
 
 
 /**
- * 一つのHttpメッセージを表す抽象クラス．
- * Httpメッセージは，メッセージヘッダとメッセージボディを一つずつ持つ．
+ * HTTP メッセージを表す抽象クラス．
+ * リクエスト及びレスポンスはこのクラスのサブクラスになります．
+ * 一つの HTTP メッセージは，メッセージヘッダとメッセージボディを一つずつ持ちます．
+ * このクラスは，それらに対するアクセッサを提供します．また，メッセージの書き出しメソッドも提供します．
  *
- * @author KAWAMOTO Junpei
+ * @author Junpei Kawamoto
+ * @since 0.1
  *
  */
 public abstract class HttpMessage{
 
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpMessage.class);
 
+	//====================================================================
+	//	Constructor
+	//====================================================================
 	/**
-	 * HTTPメッセージを書き出す．
-	 * このオブジェクトが表すメッセージをストリームに書き出す．
+	 * メッセージをストリームに書き出す．
+	 * このオブジェクトが表すメッセージをストリームに書き出します．メッセージの書き出しは破壊的操作になります．
+	 * プラグイン開発者がこのメソッドを呼ぶことはありません．
+	 * メッセージを取得する場合は，ストリームフィルタを使用してください．
 	 *
-	 * @param output 書き出し先のストリーム
+	 * @param output 書き出し先の出力ストリーム
 	 * @throws IOException ストリームの書き出しにエラーが発生した場合
 	 */
 	public void output(final OutputStream output) throws IOException{
@@ -76,9 +83,57 @@ public abstract class HttpMessage{
 	}
 
 
+	//====================================================================
+	//	Public abstract methods
+	//====================================================================
+	/**
+	 * HTTP メッセージのバージョンを取得する．
+	 *
+	 * @return HTTP メッセージのバージョン
+	 */
+	public abstract String getVersion();
 
-	/* (非 Javadoc)
-	 * @see java.lang.Object#toString()
+	/**
+	 * HTTP メッセージの要求パスを取得する.
+	 *
+	 * @return 要求パス
+	 */
+	public abstract String getPath();
+
+	/**
+	 * メッセージヘッダを取得する．
+	 *
+	 * @return ヘッダオブジェクト
+	 */
+	public abstract HttpHeader getHeader();
+
+	/**
+	 * メッセージボディを取得する．
+	 *
+	 * @return ボディオブジェクト
+	 */
+	public abstract HttpBody getBody();
+
+	/**
+	 * メッセージのヘッドラインを取得する．
+	 * ヘッドラインはリクエストとレスポンスで異なっています．
+	 * リクエストでは，
+	 * <pre>
+	 *     {Method} {Request-path} HTTP/{Version}
+	 * </pre>
+	 * というフォーマットになり，レスポンスでは，
+	 * <pre>
+	 *     HTTP/{Version} {Status-code} {Status-message}
+	 * </pre>
+	 * というフォーマットになります．
+	 *
+	 * @return HTTP メッセージのヘッドライン
+	 */
+	public abstract String getHeadLine();
+
+	/**
+	 * オブジェクトの文字列表現を返す．
+	 * このメソッドでは，ヘッドラインとヘッダのみからなる文字列を返します．
 	 */
 	@Override
 	public String toString(){
@@ -93,47 +148,7 @@ public abstract class HttpMessage{
 
 		LOGGER.exiting("toString", ret.toString());
 		return ret.toString();
+
 	}
-
-	//====================================================================
-	//	abstract メソッド
-	//====================================================================
-	/**
-	 * Httpメッセージのバージョンを返す．
-	 *
-	 * @return Httpメッセージのバージョン
-	 */
-	public abstract String getVersion();
-
-	/**
-	 * Httpメッセージの要求パスを返す.
-	 *
-	 * @return 要求パス
-	 */
-	public abstract String getPath();
-
-	/**
-	 * Httpメッセージに含まれるヘッダを返す．
-	 *
-	 * @return このHttpメッセージにおけるヘッダオブジェクト
-	 */
-	public abstract HttpHeader getHeader();
-
-	/**
-	 * Httpメッセージに含まれるメッセージボディを返す．
-	 *
-	 * @return このHttpメッセージにおけるメッセージボディオブジェクト
-	 */
-	public abstract HttpBody getBody();
-
-	/**
-	 * ヘッドラインの取得．
-	 * このメソッドはスーパークラスから呼び出されます．
-	 * サブクラスはHTTPメッセージの1行目を返します．
-	 *
-	 * @return HTTPメッセージの1行目
-	 */
-	public abstract String getHeadLine();
-
 
 }

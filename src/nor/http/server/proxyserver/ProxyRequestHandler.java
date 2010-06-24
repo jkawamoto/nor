@@ -39,6 +39,7 @@ import nor.http.HeaderName;
 import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
+import nor.http.Method;
 import nor.http.Status;
 import nor.http.error.HttpException;
 import nor.http.server.HttpRequestHandler;
@@ -111,7 +112,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		HttpResponse response = null;
 		try{
 
-			if("CONNECT".equals(request.getMethod())){
+			if(Method.CONNECT.equals(request.getMethod())){
 
 				throw new HttpException(Status.NotImplemented);
 

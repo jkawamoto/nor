@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * Set-Cookie: num=123456; expires=Sun, 10-Jun-2001 12:00:00 GMT; path=/HTTP/
  * </p>
  *
- * @author KAWAMOTO Junpei
+ * @author Junpei Kawamoto
  *
  */
 public class SetCookie implements Iterable<SetCookie.Entry>{

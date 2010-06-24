@@ -104,6 +104,15 @@ public class HttpBody implements Closeable{
 	//====================================================================
 	//  public メソッド
 	//====================================================================
+	/**
+	 * メッセージボディをストリームに書き出す．
+	 * メッセージの書き出しは破壊的操作になります．
+	 * プラグイン開発者がこのメソッドを呼ぶことはありません．
+	 * メッセージを取得する場合は，ストリームフィルタを使用してください．
+	 *
+	 * @param out 書き出し先の出力ストリーム
+	 * @throws IOException ストリームの書き出しにエラーが発生した場合
+	 */
 	public void output(final OutputStream out) throws IOException{
 
 		if(this.in != null){
@@ -115,6 +124,16 @@ public class HttpBody implements Closeable{
 
 	}
 
+	/**
+	 * メッセージボディをストリームに書き出す．
+	 * メッセージの書き出しは破壊的操作になります．
+	 * プラグイン開発者がこのメソッドを呼ぶことはありません．
+	 * メッセージを取得する場合は，ストリームフィルタを使用してください．
+	 *
+	 * @param out 書き出し先の出力ストリーム
+	 * @param header メッセージヘッダ
+	 * @throws IOException ストリームの書き出しにエラーが発生した場合
+	 */
 	public void output(final OutputStream out, final HttpHeader header) throws IOException{
 
 		OutputStream cout = out;
@@ -153,7 +172,10 @@ public class HttpBody implements Closeable{
 	}
 
 	/**
-	 * 入力ストリームを取得する．
+	 * メッセージボディが含まれている入力ストリームを取得します．
+	 * この入力ストリームに対する操作は破壊的になります．
+	 * つまり，ここからデータを読み込むとクライアントには転送されません．
+	 * このメソッドをプラグイン開発者が呼び出すことはほとんどありません．
 	 *
 	 * @return このメッセージボディに設定されている入力ストリーム
 	 */
@@ -165,7 +187,7 @@ public class HttpBody implements Closeable{
 	}
 
 	/**
-	 * 入力ストリームを設定する．
+	 * メッセージボディに新しい入力ストリームを設定する．
 	 *
 	 * @param in このメッセージボディに設定する入力ストリーム
 	 */
@@ -173,6 +195,7 @@ public class HttpBody implements Closeable{
 		LOGGER.entering("setStream", in);
 
 		this.in = in;
+		// TODO: Content-Length は分からなくなる。
 
 		LOGGER.exiting("setStream");
 	}

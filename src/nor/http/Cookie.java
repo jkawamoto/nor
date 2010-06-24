@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  * HTTPヘッダ中のCookieヘッダを解析してキーやサブキー，そしてそれらに関連付けられた値を
  * 取りだし管理します．また，そうしたエントリに対するアクセッサも提供します．
  *
- * @author KAWAMOTO Junpei
+ * @author Junpei Kawamoto
  */
 public class Cookie{
 

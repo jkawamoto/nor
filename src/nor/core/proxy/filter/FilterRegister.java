@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -17,15 +17,40 @@
  */
 package nor.core.proxy.filter;
 
-
+/**
+ * ストリームフィルタの登録先．
+ *
+ * @author Junpei Kawamoto
+ * @since 0.1
+ */
 public interface FilterRegister {
 
+	/**
+	 * EditingByteFilter を登録します．
+	 *
+	 * @param filter 登録する EditingByteFilter フィルタ
+	 */
 	public abstract void add(final EditingByteFilter filter);
 
+	/**
+	 * EditingStringFilter を登録します．
+	 *
+	 * @param filter 登録する EditingStringFilter フィルタ
+	 */
 	public abstract void add(final EditingStringFilter filter);
 
+	/**
+	 * ReadonlyByteFilter を登録します．
+	 *
+	 * @param filter 登録する ReadonlyByteFilter フィルタ
+	 */
 	public abstract void add(final ReadonlyByteFilter filter);
 
+	/**
+	 * ReadonlyStringFilter を登録します．
+	 *
+	 * @param filter 登録する ReadonlyStringFilter フィルタ
+	 */
 	public abstract void add(final ReadonlyStringFilter filter);
 
 }

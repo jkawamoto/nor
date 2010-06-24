@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,14 @@
  */
 package nor.http;
 
+/**
+ * HTTP/1.1 で定義されるヘッダ．
+ * 各ヘッダの詳細は，
+ * <a href="http://www.ietf.org/rfc/rfc2068.txt"/>RFC 2068: Hypertext Transfer Protocol -- HTTP/1.1</a>
+ * を参照してください．
+ *
+ * @author Junpei Kawamoto
+ */
 public enum HeaderName {
 
 	ContentLength("content-length"),
@@ -131,18 +139,21 @@ public enum HeaderName {
 
 	}
 
+	/**
+	 * 文字列として一致するか．
+	 *
+	 * @param anotherString 比較する文字列
+	 * @return 与えられた文字列がヘッダ名と一致する場合 true
+	 */
 	public boolean equals(final String anotherString){
 
-		return this.name.equals(anotherString);
+		return this.name.equalsIgnoreCase(anotherString);
 
 	}
 
-	public boolean equalsIgnoreCase(String anotherString) {
-
-		return name.equalsIgnoreCase(anotherString);
-
-	}
-
+	/* (非 Javadoc)
+	 * @see java.lang.Enum#toString()
+	 */
 	@Override
 	public String toString(){
 

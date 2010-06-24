@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -49,7 +49,7 @@ import nor.util.log.EasyLogger;
 /**
  * nor システム用 HTTP リクエストハンドラ
  *
- * @author KAWAMOTO Junpei
+ * @author Junpei Kawamoto
  *
  */
 class ProxyHandler implements HttpRequestHandler{

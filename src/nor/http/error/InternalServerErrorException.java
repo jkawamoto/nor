@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2009 KAWAMOTO Junpei
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -20,14 +20,13 @@ package nor.http.error;
 import nor.http.Status;
 
 /**
- * @author KAWAMOTO Junpei
+ * 500 Internal Server Error エラーを表す例外クラス．
  *
+ * @author Junpei Kawamoto
+ * @since 0.1
  */
 public class InternalServerErrorException extends HttpException{
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 1L;
 
 	public static final Status status = Status.InternalServerError;

@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,19 @@
  */
 package nor.core.proxy.filter;
 
-
+/**
+ * ReadonlyByteFilter 実装用のアダプタクラス．
+ *
+ * @author Junpei Kawamoto
+ * @since 0.1
+ */
 public abstract class ReadonlyByteFilterAdapter implements ReadonlyByteFilter{
 
+	//============================================================================
+	//  Public methods
+	//============================================================================
 	/* (非 Javadoc)
-	 * @see java.io.Closeable#close()
+	 * @see nor.core.proxy.filter.ReadonlyByteFilter#close()
 	 */
 	@Override
 	public void close(){

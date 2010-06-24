@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -19,11 +19,27 @@ package nor.core.proxy.filter;
 
 import java.util.regex.Pattern;
 
+/**
+ * RequestFilter 実装用のアダプタクラス．
+ *
+ * @author Junpei Kawamoto
+ * @since 0.1
+ */
 public abstract class RequestFilterAdapter implements RequestFilter{
 
-	final private Pattern url;
-	final private Pattern cType;
+	private final Pattern url;
+	private final Pattern cType;
 
+	//============================================================================
+	//  Constructor
+	//============================================================================
+	/**
+	 * フィルタを適用する URL とコンテンツタイプを指定して RequestFilterAdapter を作成します．
+	 * このコンストラクタでは，URL とコンテンツタイプを Pattern オブジェクトで指定します．
+	 *
+	 * @param url フィルタを適用する URL
+	 * @param cType フィルタを適用するコンテンツタイプ
+	 */
 	public RequestFilterAdapter(final Pattern url, final Pattern cType){
 
 		this.url = url;
@@ -31,13 +47,20 @@ public abstract class RequestFilterAdapter implements RequestFilter{
 
 	}
 
+	/**
+	 * フィルタを適用する URL とコンテンツタイプを指定して RequestFilterAdapter を作成します．
+	 * このコンストラクタでは，URL とコンテンツタイプを正規表現文字列で指定します．
+	 *
+	 * @param url フィルタを適用する URL の正規表現文字列
+	 * @param cType フィルタを適用するコンテンツタイプの正規表現文字列
+	 */
 	public RequestFilterAdapter(final String urlRegex, final String cTypeRegex){
-
-		this.url = Pattern.compile(urlRegex);
-		this.cType = Pattern.compile(cTypeRegex);
-
+		this(Pattern.compile(urlRegex), Pattern.compile(cTypeRegex));
 	}
 
+	//============================================================================
+	//  Public methods
+	//============================================================================
 	/* (非 Javadoc)
 	 * @see nor.core.proxy.filter.MessageFilter#getFilteringURL()
 	 */

@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -32,16 +32,24 @@ import nor.core.proxy.filter.ResponseFilter;
 /**
  * すべてのプラグインの基底クラス．
  *
+ * プラグインは，メッセージハンドラ，リクエストフィルタそしてレスポンスフィルタの三機能を提供することができます．
+ * それぞれは，次のように働きます．
+ * <pre>
  *
- * プラグインは，メッセージハンドラ，リクエストフィルタ，レスポンスフィルタの三つの機能を提供することができます．
+ * Client(Browser)
  *
+ * </pre>
+ *
+ * プラグインの設定は， properties フィールドを用いてください．
+ * 将来的には，コンピュータが接続しているネットワークごとに異なる設定を保存することができるようになります．
  *
  * @author Junpei Kawamoto
+ * @since 0.1
  */
 public abstract class Plugin implements Closeable{
 
 	/**
-	 *
+	 * プラグインの設定が格納されます．
 	 */
 	protected final Properties properties = new Properties();
 

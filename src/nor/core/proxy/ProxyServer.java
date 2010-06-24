@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-// $Id: Lotte.java 453 2010-04-01 10:58:43Z kawamoto $
 package nor.core.proxy;
 
 import java.io.Closeable;

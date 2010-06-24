@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-// $Id: HttpRequest.java 471 2010-04-03 10:25:20Z kawamoto $
 package nor.http;
 
 import java.io.BufferedReader;
@@ -37,14 +36,19 @@ import nor.http.io.HeaderInputStream;
 import nor.util.log.EasyLogger;
 
 /**
- * 一つのHttpリクエストを表すクラス．
- * このクラスのインスタンス一つが，一つのHttpリクエストに対応している．
- * このクラスは，テキストフォーマットのHttpリクエストを元に，それをオブジェクトに変換する．
+ * HTTP リクエストを表すクラス．
+ * このクラスのインスタンス一つが，一つの HTTP リクエストに対応します．
+ * また，HTTP レスポンスはこのクラスのインスタンスがなければ作成することができません．
  *
- * また，このクラス自体は不変オブジェクトである．しかし，ヘッダ及びボディに関しては，
- * getterで取得して内部を変更することは可能である．
+ * @author Junpei Kawamoto
  *
- * @author KAWAMOTO Junpei
+ */
+/**
+ * @author Junpei
+ *
+ */
+/**
+ * @author Junpei
  *
  */
 public class HttpRequest extends HttpMessage{
@@ -125,7 +129,7 @@ public class HttpRequest extends HttpMessage{
 	//	public メソッド
 	//====================================================================
 	/**
-	 * このHTTPリクエストのメソッド名を返す．
+	 * メソッド名を取得する．
 	 *
 	 * @return このHTTPリクエストのメソッド名
 	 */
@@ -141,9 +145,9 @@ public class HttpRequest extends HttpMessage{
 
 
 	/**
-	 * このHTTPリクエストにおける要求パスを設定する．
+	 * リクエストの要求パスを設定する．
 	 *
-	 * @param path このHTTPリクエストの新しい要求パス
+	 * @param path この HTTP リクエストの新しい要求パス
 	 */
 	public void setPath(final String path){
 		LOGGER.entering("setPath", path);
@@ -153,25 +157,22 @@ public class HttpRequest extends HttpMessage{
 		LOGGER.exiting("setPath");
 	}
 
-	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#toString()
-	 */
-	@Override
-	public String toString(){
-		LOGGER.entering("toString");
-
-		final String ret = String.format("Request[method=%s, path=%s]", this.getMethod(), this.getPath());
-
-		//		final StringBuilder ret = new StringBuilder();
-		//
-		//		ret.append(this.getHeadLine());
-		//		ret.append("\n");
-		//		ret.append(this.getHeader().toString());
-
-		LOGGER.exiting("toString", ret);
-		return ret.toString();
-
-	}
+//	@Override
+//	public String toString(){
+//		LOGGER.entering("toString");
+//
+//		final String ret = String.format("Request[method=%s, path=%s]", this.getMethod(), this.getPath());
+//
+//		//		final StringBuilder ret = new StringBuilder();
+//		//
+//		//		ret.append(this.getHeadLine());
+//		//		ret.append("\n");
+//		//		ret.append(this.getHeader().toString());
+//
+//		LOGGER.exiting("toString", ret);
+//		return ret.toString();
+//
+//	}
 
 	//	/**
 	//	 * このHTTPリクエストに含まれるクエリを返す．
@@ -248,10 +249,16 @@ public class HttpRequest extends HttpMessage{
 	//	レスポンスの作成
 	//--------------------------------------------------------------------
 	/**
-	 * 入力ストリームからレスポンスオブジェクトを作成する．
+	 * 入力ストリームを指定してレスポンスを作成する．
+	 * 指定された入力ストリームをもとに，このリクエストに対するレスポンスを作成します．
 	 *
-	 * @param input レスポンスを含むストリーム
-	 * @throws HttpError
+	 * 入力ストリームには，レスポンスライン，ヘッダそしてボディのすべてが含まれている必要があります．
+	 * メッセージボディのみを渡してレスポンスを作成したい場合は，
+	 * {@link  createResponse(Status, InputStream)}メソッドを使用します．
+	 *
+	 * @param input レスポンスが含まれている入力ストリーム
+	 * @return 作成されたレスポンス
+	 * @throws HttpError 何らかのエラーが発生した場合
 	 */
 	public HttpResponse createResponse(final InputStream input) throws HttpException{
 		LOGGER.entering("createResponse", input);
@@ -264,11 +271,12 @@ public class HttpRequest extends HttpMessage{
 	}
 
 	/**
-	 * HttpURLコネクションからレスポンスを作成する．
-	 * リクエストを処理しレスポンスを作成する．
+	 * HttpURLConnection のインスタンスを指定してレスポンスを作成する．
+	 * 指定された HttpURLConnection インスタンスからレスポンスを作成します．
 	 *
-	 * @param con
-	 * @return
+	 * @param con HttpURLConnection インスタンス
+	 * @return 作成されたレスポンス
+	 * @throws HttpError 何らかのエラーが発生した場合
 	 */
 	public HttpResponse createResponse(final HttpURLConnection con) throws HttpException{
 		LOGGER.entering("createResponse", con);
@@ -381,10 +389,20 @@ public class HttpRequest extends HttpMessage{
 	}
 
 	/**
+	 * 指定されたステータスを持ち，指定された入力ストリームをメッセージボディとするレスポンスを作成します．
+	 * メッセージボディのみからなる入力ストリームを用いてレスポンスを作成する場合は，
+	 * このメソッドを使用してください．
 	 *
-	 * @param status
-	 * @param body 圧縮されていないデータストリーム
-	 * @return
+	 * 入力ストリームには，転送コーディング及び内容コーディングのどちらも施されていてはいけません．
+	 * あらかじめデコードした上でこのメソッドを呼び出してください．
+	 *
+	 * このメソッドにより作成されたレスポンスは，空のメッセージヘッダを持ちます．
+	 * 返されたレスポンスに対して適切なヘッダ値を設定してください．
+	 * 少なくとも，Content-Length か Transfer-Encoding のいずれかは指定する必要があります．
+	 *
+	 * @param status レスポンスのステータス
+	 * @param body メッセージボディとなる入力ストリーム
+	 * @return 作成されたレスポンス
 	 */
 	public HttpResponse createResponse(final Status status, final InputStream body){
 
@@ -394,11 +412,12 @@ public class HttpRequest extends HttpMessage{
 	}
 
 	/**
-	 * ステータスコードのみからレスポンスを作成する
+	 * ステータス情報のみからレスポンスを作成する．
+	 * 空のヘッダとメッセージボディからなるレスポンスを作成します．
 	 *
-	 * @param status
-	 * @return
-	 * @throws HttpError
+	 * @param status レスポンスのステータス
+	 * @return 作成されたレスポンス
+	 * @throws HttpError 何らかのエラーが発生した場合
 	 */
 	public HttpResponse createResponse(final Status status){
 
@@ -406,9 +425,26 @@ public class HttpRequest extends HttpMessage{
 
 	}
 
+	/**
+	 * 指定されたステータスと文字列メッセージボディを持つレスポンスを作成します．
+	 * 現在のバージョンでは，バイト列に変換した時に Integer の範囲を超える文字列は扱えません．
+	 * そのような場合は，{@link createResponse(Status, InputStream)}を使用してください．
+	 *
+	 * このメソッドを用いて作成したレスポンスでは，Content-Length ヘッダのみ設定されます．
+	 *
+	 * @param status レスポンスのステータス
+	 * @param body メッセージボディとなる文字列
+	 * @return 作成されたレスポンス
+	 */
 	public HttpResponse createResponse(final Status status, final String body){
 
-		return this.createResponse(status, new ByteArrayInputStream(body.getBytes()));
+		final byte[] b = body.getBytes();
+		final HttpResponse ret = this.createResponse(status, new ByteArrayInputStream(b));
+
+		final HttpHeader header = ret.getHeader();
+		header.set(HeaderName.ContentLength, Integer.toString(b.length));
+
+		return ret;
 
 	}
 
@@ -416,7 +452,7 @@ public class HttpRequest extends HttpMessage{
 	//	HttpMessage のオーバーライド
 	//--------------------------------------------------------------------
 	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#getVersion()
+	 * @see nor.http.HttpMessage#getVersion()
 	 */
 	@Override
 	public String getVersion(){
@@ -430,7 +466,7 @@ public class HttpRequest extends HttpMessage{
 	}
 
 	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#getPath()
+	 * @see nor.http.HttpMessage#getPath()
 	 */
 	@Override
 	public String getPath(){
@@ -443,8 +479,8 @@ public class HttpRequest extends HttpMessage{
 
 	}
 
-	/* (non-Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#getHeadLine()
+	/* (非 Javadoc)
+	 * @see nor.http.HttpMessage#getHeadLine()
 	 */
 	@Override
 	public String getHeadLine() {
@@ -457,7 +493,7 @@ public class HttpRequest extends HttpMessage{
 	}
 
 	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#getHeader()
+	 * @see nor.http.HttpMessage#getHeader()
 	 */
 	@Override
 	public HttpHeader getHeader() {
@@ -467,7 +503,7 @@ public class HttpRequest extends HttpMessage{
 	}
 
 	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.http.HttpMessage#getBody()
+	 * @see nor.http.HttpMessage#getBody()
 	 */
 	@Override
 	public HttpBody getBody() {
@@ -479,6 +515,13 @@ public class HttpRequest extends HttpMessage{
 	//====================================================================
 	//	public static メソッド
 	//====================================================================
+	/**
+	 * 入力ストリームを指定してリクエストを作成する．
+	 *
+	 * @param input リクエストが含まれている入力ストリーム
+	 * @param prefix 将来のために予約されています
+	 * @return 作成されたリクエスト，不正なリクエストの場合は null
+	 */
 	public static HttpRequest create(final InputStream input, final String prefix){
 
 		try{

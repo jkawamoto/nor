@@ -1,4 +1,4 @@
-/*
+/**
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,27 +15,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.core.proxy.filter;
 
-import java.io.Closeable;
-import java.nio.ByteBuffer;
 
 /**
- * 読み取り専用のバイナリストリームフィルタが実装すべきインタフェース．
+ * ロギングに関するクラスを提供します．
  *
- * @author Junpei Kawamoto
- * @since 0.1
+ *	@since 0.1
+ *	@version 0.1
  */
-public interface ReadonlyByteFilter extends Closeable{
-
-
-	public void update(final ByteBuffer in);
-
-	/**
-	 * データの転送が終了したことを通知します．
-	 */
-	@Override
-	public void close();
-
-
-}
+package nor.util.log;

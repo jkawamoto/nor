@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -29,10 +29,6 @@ import java.util.concurrent.Executors;
 
 import nor.http.server.HttpRequestHandler;
 
-/**
- * @author Junpei
- *
- */
 class ThreadManager implements Closeable, Queue<Connection>{
 
 	private final int minThreads;

@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -19,6 +19,12 @@ package nor.core.proxy.filter;
 
 import java.io.Closeable;
 
+/**
+ * ストリーム内容を変更する可能性のある文字列ストリームフィルタが実装すべきインタフェース．
+ *
+ * @author Junpei Kawamoto
+ * @since 0.1
+ */
 public interface EditingStringFilter extends Closeable{
 
 	/**
@@ -29,6 +35,9 @@ public interface EditingStringFilter extends Closeable{
 	 */
 	public String update(final String in);
 
+	/**
+	 * データの転送が終了したことを通知します．
+	 */
 	@Override
 	public void close();
 

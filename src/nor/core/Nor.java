@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -36,7 +36,7 @@ import nor.util.log.EasyLogger;
  * アプリケーションのコアシステム．
  * 実行中は唯一つのインスタンスのみを持つ．また，メイン関数もこのクラスで定義される．
  *
- * @author KAWAMOTO Junpei
+ * @author Junpei Kawamoto
  *
  */
 public class Nor{

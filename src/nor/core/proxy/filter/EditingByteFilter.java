@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -21,15 +21,19 @@ import java.io.Closeable;
 import java.nio.ByteBuffer;
 
 /**
+ * ストリーム内容を変更する可能性のあるバイナリストリームフィルタが実装すべきインタフェース．
  *
- * @author KAWAMOTO Junpei
- *
+ * @author Junpei Kawamoto
+ * @since 0.1
  */
 public interface EditingByteFilter extends Closeable{
 
 
 	public ByteBuffer update(final ByteBuffer in);
 
+	/**
+	 * データの転送が終了したことを通知します．
+	 */
 	@Override
 	public void close();
 

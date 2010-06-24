@@ -18,35 +18,54 @@
 package nor.http;
 
 /**
- * HTTP/1.1で定義されるメソッド．
+ * HTTP/1.1 で定義されるメソッド．
+ * 各メソッドの詳細は，
+ * <a href="http://www.ietf.org/rfc/rfc2068.txt"/>RFC 2068: Hypertext Transfer Protocol -- HTTP/1.1</a>
+ * を参照してください．
  *
- * @author KAWAMOTO Junpei
- *
+ * @author Junpei Kawamoto
  */
 public enum Method {
 
 	/**
-	 * GETメソッド．
+	 * GET メソッド．
 	 */
 	GET,
 
 	/**
-	 * HEADメソッド．
+	 * HEAD メソッド．
 	 */
 	HEAD,
 
 	/**
-	 * POSTメソッド．
+	 * POST メソッド．
 	 */
 	POST,
+
+	/**
+	 * PUT メソッド．
+	 */
 	PUT,
+
+	/**
+	 * DELETE メソッド．
+	 */
 	DELETE,
+
+	/**
+	 * OPTIONS メソッド．
+	 */
 	OPTIONS,
+
+	/**
+	 * TRACE メソッド．
+	 */
 	TRACE,
+
+	/**
+	 * CONNECT メソッド．
+	 */
 	CONNECT,
-	PATCH,
-	LINK,
-	UNLINK;
 
 }
 
