@@ -98,7 +98,7 @@ public abstract class Plugin implements Closeable{
 	 */
 	public final void save(final File dir){
 
-		final File conf = new File(dir, String.format("%s.prop", this.getClass().getCanonicalName()));
+		final File conf = new File(dir, String.format("%s.conf", this.getClass().getCanonicalName()));
 		try {
 
 			this.properties.store(new FileOutputStream(conf), "");

@@ -42,6 +42,7 @@ import nor.http.HttpResponse;
 import nor.http.Method;
 import nor.http.Status;
 import nor.http.error.HttpException;
+import nor.http.error.InternalServerErrorException;
 import nor.http.server.HttpRequestHandler;
 import nor.util.log.EasyLogger;
 
@@ -132,14 +133,15 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 		} catch (final IOException e) {
 
-			LOGGER.warning(String.format("IOException [%s]", e.getLocalizedMessage()));
+			LOGGER.warning(String.format("Catch a IOException(%s)", e.getMessage()));
 
 			final StringWriter body = new StringWriter();
 			e.printStackTrace(new PrintWriter(body));
-			//response = ErrorResponseBuilder.create(request, Status.InternalServerError, body.toString());
+			response = (new InternalServerErrorException(e)).createResponse(request);
 
 		} catch (final HttpException e) {
 
+			LOGGER.warning(String.format("Catch a HttpException(%s)", e.getMessage()));
 			response = e.createResponse(request);
 
 		}

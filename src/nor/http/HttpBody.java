@@ -48,7 +48,7 @@ import nor.util.log.EasyLogger;
  */
 public class HttpBody implements Closeable{
 
-	protected InputStream in;
+	private InputStream in;
 
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpBody.class);
 
@@ -141,7 +141,8 @@ public class HttpBody implements Closeable{
 		if(header.containsKey(HeaderName.ContentLength)){
 
 			// ContentLengthが指定されていればそのサイズだけ送る
-			cout = new LimitedOutputStream(cout, Integer.parseInt(header.get(HeaderName.ContentLength)));
+			final String length = header.get(HeaderName.ContentLength).split(",")[0];
+			cout = new LimitedOutputStream(cout, Integer.parseInt(length));
 
 		}else if(Http.CHUNKED.equalsIgnoreCase(header.get(HeaderName.TransferEncoding))){
 
