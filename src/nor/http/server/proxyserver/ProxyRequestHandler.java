@@ -25,8 +25,6 @@ import static nor.http.HeaderName.ProxyConnection;
 import static nor.http.HeaderName.Via;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -42,7 +40,6 @@ import nor.http.HttpResponse;
 import nor.http.Method;
 import nor.http.Status;
 import nor.http.error.HttpException;
-import nor.http.error.InternalServerErrorException;
 import nor.http.server.HttpRequestHandler;
 import nor.util.log.EasyLogger;
 
@@ -134,10 +131,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		} catch (final IOException e) {
 
 			LOGGER.warning(String.format("Catch a IOException(%s)", e.getMessage()));
-
-			final StringWriter body = new StringWriter();
-			e.printStackTrace(new PrintWriter(body));
-			response = (new InternalServerErrorException(e)).createResponse(request);
+			response = HttpException.createResponse(request, Status.InternalServerError, e);
 
 		} catch (final HttpException e) {
 

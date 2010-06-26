@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import static nor.http.io.Chars.*;
-import nor.util.SequentialInputStream;
+import nor.util.io.SequentialInputStream;
 
 
 public class ChunkedInputStream extends SequentialInputStream{

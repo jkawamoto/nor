@@ -27,7 +27,7 @@ import java.util.List;
 
 import nor.core.proxy.filter.EditingStringFilter;
 import nor.core.proxy.filter.ReadonlyStringFilter;
-import nor.util.SequentialInputStream;
+import nor.util.io.SequentialInputStream;
 
 class FilteringCharacterInputStream extends SequentialInputStream{
 

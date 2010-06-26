@@ -15,49 +15,31 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.util;
+package nor.util.io;
 
-import java.io.FilterReader;
+import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.Reader;
+import java.io.OutputStream;
 
-public class SequentialReader extends FilterReader{
+public class NoCloseOutputStream extends FilterOutputStream{
 
-	public SequentialReader(final Reader in){
+	public NoCloseOutputStream(final OutputStream out){
 
-		super(in);
+		super(out);
 
 	}
 
-	/* (non-Javadoc)
-	 * @see java.io.FilterReader#mark(int)
-	 */
 	@Override
-	public final void mark(int readAheadLimit) throws IOException {
-
-		throw new IOException("このリーダはリセットをサポートしません。");
+	public void close() throws IOException {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see java.io.FilterReader#markSupported()
-	 */
-	@Override
-	public final boolean markSupported() {
+	public void reallyClose() throws IOException{
 
-		return false;
+		this.out.close();
 
 	}
 
-	/* (non-Javadoc)
-	 * @see java.io.FilterReader#reset()
-	 */
-	@Override
-	public final void reset() throws IOException {
-
-		throw new IOException("このリーダはリセットをサポートしません。");
-
-	}
 
 }
 

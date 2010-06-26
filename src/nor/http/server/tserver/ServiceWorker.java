@@ -31,8 +31,8 @@ import java.util.logging.Logger;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.server.HttpRequestHandler;
-import nor.util.NoCloseInputStream;
-import nor.util.NoCloseOutputStream;
+import nor.util.io.NoCloseInputStream;
+import nor.util.io.NoCloseOutputStream;
 
 
 /**

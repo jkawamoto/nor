@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.util;
+package nor.util.io;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;

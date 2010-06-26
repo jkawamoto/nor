@@ -28,9 +28,9 @@ import java.util.zip.GZIPOutputStream;
 
 import nor.http.io.ChunkedInputStream;
 import nor.http.io.ChunkedOutputStream;
-import nor.util.LimitedInputStream;
-import nor.util.LimitedOutputStream;
-import nor.util.Stream;
+import nor.util.io.LimitedInputStream;
+import nor.util.io.LimitedOutputStream;
+import nor.util.io.Stream;
 import nor.util.log.EasyLogger;
 
 

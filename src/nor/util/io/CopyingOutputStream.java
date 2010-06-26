@@ -15,31 +15,56 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.util;
+package nor.util.io;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class NoCloseOutputStream extends FilterOutputStream{
+public class CopyingOutputStream extends FilterOutputStream{
 
-	public NoCloseOutputStream(final OutputStream out){
+	private final ByteArrayOutputStream _copy = new ByteArrayOutputStream();
+
+	/**
+	 * @param out
+	 */
+	public CopyingOutputStream(final OutputStream out){
 
 		super(out);
 
 	}
 
+	/* (non-Javadoc)
+	 * @see java.io.FilterOutputStream#write(int)
+	 */
 	@Override
-	public void close() throws IOException {
+	public void write(int b) throws IOException {
+
+		this.out.write(b);
+		this._copy.write(b);
 
 	}
 
-	public void reallyClose() throws IOException{
+	/* (non-Javadoc)
+	 * @see java.io.FilterOutputStream#write(byte[], int, int)
+	 */
+	@Override
+	public void write(byte[] b, int off, int len) throws IOException {
 
-		this.out.close();
+		this.out.write(b, off, len);
+		this._copy.write(b, off, len);
 
 	}
 
+	/**
+	 * @return
+	 */
+	public byte[] getCopy(){
+
+		return this._copy.toByteArray();
+
+	}
 
 }
 

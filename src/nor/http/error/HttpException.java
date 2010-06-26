@@ -135,4 +135,35 @@ public class HttpException extends Exception{
 
 	}
 
+	//============================================================================
+	//  Public static methods
+	//============================================================================
+	public static HttpResponse createResponse(final HttpRequest request, final Status status){
+
+		final HttpException e = new HttpException(status);
+		return e.createResponse(request);
+
+	}
+
+	public static HttpResponse createResponse(final HttpRequest request, final Status status, final String message){
+
+		final HttpException e = new HttpException(status, message);
+		return e.createResponse(request);
+
+	}
+
+	public static HttpResponse createResponse(final HttpRequest request, final Status status, final Throwable cause){
+
+		final HttpException e = new HttpException(status, cause);
+		return e.createResponse(request);
+
+	}
+
+	public static HttpResponse createResponse(final HttpRequest request, final Status status, final String message, final Throwable cause){
+
+		final HttpException e = new HttpException(status, message, cause);
+		return e.createResponse(request);
+
+	}
+
 }

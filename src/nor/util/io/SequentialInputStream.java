@@ -15,54 +15,40 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.util;
+package nor.util.io;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FilterOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 
-public class CopyingOutputStream extends FilterOutputStream{
-
-	private final ByteArrayOutputStream _copy = new ByteArrayOutputStream();
+public class SequentialInputStream extends FilterInputStream{
 
 	/**
-	 * @param out
+	 * @param in
 	 */
-	public CopyingOutputStream(final OutputStream out){
+	protected SequentialInputStream(InputStream in) {
 
-		super(out);
+		super(in);
 
 	}
 
 	/* (non-Javadoc)
-	 * @see java.io.FilterOutputStream#write(int)
+	 * @see java.io.FilterInputStream#markSupported()
 	 */
 	@Override
-	public void write(int b) throws IOException {
+	public final boolean markSupported() {
 
-		this.out.write(b);
-		this._copy.write(b);
+		return false;
 
 	}
 
 	/* (non-Javadoc)
-	 * @see java.io.FilterOutputStream#write(byte[], int, int)
+	 * @see java.io.FilterInputStream#reset()
 	 */
 	@Override
-	public void write(byte[] b, int off, int len) throws IOException {
+	public final synchronized void reset() throws IOException {
 
-		this.out.write(b, off, len);
-		this._copy.write(b, off, len);
-
-	}
-
-	/**
-	 * @return
-	 */
-	public byte[] getCopy(){
-
-		return this._copy.toByteArray();
+		throw new IOException("このストリームはリセットをサポートしません。");
 
 	}
 

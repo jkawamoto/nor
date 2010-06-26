@@ -28,7 +28,7 @@ import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import nor.util.CopyingInputStream;
+import nor.util.io.CopyingInputStream;
 
 class CharsetDetectingInputStream extends FilterInputStream{
 
