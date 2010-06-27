@@ -175,8 +175,7 @@ class FilteringByteInputStream extends InputStream{
 
 		for(final ReadonlyByteFilter f : this.readonlyFilters){
 
-			f.update(this.buffer);
-			this.buffer.rewind();
+			f.update(this.buffer.asReadOnlyBuffer());
 
 		}
 
