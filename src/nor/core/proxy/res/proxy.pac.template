@@ -2,7 +2,12 @@ function FindProxyForURL(url, host){
 
 	var proxy = "PROXY {PROXY_URL}";
 
-	{FILTERING_RULE}
+	if(url.substr(0, 5) !== "https"){
+
+		{FILTERING_RULE}
+
+	}
+
 	{ROUTING_RULE}
 
 	return "DIRECT";

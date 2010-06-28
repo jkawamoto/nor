@@ -37,6 +37,12 @@ public class FixedSizeMap<Key, Value> implements Map<Key, Value>{
 
 	public Map.Entry<Key, Value> find(final Object key){
 
+		if(key == null){
+
+			return null;
+
+		}
+
 		for(final Map.Entry<Key, Value> e : this.elem){
 
 			if(key.equals(e.getKey())){

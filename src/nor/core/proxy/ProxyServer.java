@@ -240,7 +240,7 @@ public class ProxyServer implements Closeable{
 			routing_rule.append(addr.getHostName());
 			routing_rule.append(":");
 			routing_rule.append(addr.getPort());
-			routing_rule.append("\";}");
+			routing_rule.append("\";}\n");
 
 		}
 

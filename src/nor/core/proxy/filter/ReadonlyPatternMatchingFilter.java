@@ -25,7 +25,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class ReadonlyPatternMatchingFilter extends ReadonlyStringFilterAdapter{
+public class ReadonlyPatternMatchingFilter extends ReadonlyStringFilterAdapter{
 
 	private final Map<Pattern, List<MatchingEventListener>> listeners = new HashMap<Pattern, List<MatchingEventListener>>();
 
@@ -68,6 +68,12 @@ public abstract class ReadonlyPatternMatchingFilter extends ReadonlyStringFilter
 			this.listeners.put(pat, list);
 
 		}
+
+	}
+
+	public void addEventListener(final String regex, final MatchingEventListener l){
+
+		this.addEventListener(Pattern.compile(regex), l);
 
 	}
 

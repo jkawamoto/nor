@@ -119,6 +119,11 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 			HttpURLConnection con;
 			final URL url = new URL(request.getPath());
 			final Proxy proxy = this.router.query(request.getPath());
+			if(proxy != Proxy.NO_PROXY){
+
+				LOGGER.info("Using proxy " + proxy);
+
+			}
 			con = (HttpURLConnection)url.openConnection(proxy);
 
 			// リクエストの送信とレスポンスの作成

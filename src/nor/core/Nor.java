@@ -125,7 +125,7 @@ public class Nor{
 		final String routings = this.config.get("nor.routing");
 		if(routings != null){
 
-			final Pattern pat = Pattern.compile("([^=]+)=([^;]+)");
+			final Pattern pat = Pattern.compile("([^;=]+)=([^;]+)");
 			final Matcher m = pat.matcher(routings);
 			while(m.find()){
 

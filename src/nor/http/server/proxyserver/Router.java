@@ -47,7 +47,7 @@ public class Router implements Map<Pattern, Proxy>, Querable<Proxy>{
 		for(final Pattern p : this.routs.keySet()){
 
 			final Matcher m = p.matcher(url);
-			if(m.matches()){
+			if(m.find()){
 
 				return this.routs.get(p);
 
