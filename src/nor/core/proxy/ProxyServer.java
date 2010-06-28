@@ -17,17 +17,24 @@
  */
 package nor.core.proxy;
 
+import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
+import java.net.Proxy.Type;
 import java.util.regex.Pattern;
 
 import nor.core.plugin.Plugin;
+import nor.core.proxy.LocalContentsHandler.Contents;
 import nor.core.proxy.filter.MessageHandler;
 import nor.core.proxy.filter.RequestFilter;
 import nor.core.proxy.filter.ResponseFilter;
 import nor.http.server.HttpServer;
 import nor.http.server.nserver.HttpNServer;
+import nor.http.server.proxyserver.Router;
 import nor.util.log.EasyLogger;
 
 /**
@@ -52,6 +59,11 @@ public class ProxyServer implements Closeable{
 	private final ProxyHandler handler;
 
 	/**
+	 * 外部プロキシルーティングテーブル
+	 */
+	private final Router router = new Router();;
+
+	/**
 	 * ロガー
 	 */
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(ProxyServer.class);
@@ -63,7 +75,7 @@ public class ProxyServer implements Closeable{
 		LOGGER.entering("<init>", name);
 		assert name != null;
 
-		this.handler = new ProxyHandler(name, HttpNServer.VERSION);
+		this.handler = new ProxyHandler(name, HttpNServer.VERSION, this.router);
 		this.server = new HttpNServer(this.handler);
 
 		LOGGER.exiting("<init>");
@@ -83,6 +95,11 @@ public class ProxyServer implements Closeable{
 		LOGGER.entering("start", hostname, (Object)port);
 		assert hostname != null && hostname.length() != 0;
 		assert port > 0;
+
+		// PAC ファイルの登録
+		final LocalContentsHandler h  =new LocalContentsHandler();
+		h.put("/nor/core/proxy.pac", new Contents(this.getPAC(hostname, port), "application/x-javascript-config"));
+		this.handler.attach(h);
 
 		// サービスの開始
 		this.server.start(hostname, port);
@@ -200,7 +217,8 @@ public class ProxyServer implements Closeable{
 		assert pat != null;
 		assert extProxyHost != null;
 
-		this.handler.addRouting(pat, extProxyHost);
+		final InetSocketAddress extProxyAddr = new InetSocketAddress(extProxyHost.getHost(), extProxyHost.getPort());
+		this.router.put(pat, new Proxy(Type.HTTP, extProxyAddr));
 
 		LOGGER.exiting("addRouting");
 	}
@@ -213,9 +231,54 @@ public class ProxyServer implements Closeable{
 		LOGGER.entering("removeRouting", pat);
 		assert pat != null;
 
-		this.handler.removeRouting(pat);
+		this.router.remove(pat);
+//		this.handler.removeRouting(pat);
 
 		LOGGER.exiting("removeRouting");
+	}
+
+	//====================================================================
+	//  Private methods
+	//====================================================================
+	private String getPAC(final String hostname, final int port) throws IOException{
+
+		final Class<?> c = this.getClass();
+		final BufferedReader rin = new BufferedReader(new InputStreamReader(c.getResourceAsStream("res/proxy.pac.template")));
+		final StringBuilder pac_template = new StringBuilder();
+		for(String buf = rin.readLine(); buf != null; buf = rin.readLine()){
+
+			pac_template.append(buf);
+			pac_template.append("\n");
+
+		}
+
+		final String proxy = String.format("%s:%d", hostname, port);
+
+		final StringBuilder filtering_rule = new StringBuilder();
+		for(final String pat : this.handler.getHandlingURLPatterns()){
+
+			filtering_rule.append("if(url.match(new RegExp(\"");
+			filtering_rule.append(pat);
+			filtering_rule.append("\"))){return proxy;}\n");
+
+		}
+
+		final StringBuilder routing_rule = new StringBuilder();
+		for(final Pattern pat : this.router.keySet()){
+
+			final InetSocketAddress addr = (InetSocketAddress)this.router.get(pat).address();
+			routing_rule.append("if(url.match(new RegExp(\"");
+			routing_rule.append(pat.pattern());
+			routing_rule.append("\"))){return \"PROXY ");
+			routing_rule.append(addr.getHostName());
+			routing_rule.append(":");
+			routing_rule.append(addr.getPort());
+			routing_rule.append("\";}");
+
+		}
+
+		return pac_template.toString().replace("{PROXY_URL}", proxy).replace("{FILTERING_RULE}", filtering_rule.toString()).replace("{ROUTING_RULE}", routing_rule.toString());
+
 	}
 
 	//====================================================================

@@ -18,8 +18,6 @@
 package nor.core.proxy;
 
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
@@ -44,6 +42,7 @@ import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.proxyserver.ProxyRequestHandler;
+import nor.http.server.proxyserver.Router;
 import nor.util.log.EasyLogger;
 
 /**
@@ -84,12 +83,13 @@ class ProxyHandler implements HttpRequestHandler{
 	//====================================================================
 	//  Constructer
 	//====================================================================
-	public ProxyHandler(final String name, final String version){
-		LOGGER.entering("<init>", name, version);
+	public ProxyHandler(final String name, final String version, final Router router){
+		LOGGER.entering("<init>", name, version, router);
 		assert name != null;
 		assert version != null;
+		assert router != null;
 
-		this.proxyHandler = new ProxyRequestHandler(name, version);
+		this.proxyHandler = new ProxyRequestHandler(name, version, router);
 
 		LOGGER.exiting("<init>");
 	}
@@ -140,6 +140,29 @@ class ProxyHandler implements HttpRequestHandler{
 
 		LOGGER.exiting("doRequest", response);
 		return response;
+
+	}
+
+	public String[] getHandlingURLPatterns(){
+
+		final List<String> pats = new ArrayList<String>();
+		for(final RequestFilter f : this.requestFilters){
+
+			pats.add(f.getFilteringURL().pattern());
+
+		}
+		for(final ResponseFilter f : this.responseFilters){
+
+			pats.add(f.getFilteringURL().pattern());
+
+		}
+		for(final MessageHandler h : this.handlers){
+
+			pats.add(h.getHandlingURL().pattern());
+
+		}
+
+		return pats.toArray(new String[0]);
 
 	}
 
@@ -252,37 +275,6 @@ class ProxyHandler implements HttpRequestHandler{
 		}
 
 		LOGGER.exiting("detach");
-	}
-
-	//--------------------------------------------------------------------
-	//  外部プロキシの設定
-	//--------------------------------------------------------------------
-	/**
-	 * 外部プロキシを設定する．
-	 * @param extProxyHost プロキシホスト
-	 * @throws MalformedURLException
-	 */
-	public void addRouting(final Pattern pat, final URL extProxyHost){
-		LOGGER.entering("setExternalProxy", pat, extProxyHost);
-		assert pat != null;
-		assert extProxyHost != null;
-
-		this.proxyHandler.addRouting(pat, extProxyHost);
-
-		LOGGER.exiting("setExternalProxy");
-	}
-
-	/**
-	 * 外部プロキシの設定を解除する．
-	 *
-	 */
-	public void removeRouting(final Pattern pat){
-		LOGGER.entering("removeExternalProxy", pat);
-		assert pat != null;
-
-		this.proxyHandler.removeRouting(pat);
-
-		LOGGER.exiting("removeExternalProxy");
 	}
 
 	//====================================================================

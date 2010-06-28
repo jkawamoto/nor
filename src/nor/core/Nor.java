@@ -41,10 +41,10 @@ import nor.util.log.EasyLogger;
  */
 public class Nor{
 
-	/**
-	 * 唯一のインスタンス
-	 */
-	private static Nor instance;
+//	/**
+//	 * 唯一のインスタンス
+//	 */
+//	private static Nor instance;
 
 
 	/**
@@ -211,23 +211,23 @@ public class Nor{
 	//============================================================================
 	//  static メソッド
 	//============================================================================
-	public static Nor instance(){
-		LOGGER.entering(Nor.class.getName(), "getInstance");
-
-		final Nor ret = instance;
-
-		LOGGER.exiting(Nor.class.getName(), "getInstance", ret);
-		return ret;
-	}
-
-	private static Nor create(){
-		LOGGER.entering("create");
-
-		Nor.instance = new Nor();
-
-		LOGGER.exiting("create", Nor.instance);
-		return Nor.instance;
-	}
+//	public static Nor instance(){
+//		LOGGER.entering(Nor.class.getName(), "getInstance");
+//
+//		final Nor ret = instance;
+//
+//		LOGGER.exiting(Nor.class.getName(), "getInstance", ret);
+//		return ret;
+//	}
+//
+//	private static Nor create(){
+//		LOGGER.entering("create");
+//
+//		Nor.instance = new Nor();
+//
+//		LOGGER.exiting("create", Nor.instance);
+//		return Nor.instance;
+//	}
 
 
 	//============================================================================
@@ -249,7 +249,7 @@ public class Nor{
 		}
 
 		// 唯一のインスタンスを作成
-		final Nor nor = Nor.create();
+		final Nor nor = new Nor();
 
 		// 初期化
 		nor.init();

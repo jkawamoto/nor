@@ -1,0 +1,10 @@
+function FindProxyForURL(url, host){
+
+	var proxy = "PROXY {PROXY_URL}";
+
+	{FILTERING_RULE}
+	{ROUTING_RULE}
+
+	return "DIRECT";
+
+}

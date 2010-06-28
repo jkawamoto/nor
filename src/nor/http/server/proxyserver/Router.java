@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -27,13 +27,17 @@ import java.util.regex.Pattern;
 
 import nor.util.Querable;
 
+/**
+ * 外部プロキシ用のルーティングテーブル．
+ * 正規表現を用いたURLパターン毎に外部プロキシを設定することができます．
+ *
+ * @author Junpei Kawamoto
+ *
+ */
 public class Router implements Map<Pattern, Proxy>, Querable<Proxy>{
 
 	private final Map<Pattern, Proxy> routs = new HashMap<Pattern, Proxy>();
 
-	/* (非 Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.util.Querable#query(java.lang.String)
-	 */
 	@Override
 	public Proxy query(final String url){
 

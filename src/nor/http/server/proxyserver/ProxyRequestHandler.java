@@ -26,12 +26,8 @@ import static nor.http.HeaderName.Via;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
 import java.net.Proxy;
-import java.net.Proxy.Type;
 import java.net.URL;
-import java.util.regex.Pattern;
 
 import nor.http.HeaderName;
 import nor.http.HttpHeader;
@@ -66,11 +62,10 @@ import nor.util.log.EasyLogger;
  */
 public class ProxyRequestHandler implements HttpRequestHandler{
 
-	// このクラスはスレッドセーフ
 	private final String name;
 	private final String version;
 
-	private final Router router = new Router();
+	private final Router router;
 
 	private static final String Close = "close";
 	private static final String VIA_FORMAT = "%s %s";
@@ -81,13 +76,15 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 	//============================================================================
 	//  public メソッド
 	//============================================================================
-	public ProxyRequestHandler(final String name, final String version){
-		LOGGER.entering("<init>", name, version);
+	public ProxyRequestHandler(final String name, final String version, final Router router){
+		LOGGER.entering("<init>", name, version, router);
 		assert name != null && name.length() != 0;
 		assert version != null;
+		assert router != null;
 
 		this.name = name;
 		this.version = version;
+		this.router = router;
 
 		HttpURLConnection.setFollowRedirects(false);
 
@@ -110,6 +107,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		HttpResponse response = null;
 		try{
 
+			// TODO: CONNECT メソッドへの対応
 			if(Method.CONNECT.equals(request.getMethod())){
 
 				throw new HttpException(Status.NotImplemented);
@@ -148,41 +146,6 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		LOGGER.exiting("doRequest", response);
 		return response;
 
-	}
-
-	//--------------------------------------------------------------------
-	//  外部プロキシの設定
-	//--------------------------------------------------------------------
-	/**
-	 * 外部プロキシを設定する．
-	 * @param extProxyHost プロキシホスト名
-	 * @param extProxyPort プロキシポート番号
-	 * @throws MalformedURLException
-	 */
-	public void addRouting(final Pattern pat, final URL extProxyHost){
-		LOGGER.entering("addRouting", pat, extProxyHost);
-		assert pat != null;
-		assert extProxyHost != null;;
-
-		final InetSocketAddress extProxyAddr = new InetSocketAddress(extProxyHost.getHost(), extProxyHost.getPort());
-		this.router.put(pat, new Proxy(Type.HTTP, extProxyAddr));
-
-		LOGGER.info("外部プロキシを使用 [" + extProxyAddr + "]");
-
-		LOGGER.exiting("addRouting");
-	}
-
-	/**
-	 * 外部プロキシの設定を解除する．
-	 *
-	 */
-	public void removeRouting(final Pattern pat){
-		LOGGER.entering("removeRouting", pat);
-		assert pat != null;
-
-		this.router.remove(pat);
-
-		LOGGER.exiting("removeRouting");
 	}
 
 	//============================================================================
