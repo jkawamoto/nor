@@ -25,10 +25,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import nor.core.plugin.Plugin;
 import nor.core.proxy.ProxyServer;
+import nor.http.server.proxyserver.Router;
 import nor.util.log.EasyLogger;
 
 
@@ -41,16 +43,12 @@ import nor.util.log.EasyLogger;
  */
 public class Nor{
 
-//	/**
-//	 * 唯一のインスタンス
-//	 */
-//	private static Nor instance;
-
-
 	/**
 	 * ローカルプロキシ
 	 */
 	private ProxyServer proxy;
+
+	private Router router = new Router();
 
 	private final File confDir;
 
@@ -107,7 +105,7 @@ public class Nor{
 	private void init(){
 		LOGGER.entering("init");
 
-		this.proxy = new ProxyServer(Nor.class.getSimpleName());
+		this.proxy = new ProxyServer(Nor.class.getSimpleName(), this.router);
 
 		// クラスパス上にあるプラグインを追加
 		for(final Plugin p : ServiceLoader.load(Plugin.class)){
@@ -119,6 +117,31 @@ public class Nor{
 				this.plugins.add(p);
 
 			}
+
+		}
+
+		// ルーティングテーブルの読み込み
+		final String routings = this.config.get("nor.routing");
+		if(routings != null){
+
+			final Pattern pat = Pattern.compile("([^=]+)=([^;]+)");
+			final Matcher m = pat.matcher(routings);
+			while(m.find()){
+
+				try{
+
+					final String regex = m.group(1);
+					final URL url = new URL(m.group(2));
+					this.router.put(regex, url);
+
+				}catch(final MalformedURLException e){
+
+					e.printStackTrace();
+
+				}
+
+			}
+
 
 		}
 
@@ -209,28 +232,6 @@ public class Nor{
 
 
 	//============================================================================
-	//  static メソッド
-	//============================================================================
-//	public static Nor instance(){
-//		LOGGER.entering(Nor.class.getName(), "getInstance");
-//
-//		final Nor ret = instance;
-//
-//		LOGGER.exiting(Nor.class.getName(), "getInstance", ret);
-//		return ret;
-//	}
-//
-//	private static Nor create(){
-//		LOGGER.entering("create");
-//
-//		Nor.instance = new Nor();
-//
-//		LOGGER.exiting("create", Nor.instance);
-//		return Nor.instance;
-//	}
-
-
-	//============================================================================
 	//  main
 	//============================================================================
 	/**
@@ -241,12 +242,12 @@ public class Nor{
 	public static void main(final String[] args) throws MalformedURLException {
 		LOGGER.entering("main", args);
 
-		// ロギング設定ファイルがVM引数で与えられていなかった場合デフォルトを設定する
-		if(System.getProperty("java.util.logging.config.file") == null){
-
-			System.setProperty("java.util.logging.config.file", "logging.properties");
-
-		}
+//		// ロギング設定ファイルがVM引数で与えられていなかった場合デフォルトを設定する
+//		if(System.getProperty("java.util.logging.config.file") == null){
+//
+//			System.setProperty("java.util.logging.config.file", "logging.properties");
+//
+//		}
 
 		// 唯一のインスタンスを作成
 		final Nor nor = new Nor();
@@ -259,7 +260,7 @@ public class Nor{
 
 			if(args[i].equals("-r") && ++i != args.length){
 
-				nor.proxy.addRouting(Pattern.compile(".*"), new URL(args[i]));
+				nor.router.put(".*", new URL(args[i]));
 
 			}else if(args[i].equals("-p") && ++i != args.length){
 

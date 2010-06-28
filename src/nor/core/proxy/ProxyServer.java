@@ -22,9 +22,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.URL;
-import java.net.Proxy.Type;
 import java.util.regex.Pattern;
 
 import nor.core.plugin.Plugin;
@@ -61,7 +59,7 @@ public class ProxyServer implements Closeable{
 	/**
 	 * 外部プロキシルーティングテーブル
 	 */
-	private final Router router = new Router();;
+	private final Router router;
 
 	/**
 	 * ロガー
@@ -71,10 +69,12 @@ public class ProxyServer implements Closeable{
 	//====================================================================
 	//  コンストラクタ
 	//====================================================================
-	public ProxyServer(final String name){
-		LOGGER.entering("<init>", name);
+	public ProxyServer(final String name, final Router router){
+		LOGGER.entering("<init>", name, router);
 		assert name != null;
+		assert router != null;
 
+		this.router = router;
 		this.handler = new ProxyHandler(name, HttpNServer.VERSION, this.router);
 		this.server = new HttpNServer(this.handler);
 
@@ -204,39 +204,6 @@ public class ProxyServer implements Closeable{
 		LOGGER.exiting("detach");
 	}
 
-	//--------------------------------------------------------------------
-	//  外部プロキシの設定
-	//--------------------------------------------------------------------
-	/**
-	 * 外部プロキシ設定を追加する．
-	 * @param pat 外部プロキシを適用するURLパターン
-	 * @param extProxyHost 外部プロキシサーバのURL
-	 */
-	public void addRouting(final Pattern pat, final URL extProxyHost){
-		LOGGER.entering("addRouting", pat, extProxyHost);
-		assert pat != null;
-		assert extProxyHost != null;
-
-		final InetSocketAddress extProxyAddr = new InetSocketAddress(extProxyHost.getHost(), extProxyHost.getPort());
-		this.router.put(pat, new Proxy(Type.HTTP, extProxyAddr));
-
-		LOGGER.exiting("addRouting");
-	}
-
-	/**
-	 * 外部プロキシ設定を削除する．
-	 * @param pat 外部プロキシ設定を削除するURLパターン
-	 */
-	public void removeRouting(final Pattern pat){
-		LOGGER.entering("removeRouting", pat);
-		assert pat != null;
-
-		this.router.remove(pat);
-//		this.handler.removeRouting(pat);
-
-		LOGGER.exiting("removeRouting");
-	}
-
 	//====================================================================
 	//  Private methods
 	//====================================================================
@@ -258,8 +225,8 @@ public class ProxyServer implements Closeable{
 		for(final String pat : this.handler.getHandlingURLPatterns()){
 
 			filtering_rule.append("if(url.match(new RegExp(\"");
-			filtering_rule.append(pat);
-			filtering_rule.append("\"))){return proxy;}\n");
+			filtering_rule.append(pat.replace("\\w", "[a-zA-Z0-9_]"));
+			filtering_rule.append("\")) !== null){return proxy;}\n");
 
 		}
 
@@ -269,7 +236,7 @@ public class ProxyServer implements Closeable{
 			final InetSocketAddress addr = (InetSocketAddress)this.router.get(pat).address();
 			routing_rule.append("if(url.match(new RegExp(\"");
 			routing_rule.append(pat.pattern());
-			routing_rule.append("\"))){return \"PROXY ");
+			routing_rule.append("\")) !== null){return \"PROXY ");
 			routing_rule.append(addr.getHostName());
 			routing_rule.append(":");
 			routing_rule.append(addr.getPort());
@@ -277,7 +244,10 @@ public class ProxyServer implements Closeable{
 
 		}
 
-		return pac_template.toString().replace("{PROXY_URL}", proxy).replace("{FILTERING_RULE}", filtering_rule.toString()).replace("{ROUTING_RULE}", routing_rule.toString());
+		final String ret =  pac_template.toString().replace("{PROXY_URL}", proxy).replace("{FILTERING_RULE}", filtering_rule.toString()).replace("{ROUTING_RULE}", routing_rule.toString());
+		System.out.println(ret);
+
+		return ret;
 
 	}
 
@@ -286,7 +256,8 @@ public class ProxyServer implements Closeable{
 	//====================================================================
 	public static void main(final String[] args){
 
-		final ProxyServer app = new ProxyServer("nor");
+		final Router router = new Router();
+		final ProxyServer app = new ProxyServer("nor", router);
 		try {
 
 			if(args.length < 2){
@@ -297,7 +268,7 @@ public class ProxyServer implements Closeable{
 			}
 			if(args.length >= 3){
 
-				app.addRouting(Pattern.compile(".*"), new URL(args[2]));
+				router.put(".*", new URL(args[2]));
 
 			}
 

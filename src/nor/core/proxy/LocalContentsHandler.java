@@ -32,7 +32,6 @@ class LocalContentsHandler extends MessageHandlerAdapter{
 				ret = request.createResponse(Status.OK, c.getData());
 
 				final HttpHeader header = ret.getHeader();
-				header.set(HeaderName.CacheControl, "no-cache");
 				header.set(HeaderName.ContentType, c.getType());
 
 			}

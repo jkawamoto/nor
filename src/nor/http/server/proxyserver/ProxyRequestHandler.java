@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-//$Id: ProxyRequestHandler.java 471 2010-04-03 10:25:20Z kawamoto $
 package nor.http.server.proxyserver;
 
 import static nor.http.HeaderName.AcceptEncoding;
@@ -29,7 +28,6 @@ import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
 
-import nor.http.HeaderName;
 import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
@@ -140,8 +138,6 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 		// ヘッダの整理
 		this.cleanHeader(response);
-
-		LOGGER.info(request.getHeadLine() + " > " + response.getHeadLine() + " (" + response.getHeader().get(HeaderName.ContentLength) + " bytes)");
 
 		LOGGER.exiting("doRequest", response);
 		return response;

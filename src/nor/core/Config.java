@@ -28,7 +28,27 @@ import nor.core.plugin.Plugin;
 import nor.util.log.EasyLogger;
 
 /**
- * @author KAWAMOTO Junpei
+ * nor 本体の設定．
+ * 設定できる項目は以下の通り．
+ * <dl>
+ * 		<dt>nor.address</dt><dd>待ち受けアドレス</dd>
+ * 		<dt>nor.port</dt><dd>待ち受けポート番号</dd>
+ * 		<dt>nor.routing</dt><dd>外部プロキシなどの設定</dd>
+ * </dl>
+ *
+ * リモートのプロキシサーバを介さなければ，ローカルネットワーク外へアクセスできない場合は nor.routing を用います．
+ * 記述方法は，
+ * <pre>
+ * 		nor.routing=&lt; URL 正規表現 &rt; = &lt; 正規表現にマッチするアドレスへの接続に用いるプロキシサーバの URL &rt;;...
+ * </pre>
+ * に従います．例えば，http://www.example1.com/ は http://proxy1:8080 を通して，http://www.example2.com/ は http://proxy2:8080 を通して
+ * 通信する必要がある場合，
+ * <pre>
+ * 		nor.routing=http://www.example1.com/=http://proxy1:8080;http://www.example2.com/=http://proxy2:8080
+ * </pre>
+ * となります．
+ *
+ * @author Junpei Kawamoto
  *
  */
 public class Config {
@@ -208,6 +228,12 @@ public class Config {
 		this.prop.setProperty(Key.LISTEN_PORT, Integer.toString(port));
 
 		LOGGER.exiting("setListenPort");
+	}
+
+	String get(final String key){
+
+		return this.prop.getProperty(key);
+
 	}
 
 

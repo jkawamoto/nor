@@ -17,7 +17,10 @@
  */
 package nor.http.server.proxyserver;
 
+import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.net.URL;
+import java.net.Proxy.Type;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,6 +56,17 @@ public class Router implements Map<Pattern, Proxy>, Querable<Proxy>{
 
 		return Proxy.NO_PROXY;
 
+	}
+
+	public void put(final Pattern pat, final URL url){
+
+		final InetSocketAddress extProxyAddr = new InetSocketAddress(url.getHost(), url.getPort());
+		this.put(pat, new Proxy(Type.HTTP, extProxyAddr));
+
+	}
+
+	public void put(final String regex, final URL url){
+		this.put(Pattern.compile(regex), url);
 	}
 
 	//--------------------------------------------------------------------

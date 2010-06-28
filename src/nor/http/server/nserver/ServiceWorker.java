@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.nio.channels.ClosedChannelException;
 import java.util.Queue;
 
+import nor.http.HeaderName;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.server.HttpRequestHandler;
@@ -98,6 +99,8 @@ class ServiceWorker implements Runnable, Closeable{
 					keepAlive &= this.isKeepingAlive(response);
 
 					try{
+
+						LOGGER.info(request.getHeadLine() + " > " + response.getHeadLine() + " (" + response.getHeader().get(HeaderName.ContentLength) + " bytes)");
 
 						// レスポンスの書き出し
 						response.output(output);

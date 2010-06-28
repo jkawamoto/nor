@@ -43,14 +43,6 @@ import nor.util.log.EasyLogger;
  * @author Junpei Kawamoto
  *
  */
-/**
- * @author Junpei
- *
- */
-/**
- * @author Junpei
- *
- */
 public class HttpRequest extends HttpMessage{
 
 	/**
