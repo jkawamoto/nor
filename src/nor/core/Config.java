@@ -51,7 +51,7 @@ import nor.util.log.EasyLogger;
  * @author Junpei Kawamoto
  *
  */
-public class Config {
+class Config {
 
 	/**
 	 * プロパティオブジェクト

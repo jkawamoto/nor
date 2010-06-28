@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 import nor.util.log.EasyLogger;
 
 
-public class Context{
+class Context{
 
 	/**
 	 * 現在のゲートウェイMACアドレス

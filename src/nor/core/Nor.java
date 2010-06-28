@@ -112,6 +112,7 @@ public class Nor{
 
 			if(this.config.isEnable(p)){
 
+				p.setExternalProxies(this.router);
 				p.load(this.confDir);
 				this.proxy.attach(p);
 				this.plugins.add(p);
@@ -163,6 +164,7 @@ public class Nor{
 			final Class<?> c = Class.forName(classname);
 			final Plugin p = (Plugin)c.newInstance();
 
+			p.setExternalProxies(this.router);
 			p.load(this.confDir);
 			this.proxy.attach(p);
 			this.plugins.add(p);
@@ -242,13 +244,6 @@ public class Nor{
 	public static void main(final String[] args) throws MalformedURLException {
 		LOGGER.entering("main", args);
 
-//		// ロギング設定ファイルがVM引数で与えられていなかった場合デフォルトを設定する
-//		if(System.getProperty("java.util.logging.config.file") == null){
-//
-//			System.setProperty("java.util.logging.config.file", "logging.properties");
-//
-//		}
-
 		// 唯一のインスタンスを作成
 		final Nor nor = new Nor();
 
@@ -288,6 +283,7 @@ public class Nor{
 			// サーバの起動
 			nor.start();
 
+			// 終了を待つ
 			System.in.read();
 
 			// 終了処理
