@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
  * </p>
  *
  * @author Junpei Kawamoto
+ * @since 0.1
  *
  */
 public class SetCookie implements Iterable<SetCookie.Entry>{

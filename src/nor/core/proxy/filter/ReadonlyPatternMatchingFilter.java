@@ -25,6 +25,13 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * 登録したパターンを探しながら転送するフィルタ．
+ *
+ * @author Junpei Kawamoto
+ * @since 0.1.20100629
+ *
+ */
 public class ReadonlyPatternMatchingFilter extends ReadonlyStringFilterAdapter{
 
 	private final Map<Pattern, List<MatchingEventListener>> listeners = new HashMap<Pattern, List<MatchingEventListener>>();
@@ -55,28 +62,47 @@ public class ReadonlyPatternMatchingFilter extends ReadonlyStringFilterAdapter{
 
 	}
 
-	public void addEventListener(final Pattern pat, final MatchingEventListener l){
+	/**
+	 * パターンを指定してマッチイベントのリスナを登録する．
+	 * pat にマッチするパターンが発見された場合，l で指定したリスナにイベントが通知されます．
+	 *
+	 * @param pat 登録するパターン．
+	 * @param listener 登録するイベントリスナ
+	 */
+	public void addEventListener(final Pattern pat, final MatchingEventListener listener){
 
 		if(this.listeners.containsKey(pat)){
 
-			this.listeners.get(pat).add(l);
+			this.listeners.get(pat).add(listener);
 
 		}else{
 
 			final List<MatchingEventListener> list = new ArrayList<MatchingEventListener>();
-			list.add(l);
+			list.add(listener);
 			this.listeners.put(pat, list);
 
 		}
 
 	}
 
-	public void addEventListener(final String regex, final MatchingEventListener l){
+	/**
+	 * パターンを指定してマッチイベントのリスナを登録する．
+	 * regex にマッチするパターンが発見された場合，l で指定したリスナにイベントが通知されます．
+	 *
+	 * @param regex 登録する正規表現文字列．
+	 * @param listener 登録するイベントリスナ
+	 */
+	public void addEventListener(final String regex, final MatchingEventListener listener){
 
-		this.addEventListener(Pattern.compile(regex), l);
+		this.addEventListener(Pattern.compile(regex), listener);
 
 	}
 
+	/**
+	 * 登録済みのリスナを削除する．
+	 *
+	 * @param l 削除するイベントリスナ
+	 */
 	public void removeEventListener(final MatchingEventListener l){
 
 		for(final Pattern pat : this.listeners.keySet()){
@@ -87,8 +113,19 @@ public class ReadonlyPatternMatchingFilter extends ReadonlyStringFilterAdapter{
 
 	}
 
+	/**
+	 * パターンマッチングイベントのリスナが実装すべきインタフェース．
+	 *
+	 * @author Junpei Kawamoto
+	 *
+	 */
 	public interface MatchingEventListener{
 
+		/**
+		 * パターンにマッチする文字列が見つかったことを通知する．
+		 *
+		 * @param result パターンマッチングの結果
+		 */
 		public void update(final MatchResult result);
 
 	}

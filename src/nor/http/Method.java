@@ -24,6 +24,7 @@ package nor.http;
  * を参照してください．
  *
  * @author Junpei Kawamoto
+ * @since 0.1
  */
 public enum Method {
 

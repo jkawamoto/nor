@@ -29,6 +29,7 @@ import java.util.logging.Logger;
  * 取りだし管理します．また，そうしたエントリに対するアクセッサも提供します．
  *
  * @author Junpei Kawamoto
+ * @since 0.1
  */
 public class Cookie{
 

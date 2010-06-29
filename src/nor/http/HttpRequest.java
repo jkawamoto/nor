@@ -41,6 +41,7 @@ import nor.util.log.EasyLogger;
  * また，HTTP レスポンスはこのクラスのインスタンスがなければ作成することができません．
  *
  * @author Junpei Kawamoto
+ * @since 0.1
  *
  */
 public class HttpRequest extends HttpMessage{
@@ -150,22 +151,22 @@ public class HttpRequest extends HttpMessage{
 	}
 
 
-//	@Override
-//	public String toString(){
-//		LOGGER.entering("toString");
-//
-//		final String ret = String.format("Request[method=%s, path=%s]", this.getMethod(), this.getPath());
-//
-//		//		final StringBuilder ret = new StringBuilder();
-//		//
-//		//		ret.append(this.getHeadLine());
-//		//		ret.append("\n");
-//		//		ret.append(this.getHeader().toString());
-//
-//		LOGGER.exiting("toString", ret);
-//		return ret.toString();
-//
-//	}
+	//	@Override
+	//	public String toString(){
+	//		LOGGER.entering("toString");
+	//
+	//		final String ret = String.format("Request[method=%s, path=%s]", this.getMethod(), this.getPath());
+	//
+	//		//		final StringBuilder ret = new StringBuilder();
+	//		//
+	//		//		ret.append(this.getHeadLine());
+	//		//		ret.append("\n");
+	//		//		ret.append(this.getHeader().toString());
+	//
+	//		LOGGER.exiting("toString", ret);
+	//		return ret.toString();
+	//
+	//	}
 
 	//	/**
 	//	 * このHTTPリクエストに含まれるクエリを返す．
@@ -325,7 +326,11 @@ public class HttpRequest extends HttpMessage{
 
 			final int code = con.getResponseCode();
 			InputStream resStream = null;
-			if(code < 400){
+			if(code == -1){
+
+				throw new InternalServerErrorException("Recieve an invalid message.");
+
+			}else if(code < 400){
 
 				resStream = con.getInputStream();
 

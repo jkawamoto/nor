@@ -34,6 +34,7 @@ import nor.util.log.EasyLogger;
  * HTTP ヘッダを表すクラス．
  *
  * @author Junpei Kawamoto
+ * @since 0.1
  *
  */
 public class HttpHeader{

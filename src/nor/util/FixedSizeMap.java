@@ -1,3 +1,20 @@
+/*
+ *  Copyright (C) 2009 KAWAMOTO Junpei
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package nor.util;
 
 import java.util.AbstractMap;
@@ -8,12 +25,29 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-// 記憶量に上限付きのマップ
+/**
+ * 記憶量に上限付きのマップ．
+ *
+ * @param <Key> マップのキーとなるクラス
+ * @param <Value> マップの値となるクラス
+ *
+ * @author Junpei Kawamoto
+ * @since 0.1.20100629
+ *
+ */
 public class FixedSizeMap<Key, Value> implements Map<Key, Value>{
 
 	private final int limit;
 	private final LinkedList<Map.Entry<Key, Value>> elem = new LinkedList<Map.Entry<Key, Value>>();
 
+	//============================================================================
+	//  Constructor
+	//============================================================================
+	/**
+	 * 記憶量を指定して FixedSizeMap を作成する．
+	 *
+	 * @param limit 記憶量の増減
+	 */
 	public FixedSizeMap(final int limit){
 
 		this.limit = limit;
@@ -21,20 +55,15 @@ public class FixedSizeMap<Key, Value> implements Map<Key, Value>{
 	}
 
 
-	@Override
-	public Value put(final Key key, final Value value) {
-
-		if(this.size() == this.limit){
-
-			this.elem.removeLast();
-
-		}
-
-		this.elem.addFirst(new AbstractMap.SimpleEntry<Key, Value>(key, value));
-		return value;
-
-	}
-
+	//============================================================================
+	//  Public methods
+	//============================================================================
+	/**
+	 * キーにマッチするマップエントリを取得する．
+	 *
+	 * @param key 検索するキー
+	 * @return キーにマッチしたマップエントリ
+	 */
 	public Map.Entry<Key, Value> find(final Object key){
 
 		if(key == null){
@@ -56,6 +85,24 @@ public class FixedSizeMap<Key, Value> implements Map<Key, Value>{
 		return null;
 
 	}
+
+	/* (非 Javadoc)
+	 * @see java.util.Map#put(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public Value put(final Key key, final Value value) {
+
+		if(this.size() == this.limit){
+
+			this.elem.removeLast();
+
+		}
+
+		this.elem.addFirst(new AbstractMap.SimpleEntry<Key, Value>(key, value));
+		return value;
+
+	}
+
 
 	@Override
 	public Value get(final Object key) {

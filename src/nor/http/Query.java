@@ -38,6 +38,7 @@ import nor.util.Codec;
  * このquery部分は通常URLエンコードされているが，本クラスで扱うものは，エンコード前の文字列である．
  *
  * @author Junpei Kawamoto
+ * @since 0.1
  *
  */
 public class Query implements Map<String, String>{

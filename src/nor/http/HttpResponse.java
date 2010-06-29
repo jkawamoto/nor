@@ -33,6 +33,7 @@ import nor.util.log.EasyLogger;
  * 一つのオブジェクトで一つのHttpレスポンスを表す．
  *
  * @author Junpei Kawamoto
+ * @since 0.1
  *
  */
 public class HttpResponse extends HttpMessage{

@@ -44,6 +44,7 @@ import nor.util.log.EasyLogger;
  * このクラスの実装は今後変更になる可能性があります．
  *
  * @author KAWAMOTO Junpei
+ * @since 0.1
  *
  */
 public class HttpBody implements Closeable{

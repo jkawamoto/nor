@@ -61,16 +61,14 @@ public abstract class Plugin implements Closeable{
 
 	/**
 	 * 設定ファイルを読み込む．
-	 * このメソッドはフレームワークから呼び出され，プラグイン開発者が使用する必要はありません．
-	 * また，オーバーライドすることもできません．
+	 * このメソッドはフレームワークから呼び出されます．
+	 * デフォルトでは，Properties 形式のファイルを仮定しており，フィールド properties に読み込みます．
+	 * 異なる形式の設定ファイルを使用する場合は，このメソッドをオーバーライドしてください．
 	 *
-	 * 読み込まれた設定には，propertiesフィールドを通してアクセスできます．
-	 *
-	 * @param dir 設定ファイルが保管されているフォルダ
+	 * @param dir 設定ファイル
 	 */
-	public final void load(final File dir){
+	public void load(final File conf){
 
-		final File conf = new File(dir, String.format("%s.conf", this.getClass().getCanonicalName()));
 		if(conf.exists()){
 
 			try {
@@ -97,14 +95,14 @@ public abstract class Plugin implements Closeable{
 
 	/**
 	 * 設定ファイルを保存する．
-	 * このメソッドはフレームワークから呼び出され，プラグイン開発者が使用する必要はありません．
-	 * また，オーバーライドすることもできません．
+	 * このメソッドはフレームワークから呼び出されます．
+	 * デフォルトでは，Properties 形式のファイルを仮定しており，フィールド properties の内容を書き出します．
+	 * 異なる形式の設定ファイルを使用する場合は，このメソッドをオーバーライドしてください．
 	 *
-	 * @param dir 設定ファイルを書き出すフォルダ
+	 * @param dir 設定ファイル
 	 */
-	public final void save(final File dir){
+	public void save(final File conf){
 
-		final File conf = new File(dir, String.format("%s.conf", this.getClass().getCanonicalName()));
 		try {
 
 			this.properties.store(new FileOutputStream(conf), "");

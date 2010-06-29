@@ -72,6 +72,8 @@ public class Nor{
 	 */
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(Nor.class);
 
+	private static final String ConfigFileTemplate = "%s.conf";
+
 	//============================================================================
 	//  コンストラクタ
 	//============================================================================
@@ -113,7 +115,9 @@ public class Nor{
 			if(this.config.isEnable(p)){
 
 				p.setExternalProxies(this.router);
-				p.load(this.confDir);
+
+				final File config = new File(this.confDir, String.format(ConfigFileTemplate, p.getClass().getCanonicalName()));
+				p.load(config);
 				this.proxy.attach(p);
 				this.plugins.add(p);
 
@@ -165,7 +169,10 @@ public class Nor{
 			final Plugin p = (Plugin)c.newInstance();
 
 			p.setExternalProxies(this.router);
-			p.load(this.confDir);
+
+			final File config = new File(this.confDir, String.format(ConfigFileTemplate, p.getClass().getCanonicalName()));
+			p.load(config);
+
 			this.proxy.attach(p);
 			this.plugins.add(p);
 
@@ -222,7 +229,9 @@ public class Nor{
 		for(final Plugin p : this.plugins){
 
 			p.close();
-			p.save(this.confDir);
+
+			final File config = new File(this.confDir, String.format(ConfigFileTemplate, p.getClass().getCanonicalName()));
+			p.save(config);
 
 		}
 

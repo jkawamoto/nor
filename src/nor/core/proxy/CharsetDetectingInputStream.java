@@ -34,7 +34,7 @@ class CharsetDetectingInputStream extends FilterInputStream{
 
 	private final Charset charset;
 
-	private static final Pattern Char = Pattern.compile("(?:encoding=\"(\\S+)\"|charset=([\\w_\\-]+))", Pattern.CASE_INSENSITIVE);
+	private static final Pattern Char = Pattern.compile("(?:encoding=\"([\\w_\\-]+)\"|charset=([\\w_\\-]+))", Pattern.CASE_INSENSITIVE);
 
 
 

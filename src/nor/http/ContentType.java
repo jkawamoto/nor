@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
  * の形で表される．このオブジェクトはMIMEタイプと文字コードに対するアクセッサを提供する．
  *
  * @author Junpei Kawamoto
+ * @since 0.1
  *
  */
 public class ContentType {
