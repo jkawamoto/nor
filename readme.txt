@@ -50,7 +50,7 @@ nor 本体の設定ファイルは nor.core.Nor.conf で，設定可能なパラ
 例えば，http://www.example1.com/ は http://proxy1:8080 を通して，
 http://www.example2.com/ は http://proxy2:8080 を通して通信する必要がある場合，
 
-    nor.routing=http://www.example1.com/=http://proxy1:8080;http://www.example2.com/=http://proxy2:8080
+    nor.routing=http://www\\.example1\\.com/=http://proxy1:8080;http://www\\.example2\\.com/=http://proxy2:8080
 
 となります．
 
