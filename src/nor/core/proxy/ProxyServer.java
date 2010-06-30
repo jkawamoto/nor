@@ -225,7 +225,7 @@ public class ProxyServer implements Closeable{
 		for(final String pat : this.handler.getHandlingURLPatterns()){
 
 			filtering_rule.append("if(url.match(new RegExp(\"");
-			filtering_rule.append(pat.replace("\\w", "[a-zA-Z0-9_]"));
+			filtering_rule.append(pat.replace("\\", "\\\\"));
 			filtering_rule.append("\")) !== null){return proxy;}\n");
 
 		}

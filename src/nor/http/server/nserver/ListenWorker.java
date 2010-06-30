@@ -42,12 +42,12 @@ class ListenWorker implements Runnable, Closeable{
 
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(ListenWorker.class);
 
-	public ListenWorker(final String hostname, final int port, final HttpRequestHandler handler, final int minThreads, final int queueSize, final int waitTime){
+	public ListenWorker(final String hostname, final int port, final HttpRequestHandler handler, final int minThreads, final int queueSize, final int timeout){
 
 		this.hostname = hostname;
 		this.port = port;
 
-		this.tmanager = new ThreadManager(handler, minThreads, queueSize, waitTime);
+		this.tmanager = new ThreadManager(handler, minThreads, queueSize, timeout);
 
 	}
 

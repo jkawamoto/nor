@@ -35,12 +35,23 @@ public class HttpNServer implements HttpServer{
 	private ListenWorker listener;
 	private Thread listenThread;
 
-	private final int minThreads = 4;
-	private final int queueSize = 3;
-	private final int waitTime = 6000;
+	private final int minThreads;
+	private final int queueSize;
+	private final int timeout;
 
 	private static final EasyLogger LOGGER =  EasyLogger.getLogger(HttpNServer.class);
 
+	//============================================================================
+	//  Constants
+	//============================================================================
+	private static final String DefaultMinThreads = "4";
+	private static final String DefaultQueueSize = "3";
+	private static final String DefaultTimeout = "300000";
+
+	private static final String KeyTemplate = "%s.%s";
+	private static final String MinThreadsKey = "minThreads";
+	private static final String QueueSizeKey = "querySize";
+	private static final String TimeoutKey = "timeout";
 
 	//============================================================================
 	//  コンストラクタ
@@ -61,6 +72,11 @@ public class HttpNServer implements HttpServer{
 		// ハンドラの登録
 		this.handler = handler;
 
+		final String classname = this.getClass().getName();
+		this.minThreads = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, MinThreadsKey), DefaultMinThreads));
+		this.queueSize = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, QueueSizeKey), DefaultQueueSize));
+		this.timeout = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, TimeoutKey), DefaultTimeout));
+
 		LOGGER.exiting("<init>");
 	}
 
@@ -80,7 +96,7 @@ public class HttpNServer implements HttpServer{
 	public void start(final String hostname, final int port) throws IOException{
 		LOGGER.entering("start", hostname, (Object)port);
 
-		this.listener = new ListenWorker(hostname, port, this.handler, this.minThreads, this.queueSize, this.waitTime);
+		this.listener = new ListenWorker(hostname, port, this.handler, this.minThreads, this.queueSize, this.timeout);
 		this.listenThread = new Thread(this.listener);
 		this.listenThread.start();
 

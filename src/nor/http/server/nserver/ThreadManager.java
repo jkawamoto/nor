@@ -33,7 +33,7 @@ class ThreadManager implements Closeable, Queue<Connection>{
 
 	private final int minThreads;
 	private final int queueSize;
-	private final int waitTime;
+	private final int timeout;
 
 	private final Queue<Connection> queue = new LinkedList<Connection>();
 
@@ -41,27 +41,35 @@ class ThreadManager implements Closeable, Queue<Connection>{
 
 	private final HttpRequestHandler handler;
 
-	public ThreadManager(final HttpRequestHandler handler, final int minThreads, final int queueSize, final int waitTime){
+	public ThreadManager(final HttpRequestHandler handler, final int minThreads, final int queueSize, final int timeout){
 
 		this.pool = Executors.newCachedThreadPool();
 		this.handler = handler;
 
 		this.minThreads = minThreads;
 		this.queueSize = queueSize;
-		this.waitTime = waitTime;
+		this.timeout = timeout;
 
 	}
+
+	/* 指定した個数のスレッドは常時生きている
+	 * スレッドが全部埋まっていて指定時間過ぎた場合は新しいスレッドを作成する
+	 */
 
 	public synchronized boolean offer(final Connection e) {
 
 		final boolean ret = queue.offer(e);
-		if(ServiceWorker.nThreads() < this.minThreads || this.size() > this.queueSize){
+		if(ret){
 
-			this.pool.execute(ServiceWorker.create(this, this.handler));
+			if(ServiceWorker.nThreads() < this.minThreads || this.size() > this.queueSize){
+
+				this.pool.execute(ServiceWorker.create(this, this.handler));
+
+			}
+
+			this.notify();
 
 		}
-
-		notify();
 		return ret;
 
 	}
@@ -72,7 +80,7 @@ class ThreadManager implements Closeable, Queue<Connection>{
 
 			if(this.isEmpty()){
 
-				wait(this.waitTime);
+				this.wait(this.timeout);
 
 			}
 			return queue.poll();
