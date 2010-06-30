@@ -152,7 +152,7 @@ public class StoringToFileFilter extends ReadonlyByteFilterAdapter{
 	/**
 	 * 転送中に作成された一時ファイルを削除する．
 	 * このフィルタは転送中に，tmp という拡張子を持つ一時ファイルを作成します．
-	 * このメソッドは，指定したディレクトリないにある .tmp ファイルを削除します．
+	 * このメソッドは，指定したディレクトリ内にある .tmp ファイルをすべて削除します．
 	 *
 	 * @param dir 一時ファイルが保存されているディレクトリ
 	 */
