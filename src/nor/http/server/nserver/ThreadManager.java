@@ -52,10 +52,6 @@ class ThreadManager implements Closeable, Queue<Connection>{
 
 	}
 
-	/* 指定した個数のスレッドは常時生きている
-	 * スレッドが全部埋まっていて指定時間過ぎた場合は新しいスレッドを作成する
-	 */
-
 	public synchronized boolean offer(final Connection e) {
 
 		final boolean ret = queue.offer(e);

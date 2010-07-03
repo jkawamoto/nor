@@ -42,6 +42,9 @@ class ListenWorker implements Runnable, Closeable{
 
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(ListenWorker.class);
 
+	//============================================================================
+	//  Constractor
+	//============================================================================
 	public ListenWorker(final String hostname, final int port, final HttpRequestHandler handler, final int minThreads, final int queueSize, final int timeout){
 
 		this.hostname = hostname;
@@ -51,6 +54,10 @@ class ListenWorker implements Runnable, Closeable{
 
 	}
 
+
+	//============================================================================
+	//  Public methods
+	//============================================================================
 	@Override
 	public void run() {
 
@@ -110,24 +117,6 @@ class ListenWorker implements Runnable, Closeable{
 								assert(o instanceof Connection);
 
 								final Connection con = (Connection)o;
-//								int ret = -1;
-//								if(key.isReadable()){
-//
-//									LOGGER.finest("Receives a readable key from the " + con.toString());
-//									ret = con.loadFromChannel();
-//
-//								}else if(key.isWritable() && key.isValid()){
-//
-//									LOGGER.finest("Receives a writable key from the " + con.toString());
-//									ret = con.storeToChannel();
-//
-//								}
-//
-//								if(ret == -1){
-//
-//									con.close();
-//
-//								}
 								if(!con.handle()){
 
 //									con.close();
@@ -145,7 +134,7 @@ class ListenWorker implements Runnable, Closeable{
 
 					}catch(final CancelledKeyException e){
 
-						LOGGER.throwing("run", e);
+						LOGGER.info(e.getMessage());
 
 						final Object o = key.attachment();
 						if(o instanceof Connection){
@@ -155,11 +144,6 @@ class ListenWorker implements Runnable, Closeable{
 						}
 
 					}
-//					finally{
-//
-//						iter.remove();
-//
-//					}
 
 				}
 
@@ -182,6 +166,9 @@ class ListenWorker implements Runnable, Closeable{
 
 	}
 
+	/* (非 Javadoc)
+	 * @see java.io.Closeable#close()
+	 */
 	@Override
 	public void close() throws IOException{
 
@@ -194,6 +181,10 @@ class ListenWorker implements Runnable, Closeable{
 
 	}
 
+
+	//============================================================================
+	//  Private methods
+	//============================================================================
 	private void createServerChannel(final Selector selector) throws IOException{
 
 		// サーバソケットチャネルの作成

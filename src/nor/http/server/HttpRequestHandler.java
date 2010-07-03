@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -22,13 +22,12 @@ import nor.http.HttpResponse;
 
 /**
  * Httpサーバにおいて，Httpリクエストのハンドラに必要なインタフェイス．
- *
- * @author KAWAMOTO Junpei
+ * このインタフェースを実装するクラスはマルチスレッドでアクセスされることを意識する必要がある．
+ * @author Junpei Kawamoto
  *
  */
 public interface HttpRequestHandler {
 
-	//TODO: このインタフェースを実装するクラスはマルチスレッドでアクセスされることを意識する必要がある
 	public HttpResponse doRequest(final HttpRequest request);
 
 }

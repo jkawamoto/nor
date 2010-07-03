@@ -36,20 +36,32 @@ class SocketChannelOutputStream extends OutputStream{
 	private SelectionKey key;
 
 	private final ByteBuffer buffer;
-	private int timeout = 1000;
 
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(SocketChannelOutputStream.class);
 
+	//============================================================================
+	//  Constants
+	//============================================================================
+	private static final int BufferSize;
+	private static final int Timeout;
+
+
+	//============================================================================
+	//  Constractor
+	//============================================================================
 	public SocketChannelOutputStream(final SelectionKey key){
 
 		this.key = key;
-		this.buffer = ByteBuffer.allocate(Connection.BufferSize);
+		this.buffer = ByteBuffer.allocate(BufferSize);
 
 	}
 
 	//============================================================================
-	//  OntputStream のオーバーライド
+	//  public methods
 	//============================================================================
+	//----------------------------------------------------------------------------
+	//  OntputStream のオーバーライド
+	//----------------------------------------------------------------------------
 	@Override
 	public void write(int b) throws IOException {
 
@@ -74,8 +86,16 @@ class SocketChannelOutputStream extends OutputStream{
 			}catch(final BufferOverflowException e){
 
 				LOGGER.severe(e.getMessage() + " pos " + this.buffer.position() + ", lim " + this.buffer.limit() + ", cap " + this.buffer.capacity());
+				this.key = null;
 
 			}
+
+		}else{
+
+			final IOException e = new IOException("Stream is already closed.");
+			LOGGER.throwing("write", e);
+
+			throw e;
 
 		}
 
@@ -117,6 +137,13 @@ class SocketChannelOutputStream extends OutputStream{
 
 			}
 
+		}else{
+
+			final IOException e = new IOException("Stream is already closed.");
+			LOGGER.throwing("write", e);
+
+			throw e;
+
 		}
 
 	}
@@ -131,7 +158,7 @@ class SocketChannelOutputStream extends OutputStream{
 				this.key.interestOps(this.key.interestOps() | SelectionKey.OP_WRITE);
 				this.key.selector().wakeup();
 
-				this.wait(this.timeout);
+				this.wait(Timeout);
 
 			}catch(final InterruptedException e){
 
@@ -169,9 +196,9 @@ class SocketChannelOutputStream extends OutputStream{
 
 	}
 
-	//============================================================================
+	//----------------------------------------------------------------------------
 	// SocketChannel との通信
-	//============================================================================
+	//----------------------------------------------------------------------------
 	public synchronized int storeToChannel(final WritableByteChannel channel){
 
 		int ret = -1;
@@ -202,9 +229,23 @@ class SocketChannelOutputStream extends OutputStream{
 
 	}
 
+	//============================================================================
+	//  Private methods
+	//============================================================================
 	private int available(){
 
 		return this.buffer.limit() - this.buffer.position();
+
+	}
+
+	//============================================================================
+	//  Class constructor
+	//============================================================================
+	static{
+
+		final String classname = SocketChannelInputStream.class.getName();
+		BufferSize = Integer.valueOf(System.getProperty(String.format("%s.BufferSize", classname)));
+		Timeout = Integer.valueOf(System.getProperty(String.format("%s.Timeout", classname)));
 
 	}
 

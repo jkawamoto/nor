@@ -98,94 +98,50 @@ final class ServiceWorker implements Runnable{
 			final InputStream input = new BufferedInputStream(new NoCloseInputStream(this.socket.getInputStream()), this.socket.getReceiveBufferSize());
 			final OutputStream output = new BufferedOutputStream(new NoCloseOutputStream(this.socket.getOutputStream()), this.socket.getSendBufferSize());
 
-//			try{
+			// 切断要求が来るまで持続接続する
+			boolean keepAlive = true;
+			String prefix = "";
+			while(keepAlive){
 
-				// 切断要求が来るまで持続接続する
-				boolean keepAlive = true;
-				String prefix = "";
-				while(keepAlive){
+				// リクエストオブジェクト
+				this.socket.setSoTimeout(ServiceWorker.Timeout);
+				// リクエストオブジェクト
+				final HttpRequest request = HttpRequest.create(input, prefix);
+				if(request == null){
 
-					// TODO: パイプライン化に対応。作れるだけリクエストを作成してキューに入れる．
-
-					// リクエストオブジェクト
-					this.socket.setSoTimeout(ServiceWorker.Timeout);
-					// リクエストオブジェクト
-					final HttpRequest request = HttpRequest.create(input, prefix);
-					if(request == null){
-
-						break;
-
-					}
-					this.socket.setSoTimeout(0);
-
-					// スレッドの名称を変更
-					Thread.currentThread().setName(request.getHeadLine());
-
-					// Accept-Encodingを調べる, chunkedが可能なのか、gzipが可能なのか、
-
-
-					/* テスト用にここで、CONNECTメソッドが来た場合はSSLコネクションを確立させる。
-					 */
-					//					if("CONNECT".equals(request.getMethod())){
-					//
-					//						final ConnectHandler.Result result = _connect.doConnect(request, input, output);
-					//						if(result.isEnd()){
-					//
-					//							break;
-					//
-					//						}else{
-					//
-					//							input = result.getInputStream();
-					//							output = result.getOutputStream();
-					//							prefix = result.getPrefix();
-					//							request = new HttpRequest(input, prefix);
-					//
-					//						}
-					//
-					//					}
-
-					// リクエストに切断要求が含まれているか
-					keepAlive &= this.isKeepingAlive(request);
-
-					// リクエストの実行
-					final HttpResponse response = this.handler.doRequest(request);
-
-					// レスポンスに切断要求が含まれているか
-					keepAlive &= this.isKeepingAlive(response);
-
-					// レスポンスの書き出し
-					this.socket.setSoTimeout(5000);
-					response.output(output);
-					this.socket.setSoTimeout(0);
-
-					this.socket.getOutputStream().flush();
+					break;
 
 				}
+				this.socket.setSoTimeout(0);
 
-//			}catch(final HttpError e){
-//
-//				// TODO: リクエストが作成できない場合，outputへBadRequestを送る
-//				final ErrorStatus status = e.getStatus();
-//				final StringBuilder header = new StringBuilder();
-//				header.append(String.format("HTTP/1.1 %d %s\n", status.getCode() , status.getMessage()));
-//				header.append("Content-Type: text/html; charset=utf-8\n");
-//				header.append("Server: arthra\n");
-//				header.append("Content-Length: 0\n");
-//				header.append("Connection: close\n");
-//				header.append(String.format("Cause: %s\n", e.getMessage()));
-//				header.append("\n");
-//
-//				Stream.copy(new ByteArrayInputStream(header.toString().getBytes()), output);
-//
-//			}
+				// スレッドの名称を変更
+				Thread.currentThread().setName(request.getHeadLine());
+
+				// リクエストに切断要求が含まれているか
+				keepAlive &= this.isKeepingAlive(request);
+
+				// リクエストの実行
+				final HttpResponse response = this.handler.doRequest(request);
+
+				// レスポンスに切断要求が含まれているか
+				keepAlive &= this.isKeepingAlive(response);
+
+				// レスポンスの書き出し
+				this.socket.setSoTimeout(5000);
+				response.output(output);
+				this.socket.setSoTimeout(0);
+
+				this.socket.getOutputStream().flush();
+
+			}
 
 		}catch(final SocketTimeoutException e){
 
-			LOGGER.fine(e.getLocalizedMessage());
+			LOGGER.fine(e.getMessage());
 
 		}catch(final IOException e){
 
-			LOGGER.warning(e.getLocalizedMessage());
+			LOGGER.warning(e.getMessage());
 
 		}finally{
 

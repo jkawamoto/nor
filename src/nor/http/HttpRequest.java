@@ -60,7 +60,14 @@ public class HttpRequest extends HttpMessage{
 	 */
 	private String version;
 
+	/**
+	 * Http ヘッダ．
+	 */
 	private final HttpHeader header;
+
+	/**
+	 * Http ボディ．
+	 */
 	private final HttpBody body;
 
 
@@ -533,7 +540,7 @@ public class HttpRequest extends HttpMessage{
 
 		}catch(final IOException e){
 
-			e.printStackTrace();
+			LOGGER.warning(e.getMessage());
 			return null;
 
 		}

@@ -53,7 +53,14 @@ public class HttpResponse extends HttpMessage{
 	private String message;
 	private String version;
 
+	/**
+	 * Http ヘッダ．
+	 */
 	private final HttpHeader header;
+
+	/**
+	 * Http ボディ．
+	 */
 	private final HttpBody body;
 
 	//====================================================================

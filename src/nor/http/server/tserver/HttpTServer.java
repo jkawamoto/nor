@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-//$Id: HttpTServer.java 471 2010-04-03 10:25:20Z kawamoto $
 package nor.http.server.tserver;
 
 import java.io.IOException;
@@ -29,8 +28,7 @@ import nor.util.log.EasyLogger;
 /**
  * Httpサーバ
  *
- * @version $Rev: 471 $
- * @author KAWAMOTO Junpei
+ * @author Junpei Kawamoto
  *
  */
 public class HttpTServer implements HttpServer{
@@ -39,11 +37,6 @@ public class HttpTServer implements HttpServer{
 	 * Httpリクエストに答えるハンドラ
 	 */
 	private final HttpRequestHandler handler;
-
-	/**
-	 * Connectメソッドに答えるハンドラ
-	 */
-//	private final ConnectHandler _connect = new DecryptHandler();
 
 	/**
 	 * ポートリスニング用スレッド
@@ -139,7 +132,7 @@ public class HttpTServer implements HttpServer{
 
 			}
 
-			LOGGER.info("End.");
+			LOGGER.info("Closes.");
 
 		}
 

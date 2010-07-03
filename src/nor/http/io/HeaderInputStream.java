@@ -23,13 +23,6 @@ import java.util.logging.Logger;
 
 import static nor.http.io.Chars.*;
 
-/*
- * CR LF CR LFか LF LFがきたら終了
- *
- * Stateパターンを作る＞最終目標
- *
- */
-
 /**
  * ヘッダのみを読み込むストリーム．
  * ヘッダとボディは空行により分けられている．
@@ -39,8 +32,6 @@ import static nor.http.io.Chars.*;
  *
  */
 public class HeaderInputStream extends InputStream{
-	// ロガー
-	private static final Logger LOGGER = Logger.getLogger(HeaderInputStream.class.getName());
 
 	private final InputStream in;
 
@@ -57,12 +48,21 @@ public class HeaderInputStream extends InputStream{
 	}
 	private State state = State.SecondCR;
 
+	// ロガー
+	private static final Logger LOGGER = Logger.getLogger(HeaderInputStream.class.getName());
+
+	//====================================================================
+	//  Constractor
+	//====================================================================
 	public HeaderInputStream(final InputStream in){
 
 		this.in = in;
 
 	}
 
+	//====================================================================
+	//  Public methods
+	//====================================================================
 	/* (non-Javadoc)
 	 * @see java.io.InputStream#read()
 	 */

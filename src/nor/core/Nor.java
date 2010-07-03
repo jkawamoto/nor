@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,10 +73,14 @@ public class Nor{
 	 */
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(Nor.class);
 
+	//============================================================================
+	//  Constants
+	//============================================================================
 	private static final String ConfigFileTemplate = "%s.conf";
+	private static final String DefaultConfigFile = "res/default.conf";
 
 	//============================================================================
-	//  コンストラクタ
+	//  Constractor
 	//============================================================================
 	/**
 	 * @throws IOException
@@ -85,6 +90,22 @@ public class Nor{
 	private Nor(){
 		LOGGER.entering("<init>");
 
+		// Load default constants values
+		final Class<?> c = this.getClass();
+		final Properties def = new Properties();
+		try {
+
+			def.load(c.getResourceAsStream(DefaultConfigFile));
+			def.putAll(System.getProperties());
+			System.getProperties().putAll(def);
+
+		} catch (final IOException e) {
+
+			LOGGER.warning(e.getMessage());
+
+		}
+
+		// Load application configs
 		this.confDir = new File(String.format("./config/%s/", this.context.getMAC()));
 		if(!this.confDir.exists()){
 
@@ -99,7 +120,7 @@ public class Nor{
 
 
 	//============================================================================
-	//  private メソッド
+	//  Private methods
 	//============================================================================
 	//----------------------------------------------------------------------------
 	//  準備

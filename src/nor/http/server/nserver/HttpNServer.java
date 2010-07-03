@@ -44,14 +44,10 @@ public class HttpNServer implements HttpServer{
 	//============================================================================
 	//  Constants
 	//============================================================================
-	private static final String DefaultMinThreads = "4";
-	private static final String DefaultQueueSize = "3";
-	private static final String DefaultTimeout = "300000";
-
 	private static final String KeyTemplate = "%s.%s";
-	private static final String MinThreadsKey = "minThreads";
-	private static final String QueueSizeKey = "querySize";
-	private static final String TimeoutKey = "timeout";
+	private static final String MinThreadsKey = "MinimusThreads";
+	private static final String QueueSizeKey = "QuerySize";
+	private static final String TimeoutKey = "Timeout";
 
 	//============================================================================
 	//  コンストラクタ
@@ -73,9 +69,9 @@ public class HttpNServer implements HttpServer{
 		this.handler = handler;
 
 		final String classname = this.getClass().getName();
-		this.minThreads = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, MinThreadsKey), DefaultMinThreads));
-		this.queueSize = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, QueueSizeKey), DefaultQueueSize));
-		this.timeout = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, TimeoutKey), DefaultTimeout));
+		this.minThreads = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, MinThreadsKey)));
+		this.queueSize = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, QueueSizeKey)));
+		this.timeout = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, TimeoutKey)));
 
 		LOGGER.exiting("<init>");
 	}
@@ -128,6 +124,7 @@ public class HttpNServer implements HttpServer{
 			}
 
 		}
+		LOGGER.info("Close.");
 
 		LOGGER.exiting("close");
 	}

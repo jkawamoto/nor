@@ -36,10 +36,11 @@ class Connection implements Closeable{
 
 	private final SocketChannel schannel;
 
-	static final int BufferSize = 64*1024;
-
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(Connection.class);
 
+	//============================================================================
+	//  Constractor
+	//============================================================================
 	public Connection(final SocketChannel schannel, final Selector selector) throws IOException{
 
 		// ソケットをノンブロッキングモードにする
@@ -58,18 +59,9 @@ class Connection implements Closeable{
 
 	}
 
-	public int loadFromChannel(){
-
-		return this.in.loadFromChannel(this.schannel);
-
-	}
-
-	public int storeToChannel(){
-
-		return this.out.storeToChannel(this.schannel);
-
-	}
-
+	//============================================================================
+	//  Public methods
+	//============================================================================
 	public boolean handle(){
 
 		int ret = -1;

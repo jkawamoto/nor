@@ -47,14 +47,22 @@ class SocketChannelInputStream extends InputStream{
 
 	private final ByteBuffer buffer;
 
-	private int timeout = 1000;
-
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(SocketChannelInputStream.class);
 
+	//============================================================================
+	//  Constants
+	//============================================================================
+	private static final int BufferSize;
+	private static final int Timeout;
+
+
+	//============================================================================
+	//  Constractor
+	//============================================================================
 	public SocketChannelInputStream(final SelectionKey key){
 
 		this.key = key;
-		this.buffer = ByteBuffer.allocate(Connection.BufferSize);
+		this.buffer = ByteBuffer.allocate(BufferSize);
 		this.buffer.limit(0);
 
 	}
@@ -62,7 +70,6 @@ class SocketChannelInputStream extends InputStream{
 	//============================================================================
 	//  public methods
 	//============================================================================
-
 	//----------------------------------------------------------------------------
 	//  InputStream のオーバーライド
 	//----------------------------------------------------------------------------
@@ -188,7 +195,7 @@ class SocketChannelInputStream extends InputStream{
 	}
 
 	//============================================================================
-	//  private methods
+	//  Private methods
 	//============================================================================
 	private synchronized void load() throws IOException{
 		LOGGER.entering("load");
@@ -199,7 +206,7 @@ class SocketChannelInputStream extends InputStream{
 
 				this.key.interestOps(this.key.interestOps() | SelectionKey.OP_READ);
 				this.key.selector().wakeup();
-				this.wait(this.timeout);
+				this.wait(Timeout);
 
 			}catch(final InterruptedException e) {
 
@@ -218,6 +225,17 @@ class SocketChannelInputStream extends InputStream{
 		}
 
 		LOGGER.exiting("load");
+	}
+
+	//============================================================================
+	//  Class constructor
+	//============================================================================
+	static{
+
+		final String classname = SocketChannelInputStream.class.getName();
+		BufferSize = Integer.valueOf(System.getProperty(String.format("%s.BufferSize", classname)));
+		Timeout = Integer.valueOf(System.getProperty(String.format("%s.Timeout", classname)));
+
 	}
 
 }

@@ -33,6 +33,7 @@ import nor.core.proxy.filter.ResponseFilter;
 import nor.http.server.HttpServer;
 import nor.http.server.nserver.HttpNServer;
 import nor.http.server.proxyserver.Router;
+import nor.http.server.tserver.HttpTServer;
 import nor.util.log.EasyLogger;
 
 /**
@@ -70,14 +71,26 @@ public class ProxyServer implements Closeable{
 	//  コンストラクタ
 	//====================================================================
 	public ProxyServer(final String name, final Router router){
-		LOGGER.entering("<init>", name, router);
+		this(name, router, false);
+	}
+
+	public ProxyServer(final String name, final Router router, final boolean useTServer){
+		LOGGER.entering("<init>", name, router, useTServer);
 		assert name != null;
 		assert router != null;
 
 		this.router = router;
 		this.handler = new ProxyHandler(name, HttpNServer.VERSION, this.router);
-		this.server = new HttpNServer(this.handler);
 
+		if(useTServer){
+
+			this.server = new HttpTServer(this.handler);
+
+		}else{
+
+			this.server = new HttpNServer(this.handler);
+
+		}
 		LOGGER.exiting("<init>");
 	}
 
