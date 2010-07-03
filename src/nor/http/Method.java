@@ -66,7 +66,13 @@ public enum Method {
 	/**
 	 * CONNECT メソッド．
 	 */
-	CONNECT,
+	CONNECT;
+
+	public boolean equals(final String str){
+
+		return this.name().equals(str);
+
+	}
 
 }
 

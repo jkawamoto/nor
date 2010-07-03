@@ -177,7 +177,20 @@ public class HttpResponse extends HttpMessage{
 
 		LOGGER.exiting("getCode", ret);
 		return ret;
+	}
 
+	/**
+	 * レスポンスステータスを取得します．
+	 *
+	 * @return レスポンスステータス
+	 */
+	public Status getStatus(){
+		LOGGER.entering("getStatus");
+
+		final Status ret = Status.valueOf(this.getCode());
+
+		LOGGER.exiting("getStatus", ret);
+		return ret;
 	}
 
 	/**

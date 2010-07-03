@@ -260,7 +260,17 @@ public enum Status{
 	/**
 	 * 505 HTTP Version Not Supported（このHTTPバージョンはサポートされていません）．
 	 */
-	HTTPVersionNotSupported(505, "HTTP Version Not Supported");
+	HTTPVersionNotSupported(505, "HTTP Version Not Supported"),
+
+	/////////////////////////////////////////////////////////////////
+	// The others
+	/////////////////////////////////////////////////////////////////
+	/**
+	 * 非標準のステータス．
+	 * 直接ステータスコードを取得して下さい．
+	 */
+	NonStandard(-1, "Nonstandard status");
+
 
 	private final int code;
 	private final String msg;
@@ -299,9 +309,8 @@ public enum Status{
 	 *
 	 * @param code レスポンスコード
 	 * @return 指定したコード番号を持つこの型の列挙型定数
-	 * @throws IllegalArgumentException 指定されたコード番号を持つ定数をこの列挙型が持っていない場合
 	 */
-	public static Status valueOf(final int code) throws IllegalArgumentException{
+	public static Status valueOf(final int code){
 
 		for(final Status s : Status.values()){
 
@@ -313,7 +322,7 @@ public enum Status{
 
 		}
 
-		throw new IllegalArgumentException(String.format("Status code %d is not defined in RFC 2068.", code));
+		return Status.NonStandard;
 
 	}
 

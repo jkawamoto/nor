@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -80,12 +79,7 @@ public class HttpRequest extends HttpMessage{
 	 * 閉じない．そのため，ストリームの終了処理は呼び出し側が行う必要がある．
 	 *
 	 * @param input 文字列のHttpリクエストが入っているストリーム
-	 * @throws IOException
-	 * @throws HttpError
-	 * @throws SocketTimeoutException
-	 * @throws InvalidRequest リクエストが不正な場合
 	 * @throws IOException ストリーム処理にエラーが起きた場合
-	 * @throws InvalidRequest
 	 */
 	private HttpRequest(final InputStream input, final String prefix) throws IOException{
 		LOGGER.entering("<init>", input, prefix);
@@ -299,6 +293,7 @@ public class HttpRequest extends HttpMessage{
 				con.connect();
 
 				this.getBody().output(con.getOutputStream(), this.header);
+				this.getBody().close();
 
 			}else if(header.containsKey(HeaderName.TransferEncoding)){
 
@@ -306,6 +301,7 @@ public class HttpRequest extends HttpMessage{
 				con.connect();
 
 				this.getBody().output(con.getOutputStream(), this.header);
+				this.getBody().close();
 
 			}else{
 
