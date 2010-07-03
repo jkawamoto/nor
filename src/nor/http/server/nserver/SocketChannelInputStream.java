@@ -18,6 +18,7 @@
 package nor.http.server.nserver;
 
 import java.io.IOException;
+
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
@@ -26,11 +27,25 @@ import java.nio.channels.SelectionKey;
 
 import nor.util.log.EasyLogger;
 
+/**
+ *
+ *
+ *
+ * このストリームを閉じた場合，このストリームに関する操作のみ不能になる．
+ * キーはセレクタに登録されたまま．キーをセレクタから削除する場合は，コネクションのクローズを呼ぶ．
+ *
+ * @author Junpei
+ *
+ */
 class SocketChannelInputStream extends InputStream{
 
-	private final SelectionKey key;
+	/**
+	 * セレクタに登録されているキー．
+	 * null の場合，ストリームは閉じられている．
+	 */
+	private SelectionKey key;
+
 	private final ByteBuffer buffer;
-	private boolean closed = false;
 
 	private int timeout = 1000;
 
@@ -39,7 +54,7 @@ class SocketChannelInputStream extends InputStream{
 	public SocketChannelInputStream(final SelectionKey key){
 
 		this.key = key;
-		this.buffer = ByteBuffer.allocate(1024*64);
+		this.buffer = ByteBuffer.allocate(Connection.BufferSize);
 		this.buffer.limit(0);
 
 	}
@@ -54,7 +69,7 @@ class SocketChannelInputStream extends InputStream{
 	@Override
 	public int read() throws IOException {
 
-		if(this.closed){
+		if(this.key == null){
 
 			return -1;
 
@@ -65,6 +80,7 @@ class SocketChannelInputStream extends InputStream{
 			this.load();
 			if(this.available() == 0){
 
+				this.close();
 				return -1;
 
 			}
@@ -78,7 +94,7 @@ class SocketChannelInputStream extends InputStream{
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
 
-		if(this.closed){
+		if(this.key == null){
 
 			return -1;
 
@@ -89,6 +105,7 @@ class SocketChannelInputStream extends InputStream{
 			this.load();
 			if(this.available() == 0){
 
+				this.close();
 				return -1;
 
 			}
@@ -113,18 +130,24 @@ class SocketChannelInputStream extends InputStream{
 	}
 
 	@Override
-	public int available() throws IOException {
+	public int available(){
 
 		return this.buffer.limit() - this.buffer.position();
 
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close(){
 
-		if(this.key.isValid()){
+		if(this.key != null){
 
-			this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_READ);
+			if(this.key.isValid()){
+
+				this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_READ);
+
+			}
+
+			this.key = null;
 
 		}
 
@@ -139,14 +162,19 @@ class SocketChannelInputStream extends InputStream{
 		int ret = -1;
 		try{
 
-			this.buffer.clear();
-			ret = channel.read(this.buffer);
-			this.buffer.flip();
-			this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_READ);
+			if(this.key != null){
+
+				this.buffer.clear();
+				ret = channel.read(this.buffer);
+				this.buffer.flip();
+				this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_READ);
+
+			}
 
 		}catch(final IOException e){
 
-			LOGGER.throwing("loadFromChannel", e);
+			LOGGER.warning(e.getMessage());
+			this.close();
 
 		}finally{
 
@@ -162,22 +190,30 @@ class SocketChannelInputStream extends InputStream{
 	//============================================================================
 	//  private methods
 	//============================================================================
-	private synchronized void load(){
+	private synchronized void load() throws IOException{
 		LOGGER.entering("load");
 
-		try {
+		if(this.key != null){
 
-			this.key.interestOps(this.key.interestOps() | SelectionKey.OP_READ);
-			this.key.selector().wakeup();
-			this.wait(this.timeout);
+			try {
 
-		}catch(final InterruptedException e) {
+				this.key.interestOps(this.key.interestOps() | SelectionKey.OP_READ);
+				this.key.selector().wakeup();
+				this.wait(this.timeout);
 
-			LOGGER.throwing("load", e);
+			}catch(final InterruptedException e) {
 
-		}catch(final CancelledKeyException e){
+				this.close();
+				LOGGER.throwing("load", e);
+				throw new IOException(e);
 
-			LOGGER.throwing("load", e);
+			}catch(final CancelledKeyException e){
+
+				this.close();
+				LOGGER.throwing("load", e);
+				throw new IOException(e);
+
+			}
 
 		}
 

@@ -110,22 +110,27 @@ class ListenWorker implements Runnable, Closeable{
 								assert(o instanceof Connection);
 
 								final Connection con = (Connection)o;
-								int ret = -1;
-								if(key.isReadable()){
+//								int ret = -1;
+//								if(key.isReadable()){
+//
+//									LOGGER.finest("Receives a readable key from the " + con.toString());
+//									ret = con.loadFromChannel();
+//
+//								}else if(key.isWritable() && key.isValid()){
+//
+//									LOGGER.finest("Receives a writable key from the " + con.toString());
+//									ret = con.storeToChannel();
+//
+//								}
+//
+//								if(ret == -1){
+//
+//									con.close();
+//
+//								}
+								if(!con.handle()){
 
-									LOGGER.finest("Receives a readable key from the " + con.toString());
-									ret = con.loadFromChannel();
-
-								}else if(key.isWritable() && key.isValid()){
-
-									LOGGER.finest("Receives a writable key from the " + con.toString());
-									ret = con.storeToChannel();
-
-								}
-
-								if(ret == -1){
-
-									con.close();
+//									con.close();
 
 								}
 
@@ -149,11 +154,12 @@ class ListenWorker implements Runnable, Closeable{
 
 						}
 
-					}finally{
-
-						iter.remove();
-
 					}
+//					finally{
+//
+//						iter.remove();
+//
+//					}
 
 				}
 

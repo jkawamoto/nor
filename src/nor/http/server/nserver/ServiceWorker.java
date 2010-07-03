@@ -25,13 +25,15 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.ClosedChannelException;
 import java.util.Queue;
 
 import nor.http.HeaderName;
+import nor.http.HttpMessage;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.server.HttpRequestHandler;
+import nor.util.io.NoCloseInputStream;
+import nor.util.io.NoCloseOutputStream;
 import nor.util.log.EasyLogger;
 
 class ServiceWorker implements Runnable, Closeable{
@@ -44,6 +46,9 @@ class ServiceWorker implements Runnable, Closeable{
 	private static int nThreads = 0;
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(ServiceWorker.class);
 
+	//============================================================================
+	// Constractor
+	//============================================================================
 	private ServiceWorker(final Queue<Connection> queue, final HttpRequestHandler handler){
 
 		this.queue = queue;
@@ -51,6 +56,9 @@ class ServiceWorker implements Runnable, Closeable{
 
 	}
 
+	//============================================================================
+	// Public methods
+	//============================================================================
 	/**
 	 * 要求に答える．
 	 */
@@ -61,17 +69,12 @@ class ServiceWorker implements Runnable, Closeable{
 		while(this.running){
 
 			final Connection con = this.queue.poll();
-			if(con == null){
+			if(con != null){
 
-				break;
-
-			}
-
-			LOGGER.finest(Thread.currentThread().getName() + " begins to handle the " + con);
-			// ストリームの取得
-			final InputStream input = new BufferedInputStream(con.getInputStream());
-			final OutputStream output = new BufferedOutputStream(new NoExceptionOutputStreamFilter(con.getOutputStream()));
-			try{
+				LOGGER.finest(Thread.currentThread().getName() + " begins to handle the connection; " + con);
+				// ストリームの取得
+				final InputStream input = new BufferedInputStream(new NoCloseInputStream(con.getInputStream()));
+				final OutputStream output = new BufferedOutputStream(new NoExceptionOutputStreamFilter(new NoCloseOutputStream(con.getOutputStream())));
 
 
 				// 切断要求が来るまで持続接続する
@@ -112,6 +115,8 @@ class ServiceWorker implements Runnable, Closeable{
 						System.out.println(response.getHeadLine());
 						System.out.println(response.getHeader().toString());
 
+						keepAlive = false;
+
 					}
 
 				}
@@ -124,67 +129,52 @@ class ServiceWorker implements Runnable, Closeable{
 				}else{
 
 					LOGGER.finest(Thread.currentThread().getName() + " finishes to handle and closes the " + con);
-					input.close();
-					output.close();
+					try {
 
-					con.close();
+						con.close();
+
+					} catch (final IOException e) {
+
+						LOGGER.warning(e.getMessage());
+
+
+					}
 
 				}
 
-			}catch(final ClosedChannelException e){
+			}else{
 
-				e.printStackTrace();
-
-				try {
-					input.close();
-					output.close();
-					con.close();
-				} catch (IOException e1) {
-					// TODO 自動生成された catch ブロック
-					e1.printStackTrace();
-				}
-
-			}catch(final IOException e){
-
-				e.printStackTrace();
-
-				try {
-					input.close();
-					output.close();
-					con.close();
-				} catch (IOException e1) {
-					// TODO 自動生成された catch ブロック
-					e1.printStackTrace();
-				}
+				this.running = false;
 
 			}
 
-		}
 
+		}
 		ServiceWorker.decrease();
 		LOGGER.exiting("run");
 	}
 
-	private boolean isKeepingAlive(final HttpRequest request){
-
-		return !request.getHeader().containsValue(Connection, "close");
-
-	}
-
-	private boolean isKeepingAlive(final HttpResponse response){
-
-		return !response.getHeader().containsValue(Connection, "close");
-
-	}
-
 	@Override
-	public void close() throws IOException {
+	public void close(){
 
 		this.running = false;
 
 	}
 
 
+	//============================================================================
+	// Private methods
+	//============================================================================
+	private boolean isKeepingAlive(final HttpMessage msg){
+
+		return !msg.getHeader().containsValue(Connection, "close");
+
+	}
+
+
+	//============================================================================
+	// Public static methods
+	//============================================================================
 	public static synchronized ServiceWorker create(final Queue<Connection> queue, final HttpRequestHandler handler){
 
 		++ServiceWorker.nThreads;

@@ -19,6 +19,7 @@ package nor.core.proxy;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -297,6 +298,10 @@ class ProxyHandler implements HttpRequestHandler{
 					charset = Charset.forName(m.group(1).toLowerCase());
 
 				}catch(final UnsupportedCharsetException e){
+
+					LOGGER.warning(e.getMessage());
+
+				}catch(final IllegalCharsetNameException e){
 
 					LOGGER.warning(e.getMessage());
 

@@ -41,7 +41,7 @@ class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 			try{
 
-				super.flush();
+				this.out.flush();
 
 			}catch(final IOException e){
 
@@ -62,7 +62,7 @@ class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 			try{
 
-				super.write(b, off, len);
+				this.out.write(b, off, len);
 
 			}catch(final IOException e){
 
@@ -83,7 +83,7 @@ class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 			try{
 
-				super.write(b);
+				this.out.write(b);
 
 			}catch(final IOException e){
 
@@ -104,7 +104,7 @@ class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 			try{
 
-				super.write(b);
+				this.out.write(b);
 
 			}catch(final IOException e){
 

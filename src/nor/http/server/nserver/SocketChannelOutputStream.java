@@ -29,18 +29,21 @@ import nor.util.log.EasyLogger;
 
 class SocketChannelOutputStream extends OutputStream{
 
-	private final SelectionKey key;
+	/**
+	 * セレクタに登録されているキー．
+	 * null の場合，ストリームは閉じられている．
+	 */
+	private SelectionKey key;
+
 	private final ByteBuffer buffer;
 	private int timeout = 1000;
-
-	private boolean alive = true;
 
 	private static final EasyLogger LOGGER = EasyLogger.getLogger(SocketChannelOutputStream.class);
 
 	public SocketChannelOutputStream(final SelectionKey key){
 
 		this.key = key;
-		this.buffer = ByteBuffer.allocate(1024*64);
+		this.buffer = ByteBuffer.allocate(Connection.BufferSize);
 
 	}
 
@@ -50,11 +53,17 @@ class SocketChannelOutputStream extends OutputStream{
 	@Override
 	public void write(int b) throws IOException {
 
-		if(this.alive){
+		if(this.key != null){
 
-			while(this.available() == 0){
+			if(this.available() == 0){
 
 				this.flush();
+				if(this.available() == 0){
+
+					this.key = null;
+					return;
+
+				}
 
 			}
 
@@ -75,13 +84,19 @@ class SocketChannelOutputStream extends OutputStream{
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
 
-		if(this.alive){
+		if(this.key != null){
 
 			while(len != 0){
 
-				while(this.available() == 0){
+				if(this.available() == 0){
 
 					this.flush();
+					if(this.available() == 0){
+
+						this.key = null;
+						return;
+
+					}
 
 				}
 
@@ -109,7 +124,7 @@ class SocketChannelOutputStream extends OutputStream{
 	@Override
 	public synchronized void flush() throws IOException {
 
-		if(this.alive){
+		if(this.key != null){
 
 			try {
 
@@ -120,21 +135,15 @@ class SocketChannelOutputStream extends OutputStream{
 
 			}catch(final InterruptedException e){
 
-				this.alive = false;
-				LOGGER.warning(e.getMessage());
+				this.key = null;
+				LOGGER.throwing("flush", e);
 				throw new IOException(e);
 
 			}catch(final CancelledKeyException e){
 
-				this.alive = false;
+				this.key = null;
 				LOGGER.throwing("flush", e);
 				throw new IOException(e);
-
-			}
-
-			if(!this.alive){
-
-				throw new IOException("Connection is closed");
 
 			}
 
@@ -146,6 +155,17 @@ class SocketChannelOutputStream extends OutputStream{
 	public void close() throws IOException {
 
 		this.flush();
+		if(this.key != null){
+
+			if(this.key.isValid()){
+
+				this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_WRITE);
+
+			}
+
+			this.key = null;
+
+		}
 
 	}
 
@@ -157,16 +177,20 @@ class SocketChannelOutputStream extends OutputStream{
 		int ret = -1;
 		try{
 
-			this.buffer.flip();
-			ret = channel.write(this.buffer);
-			this.buffer.clear();
+			if(this.key != null){
 
-			this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_WRITE);
+				this.buffer.flip();
+				ret = channel.write(this.buffer);
+				this.buffer.clear();
+
+				this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_WRITE);
+
+			}
 
 		}catch(final IOException e){
 
-			this.alive = false;
-			LOGGER.throwing("storeToChannel", e);
+			LOGGER.warning(e.getMessage());
+			this.key = null;
 
 		}finally{
 
@@ -178,7 +202,7 @@ class SocketChannelOutputStream extends OutputStream{
 
 	}
 
-	private int available() throws IOException {
+	private int available(){
 
 		return this.buffer.limit() - this.buffer.position();
 

@@ -25,6 +25,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 
+import nor.util.log.EasyLogger;
+
 class Connection implements Closeable{
 
 	private final SelectionKey key;
@@ -33,6 +35,10 @@ class Connection implements Closeable{
 	private final SocketChannelOutputStream out;
 
 	private final SocketChannel schannel;
+
+	static final int BufferSize = 64*1024;
+
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(Connection.class);
 
 	public Connection(final SocketChannel schannel, final Selector selector) throws IOException{
 
@@ -64,17 +70,45 @@ class Connection implements Closeable{
 
 	}
 
+	public boolean handle(){
+
+		int ret = -1;
+		if(key.isReadable()){
+
+			LOGGER.finest("Receives a readable key from the " + this.toString());
+			ret = this.in.loadFromChannel(this.schannel);
+
+		}else if(key.isWritable() && key.isValid()){
+
+			LOGGER.finest("Receives a writable key from the " + this.toString());
+			ret = this.out.storeToChannel(this.schannel);
+
+		}
+
+		return ret != -1;
+
+	}
+
 
 	@Override
 	public void close() throws IOException{
 
-		final Selector selector = this.key.selector();
-		this.key.attach(null);
-		this.key.channel().close();
+		try{
 
-		this.key.cancel();
+			this.in.close();
+			this.out.close();
 
-		selector.wakeup();
+		}finally{
+
+			final Selector selector = this.key.selector();
+			this.key.attach(null);
+			this.key.channel().close();
+
+			this.key.cancel();
+
+			selector.wakeup();
+
+		}
 
 	}
 
