@@ -135,6 +135,34 @@ public class HttpException extends Exception{
 
 	}
 
+	/* (非 Javadoc)
+	 * @see java.lang.Throwable#getMessage()
+	 */
+	@Override
+	public String getMessage() {
+
+		if(this.cause != null){
+
+			return this.status.getMessage() + " by " + this.cause.toString();
+
+		}else{
+
+			return this.status.getMessage();
+
+		}
+
+	}
+
+	/* (非 Javadoc)
+	 * @see java.lang.Throwable#getCause()
+	 */
+	@Override
+	public Throwable getCause() {
+
+		return this.cause;
+
+	}
+
 	//============================================================================
 	//  Public static methods
 	//============================================================================

@@ -28,6 +28,9 @@ package nor.http;
  */
 public enum Method {
 
+	/////////////////////////////////////////////////////////////////
+	// Standard methods
+	/////////////////////////////////////////////////////////////////
 	/**
 	 * GET メソッド．
 	 */
@@ -66,11 +69,26 @@ public enum Method {
 	/**
 	 * CONNECT メソッド．
 	 */
-	CONNECT;
+	CONNECT,
 
+	/////////////////////////////////////////////////////////////////
+	// The others
+	/////////////////////////////////////////////////////////////////
+	/**
+	 * 非標準のステータス．
+	 * 直接ステータスコードを取得して下さい．
+	 */
+	NonStandard;
+
+	/**
+	 * 文字列との比較.
+	 *
+	 * @param str 比較対象の文字列
+	 * @return str がこのメソッドと同じであれば true
+	 */
 	public boolean equals(final String str){
 
-		return this.name().equals(str);
+		return this.toString().equals(str);
 
 	}
 

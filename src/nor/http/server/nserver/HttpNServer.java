@@ -34,10 +34,7 @@ public class HttpNServer implements HttpServer{
 
 	private ListenWorker listener;
 	private Thread listenThread;
-
-	private final int minThreads;
-	private final int queueSize;
-	private final int timeout;
+	private ThreadManager workerThreadManager;
 
 	private static final EasyLogger LOGGER =  EasyLogger.getLogger(HttpNServer.class);
 
@@ -46,7 +43,6 @@ public class HttpNServer implements HttpServer{
 	//============================================================================
 	private static final String KeyTemplate = "%s.%s";
 	private static final String MinThreadsKey = "MinimusThreads";
-	private static final String QueueSizeKey = "QuerySize";
 	private static final String TimeoutKey = "Timeout";
 
 	//============================================================================
@@ -68,10 +64,6 @@ public class HttpNServer implements HttpServer{
 		// ハンドラの登録
 		this.handler = handler;
 
-		final String classname = this.getClass().getName();
-		this.minThreads = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, MinThreadsKey)));
-		this.queueSize = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, QueueSizeKey)));
-		this.timeout = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, TimeoutKey)));
 
 		LOGGER.exiting("<init>");
 	}
@@ -92,7 +84,19 @@ public class HttpNServer implements HttpServer{
 	public void start(final String hostname, final int port) throws IOException{
 		LOGGER.entering("start", hostname, (Object)port);
 
-		this.listener = new ListenWorker(hostname, port, this.handler, this.minThreads, this.queueSize, this.timeout);
+		if(this.listener != null || this.workerThreadManager != null){
+
+			this.close();
+
+		}
+
+		final String classname = this.getClass().getName();
+		final int mThreads = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, MinThreadsKey)));
+		final int timeout = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, TimeoutKey)));
+
+		this.workerThreadManager = new ThreadManager(this.handler, mThreads, timeout);
+
+		this.listener = new ListenWorker(hostname, port, this.workerThreadManager);
 		this.listenThread = new Thread(this.listener);
 		this.listenThread.start();
 
@@ -123,8 +127,15 @@ public class HttpNServer implements HttpServer{
 
 			}
 
+			this.listener = null;
+
 		}
-		LOGGER.info("Close.");
+		if(this.workerThreadManager != null){
+
+			this.workerThreadManager.close();
+			this.workerThreadManager = null;
+
+		}
 
 		LOGGER.exiting("close");
 	}

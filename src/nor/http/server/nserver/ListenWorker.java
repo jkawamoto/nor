@@ -27,7 +27,6 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-import nor.http.server.HttpRequestHandler;
 import nor.util.log.EasyLogger;
 
 class ListenWorker implements Runnable, Closeable{
@@ -45,12 +44,11 @@ class ListenWorker implements Runnable, Closeable{
 	//============================================================================
 	//  Constractor
 	//============================================================================
-	public ListenWorker(final String hostname, final int port, final HttpRequestHandler handler, final int minThreads, final int queueSize, final int timeout){
+	public ListenWorker(final String hostname, final int port, final ThreadManager manager){
 
 		this.hostname = hostname;
 		this.port = port;
-
-		this.tmanager = new ThreadManager(handler, minThreads, queueSize, timeout);
+		this.tmanager = manager;
 
 	}
 

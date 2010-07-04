@@ -106,7 +106,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		try{
 
 			// TODO: CONNECT メソッドへの対応
-			if(Method.CONNECT.equals(request.getMethod())){
+			if(Method.CONNECT.equals(request.getMethodString())){
 
 				throw new HttpException(Status.NotImplemented);
 
@@ -116,7 +116,6 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 			this.cleanHeader(request);
 
 			// URLコネクションの作成
-			HttpURLConnection con;
 			final URL url = new URL(request.getPath());
 			final Proxy proxy = this.router.query(request.getPath());
 			if(proxy != Proxy.NO_PROXY){
@@ -124,9 +123,9 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 				LOGGER.info("Using proxy " + proxy);
 
 			}
-			con = (HttpURLConnection)url.openConnection(proxy);
 
 			// リクエストの送信とレスポンスの作成
+			final HttpURLConnection con = (HttpURLConnection)url.openConnection(proxy);
 			response = request.createResponse(con);
 
 		} catch (final IOException e) {

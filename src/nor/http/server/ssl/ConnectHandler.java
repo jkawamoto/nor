@@ -29,53 +29,53 @@ public interface ConnectHandler {
 	
 	public class Result{
 		
-		private boolean _isEnd;
+		private boolean end;
 		
-		private final String _prefix;
+		private final String prefix;
 
-		private final InputStream _in;
-		private final OutputStream _out;
+		private final InputStream in;
+		private final OutputStream out;
 		
 		
 		public Result(){
 			
-			this._isEnd = false;
-			this._prefix = null;
-			this._in = null;
-			this._out = null;
+			this.end = false;
+			this.prefix = null;
+			this.in = null;
+			this.out = null;
 			
 		}
 		
 		public Result(final String prefix, final InputStream in, final OutputStream out){
 			
-			this._isEnd = true;
-			this._prefix = prefix;
-			this._in = in;
-			this._out = out;
+			this.end = true;
+			this.prefix = prefix;
+			this.in = in;
+			this.out = out;
 			
 		}
 
 		public boolean isEnd(){
 			
-			return this._isEnd;
+			return this.end;
 			
 		}
 		
 		public String getPrefix(){
 			
-			return this._prefix;
+			return this.prefix;
 			
 		}
 		
 		public InputStream getInputStream(){
 			
-			return this._in;
+			return this.in;
 			
 		}
 		
 		public OutputStream getOutputStream(){
 			
-			return this._out;
+			return this.out;
 			
 		}
 		

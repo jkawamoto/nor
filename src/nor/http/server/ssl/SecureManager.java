@@ -41,7 +41,7 @@ public class SecureManager {
 	private static final Logger LOGGER = Logger.getLogger(SecureManager.class.getName());
 
 
-	private final SSLContext _context;
+	private final SSLContext context;
 
 	public SecureManager(){
 
@@ -93,7 +93,7 @@ public class SecureManager {
 
 		}finally{
 
-			this._context = context;
+			this.context = context;
 
 		}
 
@@ -101,7 +101,7 @@ public class SecureManager {
 
 	public SecureSession createSession(final InputStream in, final OutputStream out) throws IOException{
 
-		final SSLEngine engine = _context.createSSLEngine();
+		final SSLEngine engine = context.createSSLEngine();
 		return new SecureSession(engine, in, out);
 
 	}

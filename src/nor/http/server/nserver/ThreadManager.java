@@ -28,26 +28,28 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import nor.http.server.HttpRequestHandler;
+import nor.util.log.EasyLogger;
 
 class ThreadManager implements Closeable, Queue<Connection>{
 
+	private int waiting = 0;
+	private boolean running = true;
+
 	private final int minThreads;
-	private final int queueSize;
 	private final int timeout;
 
 	private final Queue<Connection> queue = new LinkedList<Connection>();
-
 	private final ExecutorService pool;
-
 	private final HttpRequestHandler handler;
 
-	public ThreadManager(final HttpRequestHandler handler, final int minThreads, final int queueSize, final int timeout){
+	private static final EasyLogger LOGGER = EasyLogger.getLogger(ThreadManager.class);
+
+	public ThreadManager(final HttpRequestHandler handler, final int minThreads, final int timeout){
 
 		this.pool = Executors.newCachedThreadPool();
 		this.handler = handler;
 
 		this.minThreads = minThreads;
-		this.queueSize = queueSize;
 		this.timeout = timeout;
 
 	}
@@ -57,12 +59,14 @@ class ThreadManager implements Closeable, Queue<Connection>{
 		final boolean ret = queue.offer(e);
 		if(ret){
 
-			if(ServiceWorker.nThreads() < this.minThreads || this.size() > this.queueSize){
+			if(ServiceWorker.nThreads() < this.minThreads || this.waiting == 0){
 
+				LOGGER.fine("Create a new worker thread.");
 				this.pool.execute(ServiceWorker.create(this, this.handler));
 
 			}
 
+			LOGGER.fine("Offer a new connection and send notify message.");
 			this.notify();
 
 		}
@@ -72,26 +76,43 @@ class ThreadManager implements Closeable, Queue<Connection>{
 
 	public synchronized Connection poll() {
 
-		try{
+		Connection ret = null;
+		if(this.running){
 
-			if(this.isEmpty()){
+			try{
 
-				this.wait(this.timeout);
+				LOGGER.finer("Waiting = " + this.waiting + ", working = " + ServiceWorker.nThreads() + ", connection = " + this.size());
+				while(this.isEmpty() && this.waiting <= this.minThreads){
+
+					LOGGER.finest("Going to wait.");
+
+					++this.waiting;
+					this.wait(this.timeout);
+					--this.waiting;
+
+					LOGGER.finest("Wake up.");
+
+				}
+				LOGGER.finer("Waiting = " + this.waiting + ", working = " + ServiceWorker.nThreads() + ", connection = " + this.size());
+
+				ret = queue.poll();
+
+			}catch(final InterruptedException e){
+
+				LOGGER.warning(e.getMessage());
 
 			}
-			return queue.poll();
-
-		}catch(final InterruptedException e){
-
-			return null;
 
 		}
+
+		return ret;
 
 	}
 
 	@Override
 	public void close(){
 
+		this.running = false;
 		this.pool.shutdown();
 
 	}
