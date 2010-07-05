@@ -35,7 +35,7 @@ import nor.http.Method;
 import nor.http.Status;
 import nor.http.error.HttpException;
 import nor.http.server.HttpRequestHandler;
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 
 /**
@@ -65,10 +65,12 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 	private final Router router;
 
+	private static final int Timeout;
+
 	private static final String Close = "close";
 	private static final String VIA_FORMAT = "%s %s";
 
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(ProxyRequestHandler.class);
+	private static final Logger LOGGER = Logger.getLogger(ProxyRequestHandler.class);
 
 
 	//============================================================================
@@ -126,6 +128,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 			// リクエストの送信とレスポンスの作成
 			final HttpURLConnection con = (HttpURLConnection)url.openConnection(proxy);
+			con.setConnectTimeout(Timeout);
 			response = request.createResponse(con);
 
 		} catch (final IOException e) {
@@ -267,6 +270,16 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		header.add(Via, String.format(VIA_FORMAT, this.version, this.name));
 
 		LOGGER.exiting("cleanHeader");
+	}
+
+	//============================================================================
+	//  Class constructor
+	//============================================================================
+	static{
+
+		final String classname = ProxyRequestHandler.class.getName();
+		Timeout = Integer.valueOf(System.getProperty(String.format("%s.Timeout", classname)));
+
 	}
 
 }

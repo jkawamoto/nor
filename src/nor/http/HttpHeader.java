@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 
 /**
@@ -52,7 +52,7 @@ public class HttpHeader{
 	/**
 	 * ロガー
 	 */
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpHeader.class);
+	private static final Logger LOGGER = Logger.getLogger(HttpHeader.class);
 
 	//============================================================================
 	//  Constructor

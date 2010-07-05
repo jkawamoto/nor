@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import nor.core.plugin.Plugin;
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 /**
  * nor 本体の設定．
@@ -85,7 +85,7 @@ class Config {
 	/**
 	 * ロガー
 	 */
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(Config.class);
+	private static final Logger LOGGER = Logger.getLogger(Config.class);
 
 	//============================================================================
 	//  コンストラクタ

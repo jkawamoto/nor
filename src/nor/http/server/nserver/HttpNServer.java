@@ -21,7 +21,7 @@ import java.io.IOException;
 
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.HttpServer;
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 public class HttpNServer implements HttpServer{
 
@@ -36,7 +36,7 @@ public class HttpNServer implements HttpServer{
 	private Thread listenThread;
 	private ThreadManager workerThreadManager;
 
-	private static final EasyLogger LOGGER =  EasyLogger.getLogger(HttpNServer.class);
+	private static final Logger LOGGER =  Logger.getLogger(HttpNServer.class);
 
 	//============================================================================
 	//  Constants

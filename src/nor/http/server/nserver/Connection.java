@@ -25,7 +25,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 class Connection implements Closeable{
 
@@ -36,7 +36,7 @@ class Connection implements Closeable{
 
 	private final SocketChannel schannel;
 
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(Connection.class);
+	private static final Logger LOGGER = Logger.getLogger(Connection.class);
 
 	//============================================================================
 	//  Constractor

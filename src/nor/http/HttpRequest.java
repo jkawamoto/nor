@@ -34,7 +34,7 @@ import java.util.zip.GZIPInputStream;
 import nor.http.error.HttpException;
 import nor.http.error.InternalServerErrorException;
 import nor.http.io.HeaderInputStream;
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 /**
  * HTTP リクエストを表すクラス．
@@ -76,7 +76,7 @@ public class HttpRequest extends HttpMessage{
 	/**
 	 * ロガー
 	 */
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpRequest.class);
+	private static final Logger LOGGER = Logger.getLogger(HttpRequest.class);
 
 	//====================================================================
 	//	コンストラクタ
@@ -240,8 +240,6 @@ public class HttpRequest extends HttpMessage{
 			con.addRequestProperty(key, header.get(key));
 
 		}
-
-		con.setConnectTimeout(60000);
 
 		try{
 

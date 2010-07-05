@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 
 /**
@@ -37,7 +37,7 @@ import nor.util.log.EasyLogger;
  */
 public abstract class HttpMessage{
 
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpMessage.class);
+	private static final Logger LOGGER = Logger.getLogger(HttpMessage.class);
 
 	//====================================================================
 	//	Constructor
