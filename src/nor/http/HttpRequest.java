@@ -22,7 +22,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -32,7 +34,7 @@ import java.util.zip.GZIPInputStream;
 import nor.http.error.HttpException;
 import nor.http.error.InternalServerErrorException;
 import nor.http.io.HeaderInputStream;
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 /**
  * HTTP リクエストを表すクラス．
@@ -74,7 +76,7 @@ public class HttpRequest extends HttpMessage{
 	/**
 	 * ロガー
 	 */
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpRequest.class);
+	private static final Logger LOGGER = Logger.getLogger(HttpRequest.class);
 
 	//====================================================================
 	//	コンストラクタ
@@ -124,13 +126,39 @@ public class HttpRequest extends HttpMessage{
 	//====================================================================
 	/**
 	 * メソッド名を取得する．
+	 * このメソッドはメソッド名を文字列で返します.
 	 *
 	 * @return このHTTPリクエストのメソッド名
 	 */
-	public String getMethod(){
-		LOGGER.entering("getMethod");
+	public String getMethodString(){
+		LOGGER.entering("getMethodString");
 
 		final String ret = this.method;
+
+		LOGGER.exiting("getMethodString", ret);
+		return ret;
+
+	}
+
+	/**
+	 * メソッドを取得する．
+	 * このメソッドはメソッド名を Method 列挙型で返します.
+	 *
+	 * @return このHTTPリクエストのメソッド
+	 */
+	public Method getMethod(){
+		LOGGER.entering("getMethod");
+
+		Method ret = null;
+		try{
+
+			ret = Method.valueOf(this.method);
+
+		}catch(final IllegalArgumentException e){
+
+			LOGGER.warning(e.getMessage());
+
+		}
 
 		LOGGER.exiting("getMethod", ret);
 		return ret;
@@ -152,93 +180,19 @@ public class HttpRequest extends HttpMessage{
 	}
 
 
-	//	@Override
-	//	public String toString(){
-	//		LOGGER.entering("toString");
-	//
-	//		final String ret = String.format("Request[method=%s, path=%s]", this.getMethod(), this.getPath());
-	//
-	//		//		final StringBuilder ret = new StringBuilder();
-	//		//
-	//		//		ret.append(this.getHeadLine());
-	//		//		ret.append("\n");
-	//		//		ret.append(this.getHeader().toString());
-	//
-	//		LOGGER.exiting("toString", ret);
-	//		return ret.toString();
-	//
-	//	}
+	/* (非 Javadoc)
+	 * @see nor.http.HttpMessage#toString()
+	 */
+	@Override
+	public String toString(){
+		LOGGER.entering("toString");
 
-	//	/**
-	//	 * このHTTPリクエストに含まれるクエリを返す．
-	//	 *
-	//	 * @return クエリオブジェクト
-	//	 */
-	//	public Query getQuery(){
-	//		LOGGER.entering("getQuery");
-	//
-	//		Query ret = null;
-	//		try{
-	//
-	//			final URL url = new URL(this.getPath());
-	//			final String q = url.getQuery();
-	//
-	//			if(q != null){
-	//
-	//				ret = new Query(q);
-	//
-	//			}else{
-	//
-	//				ret = new Query();
-	//
-	//			}
-	//
-	//		}catch(MalformedURLException e){
-	//
-	//			LOGGER.warning("URL解析不能：" + this.getPath());
-	//			ret = new Query();
-	//
-	//		}
-	//
-	//		LOGGER.exiting("getQuery", ret);
-	//		return ret;
-	//
-	//	}
-	//
-	//	/**
-	//	 * このHTTPリクエストに新しいクエリを設定する．
-	//	 * 今まで設定されていたクエリは破棄される．
-	//	 *
-	//	 * @param query 新たに設定するクエリ
-	//	 */
-	//	public void setQuery(final Query query){
-	//		LOGGER.entering("setQuery", query);
-	//		assert query != null;
-	//
-	//		try{
-	//
-	//			final URL url = new URL(this.getPath());
-	//			final String ref = url.getRef();
-	//
-	//			if(ref != null){
-	//
-	//				this.path = String.format("%s://%s%s?%s#%s", url.getProtocol(), url.getHost(), url.getPath(), query.toString(), ref);
-	//
-	//			}else{
-	//
-	//				this.path = String.format("%s://%s%s?%s", url.getProtocol(), url.getHost(), url.getPath(), query.toString());
-	//
-	//			}
-	//
-	//		} catch (MalformedURLException e) {
-	//
-	//			LOGGER.warning(e.getLocalizedMessage());
-	//
-	//		}
-	//
-	//		LOGGER.exiting("setQuery");
-	//	}
+		final String ret = String.format("Request[method=%s, path=%s]", this.getMethod(), this.getPath());
 
+		LOGGER.exiting("toString", ret);
+		return ret.toString();
+
+	}
 
 	//--------------------------------------------------------------------
 	//	レスポンスの作成
@@ -287,8 +241,6 @@ public class HttpRequest extends HttpMessage{
 
 		}
 
-		con.setConnectTimeout(60000);
-
 		try{
 
 			// ボディがある場合は送信
@@ -315,6 +267,16 @@ public class HttpRequest extends HttpMessage{
 				con.connect();
 
 			}
+
+		}catch(final SocketTimeoutException e){
+
+			LOGGER.warning(e.getMessage());
+			throw new HttpException(Status.RequestTimeout, e);
+
+		}catch(final ConnectException e){
+
+			LOGGER.warning(e.getMessage());
+			throw new HttpException(Status.RequestTimeout, e);
 
 		}catch(final IOException e){
 
@@ -528,7 +490,7 @@ public class HttpRequest extends HttpMessage{
 		try{
 
 			final HttpRequest ret = new HttpRequest(input, prefix);
-			if(ret.getMethod() == null){
+			if(ret.getMethodString() == null){
 
 				return null;
 

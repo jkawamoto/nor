@@ -20,49 +20,70 @@ package nor.http.server.nserver;
 
 import java.io.Closeable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import nor.http.server.HttpRequestHandler;
+import nor.http.server.nserver.ServiceWorker.EndEventListener;
+import nor.util.log.Logger;
 
-class ThreadManager implements Closeable, Queue<Connection>{
+class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
+
+	private int waiting = 0;
+	private boolean running = true;
 
 	private final int minThreads;
-	private final int queueSize;
 	private final int timeout;
+
+	private final HttpRequestHandler handler;
 
 	private final Queue<Connection> queue = new LinkedList<Connection>();
 
 	private final ExecutorService pool;
+	private final Set<ServiceWorker> workers = new HashSet<ServiceWorker>();
 
-	private final HttpRequestHandler handler;
+	private static final Logger LOGGER = Logger.getLogger(ThreadManager.class);
 
-	public ThreadManager(final HttpRequestHandler handler, final int minThreads, final int queueSize, final int timeout){
+	//============================================================================
+	// Constructor
+	//============================================================================
+	public ThreadManager(final HttpRequestHandler handler, final int minThreads, final int timeout){
 
 		this.pool = Executors.newCachedThreadPool();
 		this.handler = handler;
 
 		this.minThreads = minThreads;
-		this.queueSize = queueSize;
 		this.timeout = timeout;
 
 	}
 
+	//============================================================================
+	// Public methods
+	//============================================================================
+	@Override
 	public synchronized boolean offer(final Connection e) {
 
 		final boolean ret = queue.offer(e);
 		if(ret){
 
-			if(ServiceWorker.nThreads() < this.minThreads || this.size() > this.queueSize){
+			if(this.workers.size() < this.minThreads || this.waiting == 0){
 
-				this.pool.execute(ServiceWorker.create(this, this.handler));
+				LOGGER.fine("Create a new worker thread.");
+
+				final ServiceWorker w = new ServiceWorker(this, this.handler);
+				this.workers.add(w);
+				this.pool.execute(w);
 
 			}
 
+			LOGGER.fine("Offer a new connection and send notify message.");
 			this.notify();
 
 		}
@@ -70,41 +91,81 @@ class ThreadManager implements Closeable, Queue<Connection>{
 
 	}
 
+	@Override
 	public synchronized Connection poll() {
 
-		try{
+		Connection ret = null;
+		if(this.running){
 
-			if(this.isEmpty()){
+			try{
 
-				this.wait(this.timeout);
+				LOGGER.finer("Waiting = %d, working = %d, connection = %d", this.waiting, this.workers.size(), this.size());
+				while(this.isEmpty() && this.waiting <= this.minThreads){
+
+					LOGGER.finest("Be going to wait.");
+
+					++this.waiting;
+					this.wait(this.timeout);
+					--this.waiting;
+
+					LOGGER.finest("Wake up.");
+
+				}
+				LOGGER.finer("Waiting = %d, working = %d, connection = %d", this.waiting, this.workers.size(), this.size());
+
+				ret = queue.poll();
+
+			}catch(final InterruptedException e){
+
+				/*
+				 * This thread is interrupted. It means this application is going to exit.
+				 * Therefore, this method returns null to end this worker thread.
+				 */
+				ret = null;
 
 			}
-			return queue.poll();
-
-		}catch(final InterruptedException e){
-
-			return null;
 
 		}
+
+		return ret;
 
 	}
 
 	@Override
 	public void close(){
 
-		this.pool.shutdown();
+		this.running = false;
+		this.pool.shutdownNow();
+
+		try {
+
+			if (!this.pool.awaitTermination(60, TimeUnit.SECONDS)){
+
+				LOGGER.warning("Thread pool did not terminate.");
+
+			}
+
+		} catch (final InterruptedException ie) {
+
+			this.pool.shutdownNow();
+			Thread.currentThread().interrupt();
+
+		}
+
 
 	}
 
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	@Override
 	public boolean add(final Connection e){
 
 		return this.offer(e);
 
 	}
 
+	@Override
 	public Connection remove(){
 
 		final Connection ret = this.poll();
@@ -118,12 +179,14 @@ class ThreadManager implements Closeable, Queue<Connection>{
 
 	}
 
+	@Override
 	public boolean isEmpty(){
 
 		return this.queue.isEmpty();
 
 	}
 
+	@Override
 	public int size() {
 
 		return this.queue.size();
@@ -223,5 +286,15 @@ class ThreadManager implements Closeable, Queue<Connection>{
 		return this.queue.toArray(a);
 
 	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	@Override
+	public void update(final ServiceWorker from) {
+
+		this.workers.remove(from);
+
+	}
+
 
 }

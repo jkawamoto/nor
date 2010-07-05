@@ -25,7 +25,7 @@ import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
 
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 /**
  *
@@ -47,7 +47,7 @@ class SocketChannelInputStream extends InputStream{
 
 	private final ByteBuffer buffer;
 
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(SocketChannelInputStream.class);
+	private static final Logger LOGGER = Logger.getLogger(SocketChannelInputStream.class);
 
 	//============================================================================
 	//  Constants
@@ -211,6 +211,8 @@ class SocketChannelInputStream extends InputStream{
 			}catch(final InterruptedException e) {
 
 				this.close();
+				Thread.currentThread().interrupt();
+
 				LOGGER.throwing("load", e);
 				throw new IOException(e);
 

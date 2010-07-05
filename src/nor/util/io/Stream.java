@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -27,11 +27,11 @@ import java.nio.channels.WritableByteChannel;
 
 public class Stream {
 
-	public static int DEFAULT_BUFFER_SIZE = 1024*64;
+	public static final int DefaultBufferSize;
 
 	public static void copy(final InputStream in, final OutputStream out) throws IOException{
 
-		copy(in, out, DEFAULT_BUFFER_SIZE);
+		copy(in, out, DefaultBufferSize);
 
 	}
 
@@ -67,8 +67,24 @@ public class Stream {
 
 			}
 
+			if(Thread.interrupted()){
+
+				throw new IOException();
+
+			}
+
 		}
-		
+
+	}
+
+	//============================================================================
+	//  Class constructor
+	//============================================================================
+	static{
+
+		final String classname = Stream.class.getName();
+		DefaultBufferSize = Integer.valueOf(System.getProperty(String.format("%s.DefaultBufferSize", classname)));
+
 	}
 
 }

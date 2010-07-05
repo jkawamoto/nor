@@ -23,7 +23,7 @@ import java.net.ServerSocket;
 
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.HttpServer;
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 /**
  * Httpサーバ
@@ -48,7 +48,7 @@ public class HttpTServer implements HttpServer{
 	 */
 	private ListenWorker listener = null;
 
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpTServer.class);
+	private static final Logger LOGGER = Logger.getLogger(HttpTServer.class);
 
 
 	//============================================================================

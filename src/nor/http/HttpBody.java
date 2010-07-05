@@ -31,7 +31,7 @@ import nor.http.io.ChunkedOutputStream;
 import nor.util.io.LimitedInputStream;
 import nor.util.io.LimitedOutputStream;
 import nor.util.io.Stream;
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 
 /**
@@ -51,7 +51,7 @@ public class HttpBody implements Closeable{
 
 	private InputStream in;
 
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpBody.class);
+	private static final Logger LOGGER = Logger.getLogger(HttpBody.class);
 
 	//====================================================================
 	//  コンストラクタ
@@ -158,7 +158,7 @@ public class HttpBody implements Closeable{
 			final String encode = header.get(HeaderName.ContentEncoding);
 			if(Http.GZIP.equalsIgnoreCase(encode)){
 
-				cout = new GZIPOutputStream(cout, Stream.DEFAULT_BUFFER_SIZE);
+				cout = new GZIPOutputStream(cout, Stream.DefaultBufferSize);
 
 			}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
 

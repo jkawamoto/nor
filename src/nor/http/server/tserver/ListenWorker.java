@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import nor.http.server.HttpRequestHandler;
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 
 /**
@@ -50,7 +50,7 @@ final class ListenWorker implements Runnable, Closeable{
 	 */
 	private final ExecutorService pool;
 
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(ListenWorker.class);
+	private static final Logger LOGGER = Logger.getLogger(ListenWorker.class);
 
 	/**
 	 * 指定されたポリシで動作するリスンスレッドクラスを作成する．

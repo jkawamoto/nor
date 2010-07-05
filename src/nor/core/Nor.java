@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 import nor.core.plugin.Plugin;
 import nor.core.proxy.ProxyServer;
 import nor.http.server.proxyserver.Router;
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 
 /**
@@ -71,7 +71,7 @@ public class Nor{
 	/**
 	 * ロガー．
 	 */
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(Nor.class);
+	private static final Logger LOGGER = Logger.getLogger(Nor.class);
 
 	//============================================================================
 	//  Constants

@@ -34,7 +34,7 @@ import nor.http.server.HttpServer;
 import nor.http.server.nserver.HttpNServer;
 import nor.http.server.proxyserver.Router;
 import nor.http.server.tserver.HttpTServer;
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 /**
  * LocalProxyサブシステム．
@@ -65,7 +65,7 @@ public class ProxyServer implements Closeable{
 	/**
 	 * ロガー
 	 */
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(ProxyServer.class);
+	private static final Logger LOGGER = Logger.getLogger(ProxyServer.class);
 
 	//====================================================================
 	//  コンストラクタ

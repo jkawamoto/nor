@@ -44,7 +44,7 @@ import nor.http.HttpResponse;
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.proxyserver.ProxyRequestHandler;
 import nor.http.server.proxyserver.Router;
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 /**
  * nor システム用 HTTP リクエストハンドラ
@@ -78,7 +78,7 @@ class ProxyHandler implements HttpRequestHandler{
 	/**
 	 * ロガー
 	 */
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(ProxyHandler.class);
+	private static final Logger LOGGER = Logger.getLogger(ProxyHandler.class);
 
 
 	//====================================================================

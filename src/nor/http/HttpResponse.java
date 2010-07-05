@@ -26,7 +26,7 @@ import java.util.regex.Matcher;
 import nor.http.error.HttpException;
 import nor.http.error.InternalServerErrorException;
 import nor.http.io.HeaderInputStream;
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 /**
  * HTTP レスポンスオブジェクト．
@@ -39,7 +39,7 @@ import nor.util.log.EasyLogger;
 public class HttpResponse extends HttpMessage{
 
 	// ロガー
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(HttpResponse.class);
+	private static final Logger LOGGER = Logger.getLogger(HttpResponse.class);
 
 	/**
 	 * このレスポンスの基になった要求
@@ -113,7 +113,7 @@ public class HttpResponse extends HttpMessage{
 			this.header = new HttpHeader(in);
 
 			// ボディの読み取り
-			if(Method.HEAD.equals(this.getRequest().getMethod())){
+			if(Method.HEAD.equals(this.getRequest().getMethodString())){
 
 				// HEADリクエストへのレスポンスはメッセージボディを含んではならない
 				this.getHeader().set(HeaderName.ContentLength, "0");

@@ -72,7 +72,7 @@ public class RESTRequestHandler implements HttpRequestHandler{
 			final String path = request.getPath();
 			if(path.startsWith("/")){
 
-				switch(Method.valueOf(request.getMethod())){
+				switch(Method.valueOf(request.getMethodString())){
 
 				case GET:
 

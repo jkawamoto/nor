@@ -23,7 +23,7 @@ import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 
 class Context{
@@ -36,7 +36,7 @@ class Context{
 	/**
 	 * ロガー
 	 */
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(Context.class);
+	private static final Logger LOGGER = Logger.getLogger(Context.class);
 
 	/**
 	 * MACアドレス取得用の正規表現

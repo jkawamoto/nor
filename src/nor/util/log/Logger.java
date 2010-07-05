@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -18,35 +18,34 @@
 package nor.util.log;
 
 import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
-public class EasyLogger extends Logger{
+public class Logger extends java.util.logging.Logger{
 
 	private final String classname;
 
-	private EasyLogger(final String classname){
+	private Logger(final String classname){
 		super(classname, null);
 
 		this.classname = classname;
 
 	}
 
-	public static <T> EasyLogger getLogger(final Class<T> type){
+	public static <T> Logger getLogger(final Class<T> type){
 
 		final String classname = type.getName();
 		final LogManager m = LogManager.getLogManager();
 
-		final Logger log = m.getLogger(classname);
-		if(log == null || !(log instanceof EasyLogger)){
+		final java.util.logging.Logger log = m.getLogger(classname);
+		if(log == null || !(log instanceof Logger)){
 
-			final EasyLogger n = new EasyLogger(classname);
+			final Logger n = new Logger(classname);
 			m.addLogger(n);
 
 			return n;
 
 		}else{
 
-			return (EasyLogger)log;
+			return (Logger)log;
 
 		}
 
@@ -115,6 +114,40 @@ public class EasyLogger extends Logger{
 	public void throwing(final String method, final Throwable e){
 
 		super.throwing(this.classname, method, e);
+
+	}
+
+
+	//============================================================================
+	// Formatable logging methods
+	//============================================================================
+	public void info(final String format, final Object... args){
+
+		super.info(String.format(format, args));
+
+	}
+
+	public void config(final String format, final Object... args){
+
+		super.config(String.format(format, args));
+
+	}
+
+	public void fine(final String format, final Object... args){
+
+		super.fine(String.format(format, args));
+
+	}
+
+	public void finer(final String format, final Object... args){
+
+		super.finer(String.format(format, args));
+
+	}
+
+	public void finest(final String format, final Object... args){
+
+		super.finest(String.format(format, args));
 
 	}
 

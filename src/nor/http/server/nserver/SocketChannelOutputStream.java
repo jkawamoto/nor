@@ -25,7 +25,7 @@ import java.nio.channels.CancelledKeyException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.WritableByteChannel;
 
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 class SocketChannelOutputStream extends OutputStream{
 
@@ -37,7 +37,7 @@ class SocketChannelOutputStream extends OutputStream{
 
 	private final ByteBuffer buffer;
 
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(SocketChannelOutputStream.class);
+	private static final Logger LOGGER = Logger.getLogger(SocketChannelOutputStream.class);
 
 	//============================================================================
 	//  Constants
@@ -163,6 +163,8 @@ class SocketChannelOutputStream extends OutputStream{
 			}catch(final InterruptedException e){
 
 				this.key = null;
+				Thread.currentThread().interrupt();
+
 				LOGGER.throwing("flush", e);
 				throw new IOException(e);
 
@@ -202,26 +204,27 @@ class SocketChannelOutputStream extends OutputStream{
 	public synchronized int storeToChannel(final WritableByteChannel channel){
 
 		int ret = -1;
-		try{
 
-			if(this.key != null){
+		if(this.key != null){
+
+			try{
+
+				this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_WRITE);
 
 				this.buffer.flip();
 				ret = channel.write(this.buffer);
 				this.buffer.clear();
 
-				this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_WRITE);
+			}catch(final IOException e){
+
+				LOGGER.info(e.getMessage());
+				this.key = null;
+
+			}finally{
+
+				this.notify();
 
 			}
-
-		}catch(final IOException e){
-
-			LOGGER.warning(e.getMessage());
-			this.key = null;
-
-		}finally{
-
-			this.notify();
 
 		}
 

@@ -58,6 +58,7 @@ public class ContentType {
 		public static final String HTML = "html";
 	}
 
+
 	/**
 	 * MIMEタイプ．
 	 */

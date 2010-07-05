@@ -27,8 +27,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-import nor.http.server.HttpRequestHandler;
-import nor.util.log.EasyLogger;
+import nor.util.log.Logger;
 
 class ListenWorker implements Runnable, Closeable{
 
@@ -37,20 +36,21 @@ class ListenWorker implements Runnable, Closeable{
 
 	private final ThreadManager tmanager;
 
-	private Selector selector;
+	private final Selector selector;
 	private boolean running = true;
 
-	private static final EasyLogger LOGGER = EasyLogger.getLogger(ListenWorker.class);
+	private static final Logger LOGGER = Logger.getLogger(ListenWorker.class);
 
 	//============================================================================
 	//  Constractor
 	//============================================================================
-	public ListenWorker(final String hostname, final int port, final HttpRequestHandler handler, final int minThreads, final int queueSize, final int timeout){
+	public ListenWorker(final String hostname, final int port, final ThreadManager manager) throws IOException{
 
 		this.hostname = hostname;
 		this.port = port;
+		this.tmanager = manager;
 
-		this.tmanager = new ThreadManager(handler, minThreads, queueSize, timeout);
+		this.selector = Selector.open();
 
 	}
 
@@ -66,8 +66,6 @@ class ListenWorker implements Runnable, Closeable{
 
 		try{
 
-			// セレクタの用意
-			this.selector = Selector.open();
 
 			// サーバソケットチャネルの作成
 			this.createServerChannel(selector);
@@ -78,7 +76,7 @@ class ListenWorker implements Runnable, Closeable{
 
 				// セレクタにイベントが発生するまでブロック
 				final int nc = selector.selectNow();
-				LOGGER.finest("Begins a selection (" + nc + " selected keys, " + selector.keys().size() + " registrated keys)");
+				LOGGER.finest("Begins a selection (%d selected keys, %d registrated keys)", nc, selector.keys().size());
 
 				// 獲得したイベントごとに処理を実行
 				final Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
@@ -94,7 +92,7 @@ class ListenWorker implements Runnable, Closeable{
 							final SocketChannel socket = serverChannel.accept();
 							if(socket != null){
 
-								LOGGER.finest("Receive an accsptable key from " + socket.socket());
+								LOGGER.finest("Receive an accsptable key from %s", socket.socket());
 
 								// ノンブロッキングモード
 								final Connection con = new Connection(socket, this.selector);
@@ -117,11 +115,7 @@ class ListenWorker implements Runnable, Closeable{
 								assert(o instanceof Connection);
 
 								final Connection con = (Connection)o;
-								if(!con.handle()){
-
-//									con.close();
-
-								}
+								con.handle();
 
 							}else{
 
@@ -152,13 +146,11 @@ class ListenWorker implements Runnable, Closeable{
 
 			}
 
-			selector.close();
 			LOGGER.info("Ends listening");
 
 
 		}catch(final IOException e){
 
-			LOGGER.throwing("run", e);
 			LOGGER.severe("ListenWorker is stopped by " + e.toString());
 			e.printStackTrace();
 
@@ -173,11 +165,7 @@ class ListenWorker implements Runnable, Closeable{
 	public void close() throws IOException{
 
 		this.running = false;
-		if(this.selector != null){
-
-			this.selector.wakeup();
-
-		}
+		this.selector.close();
 
 	}
 
@@ -196,7 +184,7 @@ class ListenWorker implements Runnable, Closeable{
 		serverChannel.socket().bind(addr);
 		serverChannel.register(selector, SelectionKey.OP_ACCEPT);
 
-		LOGGER.info("Bind socket to " + addr);
+		LOGGER.info("Bind socket to %s", addr);
 
 	}
 
