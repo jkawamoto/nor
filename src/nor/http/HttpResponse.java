@@ -88,7 +88,7 @@ public class HttpResponse extends HttpMessage{
 			while((buf = in.readLine()) != null){
 
 				// ステータスコードの取得
-				final Matcher m = Http.RESONSE_LINE_PATTERN.matcher(buf);
+				final Matcher m = Http.ResponseLinePattern.matcher(buf);
 				if(m.matches()){
 
 					this.version = m.group(1);
@@ -147,7 +147,7 @@ public class HttpResponse extends HttpMessage{
 		this.request = request;
 		this.code = status.getCode();
 		this.message = status.getMessage();
-		this.version = Http.VERSION;
+		this.version = Http.Version;
 
 		this.header = new HttpHeader();
 		this.body = new HttpBody(body);
@@ -248,7 +248,7 @@ public class HttpResponse extends HttpMessage{
 	@Override
 	public String getHeadLine() {
 
-		return String.format(Http.RESONSE_LINE_TEMPLATE, version, code, message);
+		return String.format(Http.ResponseLineTemplate, version, code, message);
 
 	}
 

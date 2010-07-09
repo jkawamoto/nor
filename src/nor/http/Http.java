@@ -17,6 +17,8 @@
  */
 package nor.http;
 
+import java.io.IOException;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 public class Http {
@@ -24,24 +26,52 @@ public class Http {
 	/**
 	 * プロトコルバージョン．
 	 */
-	public static final String VERSION = "1.1";
+	public static final String Version;
 
 	/**
 	 * サーバ名．
 	 */
-	public static final String SERVERNAME = "Nor";
+	public static final String ServerName;
 
 	static final String CHUNKED = "chunked";
 	static final String GZIP = "gzip";
 	static final String DEFLATE = "deflate";
 
-	static final String REQUEST_LINE_TEMPLATE = "%s %s HTTP/%s";
-	static final Pattern REQUEST_LINE_PATTERN = Pattern.compile("^(\\w+)\\s+(.+?)\\s+HTTP/([\\d.]+)$");
+	static final String RequestLineTemplate;
+	static final Pattern RequestLinePattern;
 
-	static final String RESONSE_LINE_TEMPLATE = "HTTP/%s %d %s";
-	static final Pattern RESONSE_LINE_PATTERN = Pattern.compile("^HTTP/(\\S{3})\\s+(\\d{3})\\s*(.*)$");
+	static final String ResponseLineTemplate;
+	static final Pattern ResponseLinePattern;
 
 	private Http(){
+
+	}
+
+	static{
+
+		// Load property file.
+		final Properties prop = new Properties();
+		try {
+
+			prop.load(Http.class.getResourceAsStream("res/constant.conf"));
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			System.exit(1);
+
+		}
+
+		// Set constants.
+		final String classname = Http.class.getName();
+		Version = prop.getProperty(String.format("%s.Version", classname));
+		ServerName = prop.getProperty(String.format("%s.ServerName", classname));
+
+
+		RequestLineTemplate = prop.getProperty(String.format("%s.RequestLineTemplate", classname));
+		RequestLinePattern = Pattern.compile(prop.getProperty(String.format("%s.RequestLinePattern", classname)));
+		ResponseLineTemplate = prop.getProperty(String.format("%s.ResponseLineTemplate", classname));
+		ResponseLinePattern = Pattern.compile(prop.getProperty(String.format("%s.ResponseLinePattern", classname)));
 
 	}
 

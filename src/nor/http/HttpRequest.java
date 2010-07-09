@@ -99,7 +99,7 @@ public class HttpRequest extends HttpMessage{
 		String buf;
 		while((buf = in.readLine()) != null){
 
-			final Matcher m = Http.REQUEST_LINE_PATTERN.matcher(buf);
+			final Matcher m = Http.RequestLinePattern.matcher(buf);
 			if(m.matches()){
 
 				this.method = m.group(1);
@@ -449,7 +449,7 @@ public class HttpRequest extends HttpMessage{
 	public String getHeadLine() {
 		LOGGER.entering("getHeadLine");
 
-		final String ret = String.format(Http.REQUEST_LINE_TEMPLATE, this.method, this.path, this.version);
+		final String ret = String.format(Http.RequestLineTemplate, this.method, this.path, this.version);
 
 		LOGGER.exiting("getHeadLine", ret);
 		return ret;

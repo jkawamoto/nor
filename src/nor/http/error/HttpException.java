@@ -119,14 +119,14 @@ public class HttpException extends Exception{
 			final byte[] msg = this.message.getBytes();
 
 			header.set(HeaderName.ContentLength, Integer.toString(msg.length));
-			header.set(HeaderName.Server, Http.SERVERNAME);
+			header.set(HeaderName.Server, Http.ServerName);
 
 			ret.getBody().setStream(new ByteArrayInputStream(msg));
 
 		}else{
 
 			header.set(HeaderName.ContentLength, "0");
-			header.set(HeaderName.Server, Http.SERVERNAME);
+			header.set(HeaderName.Server, Http.ServerName);
 
 		}
 

@@ -65,7 +65,7 @@ public abstract class Plugin implements Closeable{
 	 * デフォルトでは，Properties 形式のファイルを仮定しており，フィールド properties に読み込みます．
 	 * 異なる形式の設定ファイルを使用する場合は，このメソッドをオーバーライドしてください．
 	 *
-	 * @param dir 設定ファイル
+	 * @param conf 設定ファイル
 	 */
 	public void load(final File conf){
 
@@ -99,7 +99,7 @@ public abstract class Plugin implements Closeable{
 	 * デフォルトでは，Properties 形式のファイルを仮定しており，フィールド properties の内容を書き出します．
 	 * 異なる形式の設定ファイルを使用する場合は，このメソッドをオーバーライドしてください．
 	 *
-	 * @param dir 設定ファイル
+	 * @param conf 設定ファイル
 	 */
 	public void save(final File conf){
 
