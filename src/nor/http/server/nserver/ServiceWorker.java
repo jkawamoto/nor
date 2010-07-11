@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.logging.Level;
 
 import nor.http.HeaderName;
 import nor.http.HttpHeader;
@@ -87,77 +88,77 @@ class ServiceWorker implements Runnable, Closeable{
 			final Connection con = this.queue.poll();
 			if(con != null){
 
-				LOGGER.finest("%s begins to handle the connection; %s", Thread.currentThread().getName(), con);
-				// ストリームの取得
-				final InputStream input = new BufferedInputStream(new NoCloseInputStream(con.getInputStream()));
-				final OutputStream output = new BufferedOutputStream(new NoExceptionOutputStreamFilter(new NoCloseOutputStream(con.getOutputStream())));
+				LOGGER.finer("run", "Begin to handle the connection; {0}", con);
 
+				try{
 
-				// 切断要求が来るまで持続接続する
-				boolean keepAlive = true;
-				while(keepAlive && this.running){
+					// 切断要求が来るまで持続接続する
+					boolean keepAlive = true;
+					while(keepAlive && this.running){
 
-					String prefix = "";
+						String prefix = "";
 
-					// リクエストオブジェクト
-					final HttpRequest request = HttpRequest.create(input, prefix);
-					if(request == null){
+						// ストリームの取得
+						final InputStream input = new BufferedInputStream(new NoCloseInputStream(con.getInputStream()));
+						final OutputStream output = new BufferedOutputStream(new NoExceptionOutputStreamFilter(new NoCloseOutputStream(con.getOutputStream())));
 
-						LOGGER.finest("%s receives a null request", Thread.currentThread().getName());
-						keepAlive = false;
+						// リクエストオブジェクト
+						final HttpRequest request = HttpRequest.create(input, prefix);
+						if(request == null){
 
-					}else{
+							LOGGER.fine("run", "Receive a null request");
+							keepAlive = false;
 
-						LOGGER.finest("%s receives the %s", Thread.currentThread().getName(), request);
+						}else{
 
-						// リクエストに切断要求が含まれているか
-						keepAlive &= this.isKeepingAlive(request);
+							LOGGER.fine("run", "Receive a {0}", request);
 
-						// リクエストの実行
-						final HttpResponse response = handler.doRequest(request);
+							// リクエストに切断要求が含まれているか
+							keepAlive &= this.isKeepingAlive(request);
 
-						// レスポンスに切断要求が含まれているか
-						keepAlive &= this.isKeepingAlive(response);
+							// リクエストの実行
+							final HttpResponse response = handler.doRequest(request);
 
-						try{
+							// レスポンスに切断要求が含まれているか
+							keepAlive &= this.isKeepingAlive(response);
+
 
 							final HttpHeader header = response.getHeader();
 							if(header.containsKey(HeaderName.ContentLength)){
 
-								LOGGER.info("%s > %s (%s bytes)", request.getHeadLine(), response.getHeadLine(), header.get(HeaderName.ContentLength));
+								LOGGER.info("run", "{0} > {1} ({2} bytes)", request.getHeadLine(), response.getHeadLine(), header.get(HeaderName.ContentLength));
 
 							}else{
 
-								LOGGER.info("%s > %s (unknown length)", request.getHeadLine(), response.getHeadLine());
+								LOGGER.info("run", "{0} > {1} (unknown length)", request.getHeadLine(), response.getHeadLine());
 
 							}
 
 							// レスポンスの書き出し
+							LOGGER.fine("run", "Return the {0}", response);
 							response.output(output);
 							output.flush();
-
-						}catch(final IOException e){
-
-							e.printStackTrace();
-							System.out.println(response.getHeadLine());
-							System.out.println(response.getHeader().toString());
-
-							keepAlive = false;
 
 						}
 
 					}
 
+				}catch(final IOException e){
+
+					LOGGER.warning("run", e.toString());
+					LOGGER.catched(Level.FINE, "run", e);
+
 				}
 
-				LOGGER.finest("%s finishes to handle and closes the connection; %s", Thread.currentThread().getName(), con);
+				LOGGER.finer("run", "Finish to handle and closes the connection; {0}", con);
 				try {
 
 					con.close();
 
 				} catch (final IOException e) {
 
-					LOGGER.warning(e.getMessage());
+					LOGGER.warning("run", e.getMessage());
+					LOGGER.catched(Level.FINE, "run", e);
 
 				}
 

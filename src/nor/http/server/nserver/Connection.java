@@ -67,12 +67,12 @@ class Connection implements Closeable{
 		int ret = -1;
 		if(key.isReadable()){
 
-			LOGGER.finest("Receives a readable key from the " + this.toString());
+			LOGGER.finest("handle", "Receives a readable key from the {0}", this);
 			ret = this.in.loadFromChannel(this.schannel);
 
 		}else if(key.isWritable() && key.isValid()){
 
-			LOGGER.finest("Receives a writable key from the " + this.toString());
+			LOGGER.finest("handle", "Receives a writable key from the {0}", this);
 			ret = this.out.storeToChannel(this.schannel);
 
 		}
@@ -96,6 +96,7 @@ class Connection implements Closeable{
 			this.key.attach(null);
 			this.key.channel().close();
 
+			LOGGER.fine("close", "Cancel the key; {0}", key);
 			this.key.cancel();
 
 			selector.wakeup();

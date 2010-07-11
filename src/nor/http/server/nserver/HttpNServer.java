@@ -18,6 +18,7 @@
 package nor.http.server.nserver;
 
 import java.io.IOException;
+import java.util.logging.Level;
 
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.HttpServer;
@@ -123,7 +124,7 @@ public class HttpNServer implements HttpServer{
 
 			} catch (final InterruptedException e) {
 
-				LOGGER.throwing("close", e);
+				LOGGER.catched(Level.WARNING, "close", e);
 
 			}
 

@@ -21,11 +21,13 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.CancelledKeyException;
+import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import java.util.logging.Level;
 
 import nor.util.log.Logger;
 
@@ -75,8 +77,8 @@ class ListenWorker implements Runnable, Closeable{
 			while (this.running) {
 
 				// セレクタにイベントが発生するまでブロック
-				final int nc = selector.selectNow();
-				LOGGER.finest("Begins a selection (%d selected keys, %d registrated keys)", nc, selector.keys().size());
+				final int nc = selector.select();
+				LOGGER.finest("run", "Begin a selection ({0} selected keys, {1} registrated keys)", nc, selector.keys().size());
 
 				// 獲得したイベントごとに処理を実行
 				final Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
@@ -92,7 +94,7 @@ class ListenWorker implements Runnable, Closeable{
 							final SocketChannel socket = serverChannel.accept();
 							if(socket != null){
 
-								LOGGER.finest("Receive an accsptable key from %s", socket.socket());
+								LOGGER.finest("run", "Receive an accsptable key from {0}", socket.socket());
 
 								// ノンブロッキングモード
 								final Connection con = new Connection(socket, this.selector);
@@ -103,6 +105,7 @@ class ListenWorker implements Runnable, Closeable{
 							}else{
 
 								LOGGER.finest("Receive an accsptable but null key");
+								LOGGER.fine("run", "Cancel the key; {0}", key);
 								key.cancel();
 
 							}
@@ -120,6 +123,8 @@ class ListenWorker implements Runnable, Closeable{
 							}else{
 
 								LOGGER.finest("Receives a no associated key");
+
+								LOGGER.fine("run", "Cancel the key; {0}", key);
 								key.cancel();
 
 							}
@@ -129,6 +134,7 @@ class ListenWorker implements Runnable, Closeable{
 					}catch(final CancelledKeyException e){
 
 						LOGGER.info(e.getMessage());
+						LOGGER.catched(Level.FINE, "run", e);
 
 						final Object o = key.attachment();
 						if(o instanceof Connection){
@@ -148,11 +154,17 @@ class ListenWorker implements Runnable, Closeable{
 
 			LOGGER.info("Ends listening");
 
+		}catch(final ClosedSelectorException e){
+
+			/* If the selecter is already selecting when this application will go to exit,
+			 * this exception is threw.
+			 */
+			LOGGER.catched(Level.FINE, "run", e);
 
 		}catch(final IOException e){
 
 			LOGGER.severe("ListenWorker is stopped by " + e.toString());
-			e.printStackTrace();
+			LOGGER.catched(Level.INFO, "run", e);
 
 		}
 
@@ -184,7 +196,7 @@ class ListenWorker implements Runnable, Closeable{
 		serverChannel.socket().bind(addr);
 		serverChannel.register(selector, SelectionKey.OP_ACCEPT);
 
-		LOGGER.info("Bind socket to %s", addr);
+		LOGGER.info("createServerChannel", "Bind socket to {0}", addr);
 
 	}
 

@@ -142,6 +142,8 @@ public class Nor{
 				this.proxy.attach(p);
 				this.plugins.add(p);
 
+				LOGGER.info("init", "Loading a plugin {0}", p.getClass().getName());
+
 			}
 
 		}
@@ -196,6 +198,8 @@ public class Nor{
 
 			this.proxy.attach(p);
 			this.plugins.add(p);
+
+			LOGGER.info("loadPlugin", "Loading a plugin {0}", p.getClass().getName());
 
 		}catch(final ClassNotFoundException e){
 

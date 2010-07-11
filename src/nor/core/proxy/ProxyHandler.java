@@ -24,6 +24,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -80,6 +81,10 @@ class ProxyHandler implements HttpRequestHandler{
 	 */
 	private static final Logger LOGGER = Logger.getLogger(ProxyHandler.class);
 
+	private static final String Handler = "x-nor-handler";
+	private static final String Filter = "x-nor-filter";
+	private static final String OldContentLength = "x-nor-old-content-length";
+
 
 	//====================================================================
 	//  Constructer
@@ -108,7 +113,7 @@ class ProxyHandler implements HttpRequestHandler{
 		HttpResponse response = null;
 
 		// リクエストのフィルタリング
-		ProxyHandler.doFiltering(request, this.requestFilters);
+		this.doFiltering(request, this.requestFilters);
 
 		// 他のハンドラがインストールされている場合はそれを実行する
 		final String path = request.getPath();
@@ -120,6 +125,7 @@ class ProxyHandler implements HttpRequestHandler{
 				response = h.doRequest(request, url);
 				if(response != null){
 
+					response.getHeader().set(Handler, h.getClass().getName());
 					break;
 
 				}
@@ -137,7 +143,7 @@ class ProxyHandler implements HttpRequestHandler{
 		assert response != null;
 
 		// レスポンスのフィルタリング
-		ProxyHandler.doFiltering(response, this.responseFilters);
+		this.doFiltering(response, this.responseFilters);
 
 		LOGGER.exiting("doRequest", response);
 		return response;
@@ -279,9 +285,9 @@ class ProxyHandler implements HttpRequestHandler{
 	}
 
 	//====================================================================
-	// private static メソッド
+	// Private methods
 	//====================================================================
-	private static <Message extends HttpMessage, Filter extends MessageFilter<Message>> void doFiltering(final Message msg, final Collection<Filter> filters){
+	private <Message extends HttpMessage, Filter extends MessageFilter<Message>> void doFiltering(final Message msg, final Collection<Filter> filters){
 
 		// 文字コードの取得
 		Charset charset = null;
@@ -295,15 +301,17 @@ class ProxyHandler implements HttpRequestHandler{
 
 				try{
 
-					charset = Charset.forName(m.group(1).toLowerCase());
+					charset = Charset.forName(m.group(1).toUpperCase());
 
 				}catch(final UnsupportedCharsetException e){
 
-					LOGGER.warning(e.getMessage());
+					LOGGER.warning("doFiltering", e.getMessage());
+					LOGGER.catched(Level.FINE, "doFiltering", e);
 
 				}catch(final IllegalCharsetNameException e){
 
-					LOGGER.warning(e.getMessage());
+					LOGGER.warning("doFiltering", e.getMessage());
+					LOGGER.catched(Level.FINE, "doFiltering", e);
 
 				}
 
@@ -316,7 +324,7 @@ class ProxyHandler implements HttpRequestHandler{
 		final String path = msg.getPath();
 		for(final MessageFilter<Message> f : filters){
 
-			if(header.containsKey("x-nor-nofilter")){
+			if(header.containsKey("x-nor-no-filter")){
 				break;
 			}
 
@@ -329,12 +337,14 @@ class ProxyHandler implements HttpRequestHandler{
 					if(cType.find()){
 
 						f.update(msg, url, cType, register);
+						header.add(Filter, f.getClass().getName());
 
 					}
 
 				}else{
 
 					f.update(msg, url, null, register);
+					header.add(Filter, f.getClass().getName());
 
 				}
 
@@ -381,7 +391,7 @@ class ProxyHandler implements HttpRequestHandler{
 			// テキストフィルタリングを行った場合，データサイズは不明になる
 			if(header.containsKey(HeaderName.ContentLength)){
 
-				header.set("x-nor-old-content-length", header.get(HeaderName.ContentLength));
+				header.set(OldContentLength, header.get(HeaderName.ContentLength));
 				header.remove(HeaderName.ContentLength);
 				header.add(HeaderName.TransferEncoding, "chunked");
 				header.set(HeaderName.ContentEncoding, "gzip");
@@ -397,7 +407,7 @@ class ProxyHandler implements HttpRequestHandler{
 			// 書き込みを行うフィルタがあった場合，ContentLengthは分からなくなる
 			if(!register.readonly()){
 
-					header.set("x-nor-old-content-length", header.get(HeaderName.ContentLength));
+					header.set(OldContentLength, header.get(HeaderName.ContentLength));
 					header.remove(HeaderName.ContentLength);
 					header.set(HeaderName.TransferEncoding, "chunked");
 					header.set(HeaderName.ContentEncoding, "gzip");
@@ -407,7 +417,7 @@ class ProxyHandler implements HttpRequestHandler{
 			// 内容コーディングが指定されている場合，最終的なデータサイズが不明のためチャンク形式にする
 			if(header.containsKey(HeaderName.ContentEncoding)){
 
-				header.set("x-nor-old-content-length", header.get(HeaderName.ContentLength));
+				header.set(OldContentLength, header.get(HeaderName.ContentLength));
 				header.remove(HeaderName.ContentLength);
 				header.add(HeaderName.TransferEncoding, "chunked");
 

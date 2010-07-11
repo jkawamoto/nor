@@ -69,17 +69,18 @@ class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
 	//============================================================================
 	@Override
 	public synchronized boolean offer(final Connection e) {
+		assert e != null;
 
 		final boolean ret = queue.offer(e);
 		if(ret){
 
-			if(this.workers.size() < this.minThreads || this.waiting == 0){
-
-				LOGGER.fine("Create a new worker thread.");
+			if(this.waiting == 0){
 
 				final ServiceWorker w = new ServiceWorker(this, this.handler);
 				this.workers.add(w);
 				this.pool.execute(w);
+
+				LOGGER.fine("offer", "Create a new worker thread (current: {0} threads).", this.workers.size());
 
 			}
 
@@ -99,7 +100,7 @@ class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
 
 			try{
 
-				LOGGER.finer("Waiting = %d, working = %d, connection = %d", this.waiting, this.workers.size(), this.size());
+				LOGGER.finer("poll", "Waiting = {0}, working = {1}, connection = {2}", this.waiting, this.workers.size(), this.size());
 				while(this.isEmpty() && this.waiting <= this.minThreads){
 
 					LOGGER.finest("Be going to wait.");
@@ -111,7 +112,7 @@ class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
 					LOGGER.finest("Wake up.");
 
 				}
-				LOGGER.finer("Waiting = %d, working = %d, connection = %d", this.waiting, this.workers.size(), this.size());
+				LOGGER.finer("poll", "Waiting = {0}, working = {1}, connection = {2}", this.waiting, this.workers.size(), this.size());
 
 				ret = queue.poll();
 
@@ -141,7 +142,7 @@ class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
 
 			if (!this.pool.awaitTermination(60, TimeUnit.SECONDS)){
 
-				LOGGER.warning("Thread pool did not terminate.");
+				LOGGER.warning("close", "Thread pool did not terminate.");
 
 			}
 
@@ -293,6 +294,7 @@ class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
 	public void update(final ServiceWorker from) {
 
 		this.workers.remove(from);
+		LOGGER.fine("update", "Remove a worker thread (current: {0} threads).", this.workers.size());
 
 	}
 

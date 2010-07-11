@@ -27,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.zip.DeflaterInputStream;
 import java.util.zip.GZIPInputStream;
@@ -187,7 +188,7 @@ public class HttpRequest extends HttpMessage{
 	public String toString(){
 		LOGGER.entering("toString");
 
-		final String ret = String.format("Request[method=%s, path=%s]", this.getMethod(), this.getPath());
+		final String ret = String.format("Request[method=%s, path=%s]\r\n%s", this.getMethod(), this.getPath(), this.header.toString());
 
 		LOGGER.exiting("toString", ret);
 		return ret.toString();
@@ -252,7 +253,6 @@ public class HttpRequest extends HttpMessage{
 				con.connect();
 
 				this.getBody().output(con.getOutputStream(), this.header);
-				this.getBody().close();
 
 			}else if(header.containsKey(HeaderName.TransferEncoding)){
 
@@ -260,13 +260,13 @@ public class HttpRequest extends HttpMessage{
 				con.connect();
 
 				this.getBody().output(con.getOutputStream(), this.header);
-				this.getBody().close();
 
 			}else{
 
 				con.connect();
 
 			}
+			this.getBody().close();
 
 		}catch(final SocketTimeoutException e){
 
@@ -299,17 +299,23 @@ public class HttpRequest extends HttpMessage{
 
 				resStream = con.getInputStream();
 
-				// 内容エンコーディングの解決
-				final String encode = con.getHeaderField(HeaderName.ContentEncoding.toString());
-				if(encode != null){
+				// ContentLength も TransferEncoding も指定していない場合は内容コーディングを無視する．
+				if(con.getHeaderField(HeaderName.ContentLength.toString()) != null || con.getHeaderField(HeaderName.TransferEncoding.toString()) != null){
 
-					if(Http.GZIP.equalsIgnoreCase(encode)){
+					// 内容エンコーディングの解決
+					final String encode = con.getHeaderField(HeaderName.ContentEncoding.toString());
+					if(encode != null){
 
-						resStream = new GZIPInputStream(resStream);
+						if(Http.GZIP.equalsIgnoreCase(encode)){
 
-					}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
+							LOGGER.info(con + ":"  + con.getResponseMessage() + " : " + con.getHeaderFields());
+							resStream = new GZIPInputStream(resStream);
 
-						resStream = new DeflaterInputStream(resStream);
+						}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
+
+							resStream = new DeflaterInputStream(resStream);
+
+						}
 
 					}
 
@@ -502,7 +508,13 @@ public class HttpRequest extends HttpMessage{
 
 		}catch(final IOException e){
 
-			LOGGER.warning(e.getMessage());
+			if(!(e.getCause() instanceof InterruptedException)){
+
+				LOGGER.warning("create", e.getMessage());
+
+			}
+			LOGGER.catched(Level.FINE, "create", e);
+
 			return null;
 
 		}

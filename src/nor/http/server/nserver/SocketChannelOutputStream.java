@@ -192,6 +192,7 @@ class SocketChannelOutputStream extends OutputStream{
 
 			}
 
+			LOGGER.fine("close", "InputStream by {0} is closed.", this.key);
 			this.key = null;
 
 		}

@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
+import java.util.logging.Level;
 
 import nor.http.HttpHeader;
 import nor.http.HttpRequest;
@@ -122,23 +123,31 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 			final Proxy proxy = this.router.query(request.getPath());
 			if(proxy != Proxy.NO_PROXY){
 
-				LOGGER.info("Using proxy " + proxy);
+				LOGGER.config("Use the proxy; " + proxy);
 
 			}
+
+			LOGGER.fine("Send the " + request.toString());
 
 			// リクエストの送信とレスポンスの作成
 			final HttpURLConnection con = (HttpURLConnection)url.openConnection(proxy);
 			con.setConnectTimeout(Timeout);
 			response = request.createResponse(con);
 
+			LOGGER.fine("Receive the " + response.toString());
+
 		} catch (final IOException e) {
 
-			LOGGER.warning(String.format("Catch a IOException(%s)", e.getMessage()));
+			LOGGER.warning("doRequest", String.format("Catch a IOException({0})", e.getMessage()));
+			LOGGER.catched(Level.FINE, "doRequest", e);
+
 			response = HttpException.createResponse(request, Status.InternalServerError, e);
 
 		} catch (final HttpException e) {
 
-			LOGGER.warning(String.format("Catch a HttpException(%s)", e.getMessage()));
+			LOGGER.warning("doRequest", String.format("Catch a HttpException({0})", e.getMessage()));
+			LOGGER.catched(Level.FINE, "doRequest", e);
+
 			response = e.createResponse(request);
 
 		}

@@ -72,7 +72,7 @@ public abstract class HttpMessage{
 		writer.flush();
 
 		// ヘッダの書き出し
-		header.writeHeader(writer);
+		header.output(writer);
 
 		// バッファのフラッシュ
 		writer.append('\r');

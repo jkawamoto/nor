@@ -17,7 +17,9 @@
  */
 package nor.util.log;
 
+import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
 
 public class Logger extends java.util.logging.Logger{
 
@@ -83,20 +85,6 @@ public class Logger extends java.util.logging.Logger{
 
 	}
 
-	public void warning(final Object msg){
-
-		if(msg == null){
-
-			super.warning("null");
-
-		}else{
-
-			super.warning(msg.toString());
-
-		}
-
-	}
-
 	public void severe(final Object msg){
 
 		if(msg == null){
@@ -111,43 +99,79 @@ public class Logger extends java.util.logging.Logger{
 
 	}
 
+
+	//============================================================================
+	//
+	//============================================================================
 	public void throwing(final String method, final Throwable e){
 
 		super.throwing(this.classname, method, e);
 
 	}
 
+	public void catched(final Level level, final String method, final String msg, final Throwable thrown){
+
+		this.logp(level, this.classname, method, msg, thrown);
+
+	}
+
+	public void catched(final Level level, final String method, final Throwable thrown){
+
+		this.catched(level, method, thrown.getMessage(), thrown);
+
+	}
 
 	//============================================================================
-	// Formatable logging methods
+	// Overridden logging methods
 	//============================================================================
-	public void info(final String format, final Object... args){
+	@Override
+	public void log(final LogRecord record) {
 
-		super.info(String.format(format, args));
+		final String msg = record.getMessage();
+		record.setMessage(String.format("[%s] %s", Thread.currentThread().getName(), msg));
+		record.setSourceClassName(this.classname);
 
-	}
-
-	public void config(final String format, final Object... args){
-
-		super.config(String.format(format, args));
-
-	}
-
-	public void fine(final String format, final Object... args){
-
-		super.fine(String.format(format, args));
+		super.log(record);
 
 	}
 
-	public void finer(final String format, final Object... args){
+	//============================================================================
+	// Formatable logging methods.
+	// For format strings, you can use {0}, {1}, ... as place holders.
+	//============================================================================
+	public void warning(final String method, final String format, final Object... args){
 
-		super.finer(String.format(format, args));
+		this.logp(Level.WARNING, this.classname, method, format, args);
 
 	}
 
-	public void finest(final String format, final Object... args){
+	public void info(final String method, final String format, final Object... args){
 
-		super.finest(String.format(format, args));
+		this.logp(Level.INFO, this.classname, method, format, args);
+
+	}
+
+	public void config(final String method, final String format, final Object... args){
+
+		this.logp(Level.CONFIG, this.classname, method, format, args);
+
+	}
+
+	public void fine(final String method, final String format, final Object... args){
+
+		this.logp(Level.FINE, this.classname, method, format, args);
+
+	}
+
+	public void finer(final String method, final String format, final Object... args){
+
+		this.logp(Level.FINER, this.classname, method, format, args);
+
+	}
+
+	public void finest(final String method, final String format, final Object... args){
+
+		this.logp(Level.FINEST, this.classname, method, format, args);
 
 	}
 

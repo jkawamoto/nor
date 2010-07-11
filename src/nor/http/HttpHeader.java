@@ -24,6 +24,7 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -80,15 +81,24 @@ public class HttpHeader{
 
 		for(String line = reader.readLine(); line != null; line = reader.readLine()){
 
-			// ヘッダ記述のシンタクスに合致するか
-			final Matcher m = HEADER.matcher(line);
-			if(m.matches()){
+			if(line.length() != 0){
 
-				final String key = m.group(1).toLowerCase();
-				if(key != null){
+				// ヘッダ記述のシンタクスに合致するか
+				final Matcher m = HEADER.matcher(line);
+				if(m.matches()){
 
-					final String value = m.group(2);
-					this.add(key, value);
+					final String key = m.group(1).toLowerCase();
+					if(key != null){
+
+						final String value = m.group(2);
+						this.add(key, value);
+
+					}
+
+				}else{
+
+					// TODO:
+					System.out.println(line);
 
 				}
 
@@ -148,8 +158,6 @@ public class HttpHeader{
 		}
 		this.elements.put(skey, value);
 
-		LOGGER.fine("Header set: " + skey + ": " + value);
-
 		LOGGER.exiting("set");
 	}
 
@@ -162,6 +170,7 @@ public class HttpHeader{
 	 * @param value 追加する値
 	 */
 	public void add(final String key, final String value){
+		LOGGER.entering("add", key, value);
 
 		final String skey = key.toLowerCase();
 		if(this.elements.containsKey(skey)){
@@ -186,8 +195,7 @@ public class HttpHeader{
 
 		}
 
-		LOGGER.fine("Header add: " + skey + ": " + value);
-
+		LOGGER.exiting("add");
 	}
 
 
@@ -236,7 +244,6 @@ public class HttpHeader{
 
 		LOGGER.exiting("getValues", ret);
 		return ret;
-
 	}
 
 	/**
@@ -254,7 +261,6 @@ public class HttpHeader{
 
 		LOGGER.exiting("containsKey", ret);
 		return ret;
-
 	}
 
 	/**
@@ -325,8 +331,8 @@ public class HttpHeader{
 	 * @param writer 書き出し先のストリーム
 	 * @throws IOException I/Oエラーが発生した場合
 	 */
-	public void writeHeader(final BufferedWriter writer) throws IOException{
-		LOGGER.entering("writeHeader", writer);
+	public void output(final BufferedWriter writer) throws IOException{
+		LOGGER.entering("output", writer);
 		assert writer != null;
 
 		for(final String key : this.elements.keySet()){
@@ -340,7 +346,7 @@ public class HttpHeader{
 					writer.append(v.trim());
 					writer.newLine();
 
-					LOGGER.fine("Header write: " + key + ": " + v.trim());
+					LOGGER.finer("output", "Write[{0}: {1}]", key, v);
 
 				}
 
@@ -351,7 +357,7 @@ public class HttpHeader{
 				writer.append(this.get(key));
 				writer.newLine();
 
-				LOGGER.fine("Header write: " + key + ": " + this.get(key));
+				LOGGER.finer("output", "Write[{0}: {1}]", key, this.get(key));
 
 			}
 
@@ -359,7 +365,7 @@ public class HttpHeader{
 
 		writer.flush();
 
-		LOGGER.exiting("writeHeader");
+		LOGGER.exiting("output");
 
 	}
 
@@ -376,12 +382,13 @@ public class HttpHeader{
 		String ret = "";
 		try {
 
-			this.writeHeader(new BufferedWriter(buffer));
+			this.output(new BufferedWriter(buffer));
 			ret = buffer.toString();
 
-		} catch (IOException e) {
+		} catch (final IOException e) {
 
-			LOGGER.warning(e.getLocalizedMessage());
+			LOGGER.warning(e.toString());
+			LOGGER.catched(Level.FINER, "toString", e);
 
 		}
 

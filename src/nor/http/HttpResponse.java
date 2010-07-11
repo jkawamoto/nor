@@ -143,6 +143,8 @@ public class HttpResponse extends HttpMessage{
 	 * @param body 内容コーディング，転送コーディングともに解決済みの入力ストリーム
 	 */
 	HttpResponse(final HttpRequest request, final Status status, final InputStream body){
+		assert request != null;
+		assert status != null;
 
 		this.request = request;
 		this.code = status.getCode();
@@ -211,6 +213,14 @@ public class HttpResponse extends HttpMessage{
 		final String ret = this.message;
 
 		LOGGER.exiting("getMessage", ret);
+		return ret;
+
+	}
+
+	@Override
+	public String toString(){
+
+		final String ret = String.format("Response[status=%s, path=%s]\r\n%s", this.getStatus(), this.getPath(), this.header);
 		return ret;
 
 	}

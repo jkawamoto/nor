@@ -82,6 +82,10 @@ public class HttpBody implements Closeable{
 			final String length = header.get(HeaderName.ContentLength);
 			this.in = new LimitedInputStream(this.in, Integer.valueOf(length));
 
+		}else{
+
+			this.in = new LimitedInputStream(this.in, Integer.valueOf(0));
+
 		}
 
 		// 内容エンコーディングの解決

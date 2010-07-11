@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
+import java.util.logging.Level;
 
 import nor.util.log.Logger;
 
@@ -154,6 +155,7 @@ class SocketChannelInputStream extends InputStream{
 
 			}
 
+			LOGGER.fine("close", "InputStream by {0} is closed.", this.key);
 			this.key = null;
 
 		}
@@ -174,18 +176,21 @@ class SocketChannelInputStream extends InputStream{
 				this.buffer.clear();
 				ret = channel.read(this.buffer);
 				this.buffer.flip();
-				this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_READ);
+
+				if(ret != 0){
+
+					this.key.interestOps(this.key.interestOps() & ~SelectionKey.OP_READ);
+					this.notify();
+
+				}
 
 			}
 
 		}catch(final IOException e){
 
 			LOGGER.warning(e.getMessage());
+			LOGGER.catched(Level.FINE, "loadFromChannel", e);
 			this.close();
-
-		}finally{
-
-			this.notify();
 
 		}
 
@@ -210,6 +215,8 @@ class SocketChannelInputStream extends InputStream{
 
 			}catch(final InterruptedException e) {
 
+				LOGGER.catched(Level.FINE, "load", e);
+
 				this.close();
 				Thread.currentThread().interrupt();
 
@@ -217,6 +224,8 @@ class SocketChannelInputStream extends InputStream{
 				throw new IOException(e);
 
 			}catch(final CancelledKeyException e){
+
+				LOGGER.catched(Level.FINE, "load", e);
 
 				this.close();
 				LOGGER.throwing("load", e);
