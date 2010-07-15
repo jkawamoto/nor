@@ -33,9 +33,9 @@ public class Http {
 	 */
 	public static final String ServerName;
 
-	static final String CHUNKED = "chunked";
-	static final String GZIP = "gzip";
-	static final String DEFLATE = "deflate";
+	public static final String CHUNKED = "chunked";
+	public static final String GZIP = "gzip";
+	public static final String DEFLATE = "deflate";
 
 	static final String RequestLineTemplate;
 	static final Pattern RequestLinePattern;

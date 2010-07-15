@@ -26,7 +26,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
 import java.util.logging.Level;
 
 import nor.util.log.Logger;
@@ -81,10 +80,8 @@ class ListenWorker implements Runnable, Closeable{
 				LOGGER.finest("run", "Begin a selection ({0} selected keys, {1} registrated keys)", nc, selector.keys().size());
 
 				// 獲得したイベントごとに処理を実行
-				final Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
-				while(iter.hasNext()) {
+				for(final SelectionKey key : selector.selectedKeys()){
 
-					final SelectionKey key = iter.next();
 					try{
 
 						if (key.isAcceptable()) {

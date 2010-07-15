@@ -24,17 +24,28 @@ import static nor.http.HeaderName.ProxyConnection;
 import static nor.http.HeaderName.Via;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
+import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
+import java.util.zip.DeflaterInputStream;
+import java.util.zip.GZIPInputStream;
 
+import nor.http.HeaderName;
+import nor.http.Http;
+import nor.http.HttpBody;
 import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.Method;
 import nor.http.Status;
 import nor.http.error.HttpException;
+import nor.http.error.InternalServerErrorException;
 import nor.http.server.HttpRequestHandler;
 import nor.util.log.Logger;
 
@@ -132,7 +143,8 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 			// リクエストの送信とレスポンスの作成
 			final HttpURLConnection con = (HttpURLConnection)url.openConnection(proxy);
 			con.setConnectTimeout(Timeout);
-			response = request.createResponse(con);
+			this.sendRequest(con, request);
+			response = this.receiveResponse(con, request);
 
 			LOGGER.fine("Receive the " + response.toString());
 
@@ -163,6 +175,148 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 	//============================================================================
 	//  private メソッド
 	//============================================================================
+	/**
+	 * HttpURLConnection を用いてリクエストを送信する．
+	 *
+	 * @param con 送信先の HttpURLConnection インスタンス
+	 * @param request 送信するリクエスト
+	 * @throws HttpException リクエストの送信にエラーが起こった場合
+	 */
+	private void sendRequest(final HttpURLConnection con, final HttpRequest request) throws HttpException{
+
+		// リクエストヘッダの登録
+		final HttpHeader header = request.getHeader();
+		final HttpBody body = request.getBody();
+		for(final String key : header.keySet()){
+
+			con.addRequestProperty(key, header.get(key));
+
+		}
+
+		try{
+
+			// ボディがある場合は送信
+			if(header.containsKey(HeaderName.ContentLength)){
+
+				final int length = Integer.parseInt(header.get(HeaderName.ContentLength));
+				con.setFixedLengthStreamingMode(length);
+				con.setDoOutput(true);
+				con.connect();
+
+				body.output(con.getOutputStream(), header);
+
+			}else if(header.containsKey(HeaderName.TransferEncoding)){
+
+				con.setDoOutput(true);
+				con.connect();
+
+				body.output(con.getOutputStream(), header);
+
+			}else{
+
+				con.connect();
+
+			}
+			body.close();
+
+		}catch(final SocketTimeoutException e){
+
+			LOGGER.warning(e.getMessage());
+			throw new HttpException(Status.RequestTimeout, e);
+
+		}catch(final ConnectException e){
+
+			LOGGER.warning(e.getMessage());
+			throw new HttpException(Status.RequestTimeout, e);
+
+		}catch(final IOException e){
+
+			throw new InternalServerErrorException(e);
+
+		}
+
+	}
+
+	/**
+	 * HttpURLConnection を用いてレスポンスを受信する．
+	 *
+	 * @param con レスポンスを受信する HttpURLConnection インスタンス
+	 * @param request レスポンスの元となるリクエスト
+	 * @return 受信したレスポンス
+	 * @throws HttpException データの受信中にエラーが起こった場合
+	 */
+	private HttpResponse receiveResponse(final HttpURLConnection con, final HttpRequest request) throws HttpException{
+
+		// レスポンスの作成
+		HttpResponse ret = null;
+		try {
+
+			final int code = con.getResponseCode();
+			InputStream resStream = null;
+			if(code == -1){
+
+				throw new InternalServerErrorException("Recieve an invalid message.");
+
+			}else if(code < 400){
+
+				resStream = con.getInputStream();
+
+				// ContentLength も TransferEncoding も指定していない場合は内容コーディングを無視する．
+				if(con.getHeaderField(HeaderName.ContentLength.toString()) != null || con.getHeaderField(HeaderName.TransferEncoding.toString()) != null){
+
+					// 内容エンコーディングの解決
+					final String encode = con.getHeaderField(HeaderName.ContentEncoding.toString());
+					if(encode != null){
+
+						if(Http.GZIP.equalsIgnoreCase(encode)){
+
+							LOGGER.info(con + ":"  + con.getResponseMessage() + " : " + con.getHeaderFields());
+							resStream = new GZIPInputStream(resStream);
+
+						}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
+
+							resStream = new DeflaterInputStream(resStream);
+
+						}
+
+					}
+
+				}
+
+			}else{
+
+				resStream = con.getErrorStream();
+
+			}
+			ret = request.createResponse(Status.valueOf(code), resStream);
+
+			// ヘッダの登録
+			final HttpHeader resHeader = ret.getHeader();
+			final Map<String, List<String>> fields = con.getHeaderFields();
+			for(final String key : fields.keySet()){
+
+				if(key != null){
+
+					for(final String value : fields.get(key)){
+
+						resHeader.add(key, value);
+
+					}
+
+				}
+
+			}
+
+		}catch(final IOException e){
+
+			throw new InternalServerErrorException(e);
+
+		}
+
+		return ret;
+
+	}
+
 	private void cleanHeader(final HttpRequest request){
 		LOGGER.entering("cleanHeader", request);
 		assert request != null;
@@ -186,16 +340,8 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		}
 
 		// ホップバイホップヘッダの削除
-		if(header.containsKey(Connection)){
+		this.removeHopByHopHeader(header);
 
-			for(final String value : header.get(Connection).split(",")){
-
-				header.remove(value.trim());
-
-			}
-			header.remove(Connection);
-
-		}
 		// TODO: さらにプロキシ経由の場合も消していいのか？>とりあえず保存する
 		if(this.router.query(request.getPath()) == null && header.containsKey(ProxyConnection)){
 
@@ -239,6 +385,32 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		final HttpHeader header = response.getHeader();
 
 		// ホップバイホップヘッダの削除
+		this.removeHopByHopHeader(header);
+
+		if(header.containsKey(ProxyConnection)){
+
+			for(final String value : header.get(ProxyConnection).split(",")){
+
+				header.remove(value.trim());
+
+			}
+			header.remove(ProxyConnection);
+
+		}
+
+		// プロキシ通過スタンプ
+		header.add(Via, String.format(VIA_FORMAT, this.version, this.name));
+
+		LOGGER.exiting("cleanHeader");
+	}
+
+	/**
+	 * ホップバイホップヘッダの削除．
+	 *
+	 * @param header 削除対象のヘッダ
+	 */
+	private void removeHopByHopHeader(final HttpHeader header){
+
 		if(header.containsKey(Connection)){
 
 			boolean isClose = false;
@@ -264,21 +436,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 			}
 
 		}
-		if(header.containsKey(ProxyConnection)){
 
-			for(final String value : header.get(ProxyConnection).split(",")){
-
-				header.remove(value.trim());
-
-			}
-			header.remove(ProxyConnection);
-
-		}
-
-		// プロキシ通過スタンプ
-		header.add(Via, String.format(VIA_FORMAT, this.version, this.name));
-
-		LOGGER.exiting("cleanHeader");
 	}
 
 	//============================================================================
@@ -288,6 +446,8 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 		final String classname = ProxyRequestHandler.class.getName();
 		Timeout = Integer.valueOf(System.getProperty(String.format("%s.Timeout", classname)));
+
+		LOGGER.config("<init>", "Load a constant: Timeout = {0}", Timeout);
 
 	}
 

@@ -95,6 +95,9 @@ public class HttpNServer implements HttpServer{
 		final int mThreads = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, MinThreadsKey)));
 		final int timeout = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, TimeoutKey)));
 
+		LOGGER.config("start", "Load a constant: {0} = {1}", MinThreadsKey, mThreads);
+		LOGGER.config("start", "Load a constant: {0} = {1}", TimeoutKey, mThreads);
+
 		this.workerThreadManager = new ThreadManager(this.handler, mThreads, timeout);
 
 		this.listener = new ListenWorker(hostname, port, this.workerThreadManager);

@@ -256,7 +256,7 @@ public class ProxyServer implements Closeable{
 		}
 
 		final String ret =  pac_template.toString().replace("{PROXY_URL}", proxy).replace("{FILTERING_RULE}", filtering_rule.toString()).replace("{ROUTING_RULE}", routing_rule.toString());
-		System.out.println(ret);
+		LOGGER.fine("getPAC", ret);
 
 		return ret;
 

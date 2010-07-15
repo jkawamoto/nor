@@ -247,6 +247,9 @@ class SocketChannelInputStream extends InputStream{
 		BufferSize = Integer.valueOf(System.getProperty(String.format("%s.BufferSize", classname)));
 		Timeout = Integer.valueOf(System.getProperty(String.format("%s.Timeout", classname)));
 
+		LOGGER.config("<init>", "Load a constant: BufferSize = {0}", BufferSize);
+		LOGGER.config("<init>", "Load a constant: Timeout = {0}", Timeout);
+
 	}
 
 }

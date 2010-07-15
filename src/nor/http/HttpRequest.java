@@ -22,18 +22,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
-import java.util.zip.DeflaterInputStream;
-import java.util.zip.GZIPInputStream;
 
 import nor.http.error.HttpException;
-import nor.http.error.InternalServerErrorException;
 import nor.http.io.HeaderInputStream;
 import nor.util.log.Logger;
 
@@ -215,143 +207,6 @@ public class HttpRequest extends HttpMessage{
 		assert input != null;
 
 		final HttpResponse ret = new HttpResponse(this, input);
-
-		LOGGER.exiting("createResponse", ret);
-		return ret;
-	}
-
-	/**
-	 * HttpURLConnection のインスタンスを指定してレスポンスを作成する．
-	 * 指定された HttpURLConnection インスタンスからレスポンスを作成します．
-	 *
-	 * @param con HttpURLConnection インスタンス
-	 * @return 作成されたレスポンス
-	 * @throws HttpError 何らかのエラーが発生した場合
-	 */
-	public HttpResponse createResponse(final HttpURLConnection con) throws HttpException{
-		LOGGER.entering("createResponse", con);
-		assert con != null;
-
-
-		// リクエストの処理
-		// リクエストヘッダの登録
-		final HttpHeader header = this.getHeader();
-		for(final String key : header.keySet()){
-
-			con.addRequestProperty(key, header.get(key));
-
-		}
-
-		try{
-
-			// ボディがある場合は送信
-			if(header.containsKey(HeaderName.ContentLength)){
-
-				final int length = Integer.parseInt(header.get(HeaderName.ContentLength));
-				con.setFixedLengthStreamingMode(length);
-				con.setDoOutput(true);
-				con.connect();
-
-				this.getBody().output(con.getOutputStream(), this.header);
-
-			}else if(header.containsKey(HeaderName.TransferEncoding)){
-
-				con.setDoOutput(true);
-				con.connect();
-
-				this.getBody().output(con.getOutputStream(), this.header);
-
-			}else{
-
-				con.connect();
-
-			}
-			this.getBody().close();
-
-		}catch(final SocketTimeoutException e){
-
-			LOGGER.warning(e.getMessage());
-			throw new HttpException(Status.RequestTimeout, e);
-
-		}catch(final ConnectException e){
-
-			LOGGER.warning(e.getMessage());
-			throw new HttpException(Status.RequestTimeout, e);
-
-		}catch(final IOException e){
-
-			throw new InternalServerErrorException(e);
-
-		}
-
-
-		// レスポンスの作成
-		HttpResponse ret;
-		try {
-
-			final int code = con.getResponseCode();
-			InputStream resStream = null;
-			if(code == -1){
-
-				throw new InternalServerErrorException("Recieve an invalid message.");
-
-			}else if(code < 400){
-
-				resStream = con.getInputStream();
-
-				// ContentLength も TransferEncoding も指定していない場合は内容コーディングを無視する．
-				if(con.getHeaderField(HeaderName.ContentLength.toString()) != null || con.getHeaderField(HeaderName.TransferEncoding.toString()) != null){
-
-					// 内容エンコーディングの解決
-					final String encode = con.getHeaderField(HeaderName.ContentEncoding.toString());
-					if(encode != null){
-
-						if(Http.GZIP.equalsIgnoreCase(encode)){
-
-							LOGGER.info(con + ":"  + con.getResponseMessage() + " : " + con.getHeaderFields());
-							resStream = new GZIPInputStream(resStream);
-
-						}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
-
-							resStream = new DeflaterInputStream(resStream);
-
-						}
-
-					}
-
-				}
-
-			}else{
-
-				resStream = con.getErrorStream();
-
-			}
-			ret = new HttpResponse(this, Status.valueOf(code), resStream);
-
-
-			// ヘッダの登録
-			final HttpHeader resHeader = ret.getHeader();
-			final Map<String, List<String>> fields = con.getHeaderFields();
-			for(final String key : fields.keySet()){
-
-				if(key != null){
-
-					for(final String value : fields.get(key)){
-
-						resHeader.add(key, value);
-
-					}
-
-				}
-
-			}
-
-		}catch(final IOException e){
-
-			throw new InternalServerErrorException(e);
-
-		}
-
 
 		LOGGER.exiting("createResponse", ret);
 		return ret;
