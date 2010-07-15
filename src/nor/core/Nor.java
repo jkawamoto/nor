@@ -106,14 +106,10 @@ public class Nor{
 		}
 
 		// Load application configs
-		this.confDir = new File(String.format("./config/%s/", this.context.getMAC()));
-		if(!this.confDir.exists()){
+		this.confDir = new File(String.format("./config/%s/", this.context.getHostName()));
+		this.confDir.mkdirs();
 
-			this.confDir.mkdirs();
-
-		}
-
-		this.config = new Config(new File(this.confDir, this.getClass().getCanonicalName() + ".conf"));
+		this.config = new Config(new File(this.confDir, String.format("%s.conf", this.getClass().getCanonicalName())));
 
 		LOGGER.exiting("<init>");
 	}

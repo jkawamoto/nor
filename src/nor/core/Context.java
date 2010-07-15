@@ -20,6 +20,8 @@ package nor.core;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,19 +31,20 @@ import nor.util.log.Logger;
 class Context{
 
 	/**
-	 * 現在のゲートウェイMACアドレス
+	 * 現在のゲートウェイのホスト名
 	 */
-	private final String mac;
+	private final String host;
 
 	/**
 	 * ロガー
 	 */
 	private static final Logger LOGGER = Logger.getLogger(Context.class);
 
-	/**
-	 * MACアドレス取得用の正規表現
-	 */
-	private static final Pattern GATEWAY_IP = Pattern.compile("Gateway.*((\\d{1,3}\\.){3}\\d{1,3})");
+	private static final String GatewayRegexWindows = "\\s*(?:\\d+\\.\\d+\\.\\d+\\.\\d+)\\s*(?:\\d+\\.\\d+\\.\\d+\\.\\d+)\\s*(\\d+\\.\\d+\\.\\d+\\.\\d+)\\s*(?:\\d+\\.\\d+\\.\\d+\\.\\d+)";
+	private static final String GatewayRegexLinux = "\\s*(?:\\d+\\.\\d+\\.\\d+\\.\\d+)\\s*(\\d+\\.\\d+\\.\\d+\\.\\d+)\\s*(?:\\d+\\.\\d+\\.\\d+\\.\\d+)";
+
+	private static final String Windows = "Windows";
+	private static final String Linux = "Linux";
 
 	//============================================================================
 	//  コンストラクタ
@@ -49,28 +52,39 @@ class Context{
 	public Context(){
 		LOGGER.entering("<init>");
 
-		String gatewayMAC = null;
+		String host = null;
 		try{
 
-			String gatwayIP = null;
+			final Process netstat = new ProcessBuilder("netstat", "-rn").start();
+			final BufferedReader in = new BufferedReader(new InputStreamReader(netstat.getInputStream()));
 
-			final Process ipconfig = new ProcessBuilder("ipconfig").start();
-			final BufferedReader r1 = new BufferedReader(new InputStreamReader(ipconfig.getInputStream()));
+			Pattern ipPat = null;
+			final String os = System.getProperty("os.name");
+			if(os.startsWith(Windows)){
 
-			boolean flag = false;
-			for(String buf; (buf = r1.readLine()) != null;){
+				ipPat = Pattern.compile(GatewayRegexWindows);
 
-				if(buf.contains("Ethernet")){
+			}else if(os.startsWith(Linux)){
 
-					flag = true;
+				ipPat = Pattern.compile(GatewayRegexLinux);
 
-				}else if(flag){
+			}
 
-					final Matcher m = GATEWAY_IP.matcher(buf);
+			if(ipPat != null){
+
+				for(String buf; (buf = in.readLine()) != null;){
+
+					final Matcher m = ipPat.matcher(buf);
 					if(m.find()){
 
-						gatwayIP = m.group(1);
-						break;
+						final String ip = m.group(1);
+						if(!"0.0.0.0".equals(ip)){
+
+							final InetAddress addr = InetAddress.getByName(ip);
+							host = addr.getCanonicalHostName();
+							break;
+
+						}
 
 					}
 
@@ -78,35 +92,18 @@ class Context{
 
 			}
 
-			r1.close();
-			ipconfig.destroy();
+			in.close();
+			netstat.destroy();
 
-			final Pattern MAC = Pattern.compile(gatwayIP + ".*(([0-9a-fA-F]{2}-){5}[0-9a-fA-F]{2})");
-			final Process arp = new ProcessBuilder("arp", "-a").start();
-			final BufferedReader r2 = new BufferedReader(new InputStreamReader(arp.getInputStream()));
-			for(String buf; (buf = r2.readLine()) != null;){
+		}catch(final IOException e){
 
-				final Matcher m = MAC.matcher(buf);
-				if(m.find()){
-
-					gatewayMAC = m.group(1);
-					break;
-
-				}
-
-			}
-
-			r2.close();
-			arp.destroy();
-
-		}catch(IOException e){
-
-			LOGGER.warning(e.getLocalizedMessage());
+			LOGGER.warning("<init>", e.getMessage());
+			LOGGER.catched(Level.FINE, "<init>", e);
 
 		}finally{
 
-			LOGGER.info("Gateway MAC-Address: " + gatewayMAC);
-			this.mac = gatewayMAC;
+			this.host = host;
+			LOGGER.info("<init>", "Gateway Host: {0}", this.host);
 
 		}
 
@@ -116,12 +113,12 @@ class Context{
 	//============================================================================
 	//  public メソッド
 	//============================================================================
-	public String getMAC(){
-		LOGGER.entering("getMAC");
+	public String getHostName(){
+		LOGGER.entering("getHostName");
 
-		final String ret = this.mac;
+		final String ret = this.host;
 
-		LOGGER.exiting("getMAC", ret);
+		LOGGER.exiting("getHostName", ret);
 		return ret;
 	}
 
