@@ -119,7 +119,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		HttpResponse response = null;
 		try{
 
-			// TODO: CONNECT メソッドへの対応
+			// This handler doesn't support the connect method.
 			if(Method.CONNECT.equals(request.getMethodString())){
 
 				throw new HttpException(Status.NotImplemented);

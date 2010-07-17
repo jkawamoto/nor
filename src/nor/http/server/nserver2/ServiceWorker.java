@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server.nserver;
+package nor.http.server.nserver2;
 
 import static nor.http.HeaderName.Connection;
 
@@ -109,6 +109,56 @@ class ServiceWorker implements Runnable, Closeable{
 
 							LOGGER.fine("run", "Receive a null request");
 							keepAlive = false;
+
+//						}else if(request.getMethod() == Method.CONNECT){
+//
+//							final Pattern pat = Pattern.compile("(.+):(\\d+)");
+//							final Matcher m = pat.matcher(request.getPath());
+//
+//							if(m.find()){
+//
+//								final String host = m.group(1);
+//								final int port = Integer.valueOf(m.group(2));
+//								final InetSocketAddress addr = new InetSocketAddress(host, port);
+//								final SocketChannel schannel = SocketChannel.open(addr);
+//								schannel.configureBlocking(false);
+//
+//								final Selector sel = Selector.open();
+//
+//								schannel.register(sel, SelectionKey.OP_READ);
+//
+//								final ReadableByteChannel cin = Channels.newChannel(input);
+//								final WritableByteChannel cout = Channels.newChannel(output);
+//
+//								final ByteBuffer buf = ByteBuffer.allocate(1024*1024);
+//								while(true){
+//
+//									sel.select();
+//									for(SelectionKey k : sel.selectedKeys()){
+//
+//										buf.clear();
+//										if(k.isReadable()){
+//
+//											final SocketChannel c = (SocketChannel)k.channel();
+//											System.out.println("read" + c.read(buf));
+//											buf.flip();
+//											System.out.println("write" + cout.write(buf));
+//
+//										}else if(k.isWritable()){
+//
+//											final SocketChannel c = (SocketChannel)k.channel();
+//											System.out.println("Read" + cin.read(buf));
+//											buf.flip();
+//											System.out.println("Write" + c.write(buf));
+//
+//										}
+//
+//									}
+//									sel.selectedKeys().clear();
+//
+//								}
+//
+//							}
 
 						}else{
 

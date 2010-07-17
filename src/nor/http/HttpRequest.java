@@ -363,11 +363,6 @@ public class HttpRequest extends HttpMessage{
 
 		}catch(final IOException e){
 
-			if(!(e.getCause() instanceof InterruptedException)){
-
-				LOGGER.warning("create", e.getMessage());
-
-			}
 			LOGGER.catched(Level.FINE, "create", e);
 
 			return null;

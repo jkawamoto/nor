@@ -15,13 +15,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server.nserver;
+package nor.util.io;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-class NoExceptionOutputStreamFilter extends FilterOutputStream{
+public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 	private boolean alive = true;
 

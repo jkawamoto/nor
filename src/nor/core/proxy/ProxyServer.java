@@ -31,7 +31,7 @@ import nor.core.proxy.filter.MessageHandler;
 import nor.core.proxy.filter.RequestFilter;
 import nor.core.proxy.filter.ResponseFilter;
 import nor.http.server.HttpServer;
-import nor.http.server.nserver.HttpNServer;
+import nor.http.server.nserver2.HttpNServer;
 import nor.http.server.proxyserver.Router;
 import nor.http.server.tserver.HttpTServer;
 import nor.util.log.Logger;

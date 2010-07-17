@@ -67,7 +67,6 @@ class ListenWorker implements Runnable, Closeable{
 
 		try{
 
-
 			// サーバソケットチャネルの作成
 			this.createServerChannel(selector);
 			LOGGER.info("Starts listening");

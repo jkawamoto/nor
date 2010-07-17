@@ -109,6 +109,12 @@ public class Logger extends java.util.logging.Logger{
 
 	}
 
+	public void throwing(final Class<?> cls, final String method, final Throwable e){
+
+		super.throwing(cls.getName(), method, e);
+
+	}
+
 	public void catched(final Level level, final String method, final String msg, final Throwable thrown){
 
 		this.logp(level, this.classname, method, msg, thrown);
@@ -121,6 +127,18 @@ public class Logger extends java.util.logging.Logger{
 
 	}
 
+	public void catched(final Level level, final Class<?> cls, final String method, final String msg, final Throwable thrown){
+
+		this.logp(level, cls.getName(), method, msg, thrown);
+
+	}
+
+	public void catched(final Level level, final Class<?> cls, final String method, final Throwable thrown){
+
+		this.catched(level, cls, method, thrown.getMessage(), thrown);
+
+	}
+
 	//============================================================================
 	// Overridden logging methods
 	//============================================================================
@@ -129,7 +147,7 @@ public class Logger extends java.util.logging.Logger{
 
 		final String msg = record.getMessage();
 		record.setMessage(String.format("[%s] %s", Thread.currentThread().getName(), msg));
-		record.setSourceClassName(this.classname);
+		//record.setSourceClassName(this.classname);
 
 		super.log(record);
 
@@ -172,6 +190,42 @@ public class Logger extends java.util.logging.Logger{
 	public void finest(final String method, final String format, final Object... args){
 
 		this.logp(Level.FINEST, this.classname, method, format, args);
+
+	}
+
+	public void warning(final Class<?> cls, final String method, final String format, final Object... args){
+
+		this.logp(Level.WARNING, cls.getName(), method, format, args);
+
+	}
+
+	public void info(final Class<?> cls, final String method, final String format, final Object... args){
+
+		this.logp(Level.INFO, cls.getName(), method, format, args);
+
+	}
+
+	public void config(final Class<?> cls, final String method, final String format, final Object... args){
+
+		this.logp(Level.CONFIG, cls.getName(), method, format, args);
+
+	}
+
+	public void fine(final Class<?> cls, final String method, final String format, final Object... args){
+
+		this.logp(Level.FINE, cls.getName(), method, format, args);
+
+	}
+
+	public void finer(final Class<?> cls, final String method, final String format, final Object... args){
+
+		this.logp(Level.FINER, cls.getName(), method, format, args);
+
+	}
+
+	public void finest(final Class<?> cls, final String method, final String format, final Object... args){
+
+		this.logp(Level.FINEST, cls.getName(), method, format, args);
 
 	}
 
