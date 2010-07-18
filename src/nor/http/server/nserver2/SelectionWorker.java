@@ -89,7 +89,7 @@ class SelectionWorker implements Runnable, Closeable{
 				}
 
 				this.selector.selectedKeys().clear();
-				LOGGER.finer("run", "Ends the selection");
+				LOGGER.finest("run", "Ends the selection");
 
 			}
 

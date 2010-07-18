@@ -101,7 +101,7 @@ public class Nor{
 
 		} catch (final IOException e) {
 
-			LOGGER.warning(e.getMessage());
+			LOGGER.warning("<init>", e.getMessage());
 
 		}
 
@@ -199,17 +199,17 @@ public class Nor{
 
 		}catch(final ClassNotFoundException e){
 
-			LOGGER.warning(e.getMessage());
+			LOGGER.warning("loadPlugin", e.getMessage());
 			throw new IllegalArgumentException(e);
 
 		} catch (final InstantiationException e) {
 
-			LOGGER.warning(e.getMessage());
+			LOGGER.warning("loadPlugin", e.getMessage());
 			throw new IllegalArgumentException(e);
 
 		} catch (final IllegalAccessException e) {
 
-			LOGGER.warning(e.getMessage());
+			LOGGER.warning("loadPlugin", e.getMessage());
 			throw new IllegalArgumentException(e);
 
 		}
@@ -272,7 +272,7 @@ public class Nor{
 	 * @throws MalformedURLException
 	 */
 	public static void main(final String[] args) throws MalformedURLException {
-		LOGGER.entering("main", args);
+		LOGGER.entering("main", (Object[])args);
 
 		// 唯一のインスタンスを作成
 		final Nor nor = new Nor();
@@ -321,7 +321,7 @@ public class Nor{
 
 		} catch (final IOException e) {
 
-			LOGGER.severe(e.getMessage());
+			LOGGER.severe("main", e.getMessage());
 
 		}
 

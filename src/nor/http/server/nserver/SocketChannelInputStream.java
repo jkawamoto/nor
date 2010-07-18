@@ -188,7 +188,7 @@ class SocketChannelInputStream extends InputStream{
 
 		}catch(final IOException e){
 
-			LOGGER.warning(e.getMessage());
+			LOGGER.warning("loadFromChannel", e.getMessage());
 			LOGGER.catched(Level.FINE, "loadFromChannel", e);
 			this.close();
 

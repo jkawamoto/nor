@@ -85,7 +85,7 @@ class SocketChannelOutputStream extends OutputStream{
 
 			}catch(final BufferOverflowException e){
 
-				LOGGER.severe(e.getMessage() + " pos " + this.buffer.position() + ", lim " + this.buffer.limit() + ", cap " + this.buffer.capacity());
+				LOGGER.severe("write", "{0} pos {1}, lim {2}, cap {3}", e.getMessage(), this.buffer.position(), this.buffer.limit(), this.buffer.capacity());
 				this.key = null;
 
 			}
@@ -218,7 +218,7 @@ class SocketChannelOutputStream extends OutputStream{
 
 			}catch(final IOException e){
 
-				LOGGER.info(e.getMessage());
+				LOGGER.info("storeToChannel", e.getMessage());
 				this.key = null;
 
 			}finally{

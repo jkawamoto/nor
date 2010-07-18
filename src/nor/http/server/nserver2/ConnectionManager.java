@@ -30,10 +30,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import nor.http.server.HttpRequestHandler;
-import nor.http.server.nserver2.ServiceWorker.EndEventListener;
+import nor.http.server.nserver2.ServiceWorker.ServiceEventListener;
 import nor.util.log.Logger;
 
-class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
+class ConnectionManager implements Closeable, Queue<Connection>, ServiceEventListener{
 
 	private int waiting = 0;
 	private boolean running = true;
@@ -48,12 +48,12 @@ class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
 	private final ExecutorService pool;
 	private final Set<ServiceWorker> workers = new HashSet<ServiceWorker>();
 
-	private static final Logger LOGGER = Logger.getLogger(ThreadManager.class);
+	private static final Logger LOGGER = Logger.getLogger(ConnectionManager.class);
 
 	//============================================================================
 	// Constructor
 	//============================================================================
-	public ThreadManager(final HttpRequestHandler handler, final int minThreads, final int timeout){
+	public ConnectionManager(final HttpRequestHandler handler, final int minThreads, final int timeout){
 
 		this.pool = Executors.newCachedThreadPool();
 		this.handler = handler;
@@ -89,7 +89,7 @@ class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
 
 				}
 
-				LOGGER.fine("Offer a new connection and send notify message.");
+				LOGGER.finer("offer", "Offer a new connection and send notify message.");
 				this.notify();
 
 			}
@@ -113,13 +113,13 @@ class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
 					LOGGER.finer("poll", "Waiting = {0}, working = {1}, connection = {2}", this.waiting, this.workers.size(), this.size());
 					while(this.isEmpty() && this.waiting <= this.minThreads){
 
-						LOGGER.finest("Be going to wait.");
+						LOGGER.finest("poll", "Be going to wait.");
 
 						++this.waiting;
 						this.wait(this.timeout);
 						--this.waiting;
 
-						LOGGER.finest("Wake up.");
+						LOGGER.finest("poll", "Wake up.");
 
 					}
 					LOGGER.finer("poll", "Waiting = {0}, working = {1}, connection = {2}", this.waiting, this.workers.size(), this.size());
@@ -168,9 +168,24 @@ class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
 
 	}
 
+	/**
+	 * Receive a service-end event from service workers.
+	 *
+	 * @param from the service worker sending this event.
+	 */
+	@Override
+	public void onEnd(final ServiceWorker from) {
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+		this.workers.remove(from);
+		LOGGER.fine("update", "Remove a worker thread (current: {0} threads).", this.workers.size());
 
+	}
+
+
+
+	//----------------------------------------------------------------------------
+	// Delegation methods
+	//----------------------------------------------------------------------------
 	@Override
 	public boolean add(final Connection e){
 
@@ -206,8 +221,6 @@ class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
 
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	@Override
 	public Connection element() {
 
@@ -240,8 +253,6 @@ class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
 		this.queue.clear();
 
 	}
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	@Override
 	public boolean contains(Object o) {
@@ -299,16 +310,5 @@ class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
 		return this.queue.toArray(a);
 
 	}
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	@Override
-	public void update(final ServiceWorker from) {
-
-		this.workers.remove(from);
-		LOGGER.fine("update", "Remove a worker thread (current: {0} threads).", this.workers.size());
-
-	}
-
 
 }

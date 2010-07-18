@@ -69,7 +69,7 @@ class ListenWorker implements Runnable, Closeable{
 
 			// サーバソケットチャネルの作成
 			this.createServerChannel(selector);
-			LOGGER.info("Starts listening");
+			LOGGER.info("run", "Starts listening");
 
 			// セレクタにイベントが通知されるごとに処理
 			while (this.running) {
@@ -100,7 +100,7 @@ class ListenWorker implements Runnable, Closeable{
 
 							}else{
 
-								LOGGER.finest("Receive an accsptable but null key");
+								LOGGER.finest("run", "Receive an accsptable but null key");
 								LOGGER.fine("run", "Cancel the key; {0}", key);
 								key.cancel();
 
@@ -118,7 +118,7 @@ class ListenWorker implements Runnable, Closeable{
 
 							}else{
 
-								LOGGER.finest("Receives a no associated key");
+								LOGGER.finest("run", "Receives a no associated key");
 
 								LOGGER.fine("run", "Cancel the key; {0}", key);
 								key.cancel();
@@ -129,7 +129,7 @@ class ListenWorker implements Runnable, Closeable{
 
 					}catch(final CancelledKeyException e){
 
-						LOGGER.info(e.getMessage());
+						LOGGER.info("run", e.getMessage());
 						LOGGER.catched(Level.FINE, "run", e);
 
 						final Object o = key.attachment();
@@ -144,11 +144,11 @@ class ListenWorker implements Runnable, Closeable{
 				}
 
 				this.selector.selectedKeys().clear();
-				LOGGER.finest("Ends the selection");
+				LOGGER.finest("run", "Ends the selection");
 
 			}
 
-			LOGGER.info("Ends listening");
+			LOGGER.info("run", "Ends listening");
 
 		}catch(final ClosedSelectorException e){
 
@@ -159,7 +159,7 @@ class ListenWorker implements Runnable, Closeable{
 
 		}catch(final IOException e){
 
-			LOGGER.severe("ListenWorker is stopped by " + e.toString());
+			LOGGER.severe("run", "ListenWorker is stopped by {0}", e);
 			LOGGER.catched(Level.INFO, "run", e);
 
 		}

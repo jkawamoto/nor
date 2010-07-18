@@ -30,7 +30,7 @@ import nor.util.log.Logger;
 
 class PortListener implements Closeable{
 
-	private final ThreadManager manager;
+	private final ConnectionManager manager;
 	private final SelectionWorker selector;
 	private final SelectionEventHandler handler;
 	private final SelectionKey key;
@@ -40,7 +40,7 @@ class PortListener implements Closeable{
 	//============================================================================
 	//  Constructor
 	//============================================================================
-	public PortListener(final String host, final int port, final ThreadManager manager, final SelectionWorker selector) throws IOException{
+	public PortListener(final String host, final int port, final ConnectionManager manager, final SelectionWorker selector) throws IOException{
 
 		this.manager = manager;
 		this.selector = selector;
@@ -95,7 +95,7 @@ class PortListener implements Closeable{
 
 				}else{
 
-					LOGGER.finest("Receive an accsptable but null key");
+					LOGGER.finest("onAccept", "Receive an accsptable but null key");
 
 				}
 

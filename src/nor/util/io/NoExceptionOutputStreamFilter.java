@@ -20,12 +20,17 @@ package nor.util.io;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
+
+import nor.util.log.Logger;
 
 public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 	private boolean alive = true;
 
-	public NoExceptionOutputStreamFilter(OutputStream out) {
+	private static final Logger LOGGER = Logger.getLogger(NoExceptionOutputStreamFilter.class);
+
+	public NoExceptionOutputStreamFilter(final OutputStream out) {
 
 		super(out);
 
@@ -45,6 +50,7 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 			}catch(final IOException e){
 
+				LOGGER.catched(Level.FINE, "flush", e);
 				this.alive = false;
 
 			}
@@ -66,6 +72,7 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 			}catch(final IOException e){
 
+				LOGGER.catched(Level.FINE, "write", e);
 				this.alive = false;
 
 			}
@@ -87,6 +94,7 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 			}catch(final IOException e){
 
+				LOGGER.catched(Level.FINE, "write", e);
 				this.alive = false;
 
 			}
@@ -108,6 +116,7 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 			}catch(final IOException e){
 
+				LOGGER.catched(Level.FINE, "write", e);
 				this.alive = false;
 
 			}
@@ -115,6 +124,11 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 		}
 	}
 
+	/**
+	 * Check whether this stream is alive or not.
+	 *
+	 * @return If this stream is still alive, return true
+	 */
 	public boolean alive(){
 
 		return this.alive;

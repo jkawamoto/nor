@@ -24,7 +24,6 @@ import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -48,7 +47,7 @@ class ServiceWorker implements Runnable, Closeable{
 	private final Queue<Connection> queue;
 	private final HttpRequestHandler handler;
 
-	private final List<EndEventListener> listeners = new ArrayList<EndEventListener>();
+	private final List<ServiceEventListener> listeners = new ArrayList<ServiceEventListener>();
 
 	private static final Logger LOGGER = Logger.getLogger(ServiceWorker.class);
 
@@ -62,13 +61,13 @@ class ServiceWorker implements Runnable, Closeable{
 
 	}
 
-	public void addListener(final EndEventListener listener){
+	public void addListener(final ServiceEventListener listener){
 
 		this.listeners.add(listener);
 
 	}
 
-	public void removeListener(final EndEventListener listener){
+	public void removeListener(final ServiceEventListener listener){
 
 		this.listeners.remove(listener);
 
@@ -94,21 +93,20 @@ class ServiceWorker implements Runnable, Closeable{
 				try{
 
 					// 切断要求が来るまで持続接続する
-					boolean keepAlive = true;
-					while(keepAlive && this.running){
+					while(this.running){
 
 						String prefix = "";
 
 						// ストリームの取得
 						final InputStream input = new BufferedInputStream(new NoCloseInputStream(con.getInputStream()));
-						final OutputStream output = new BufferedOutputStream(new NoExceptionOutputStreamFilter(new NoCloseOutputStream(con.getOutputStream())));
+						final NoExceptionOutputStreamFilter output = new NoExceptionOutputStreamFilter(new BufferedOutputStream(new NoCloseOutputStream(con.getOutputStream())));
 
 						// リクエストオブジェクト
 						final HttpRequest request = HttpRequest.create(input, prefix);
 						if(request == null){
 
 							LOGGER.fine("run", "Receive a null request");
-							keepAlive = false;
+							break;
 
 //						}else if(request.getMethod() == Method.CONNECT){
 //
@@ -164,15 +162,8 @@ class ServiceWorker implements Runnable, Closeable{
 
 							LOGGER.fine("run", "Receive a {0}", request);
 
-							// リクエストに切断要求が含まれているか
-							keepAlive &= this.isKeepingAlive(request);
-
 							// リクエストの実行
 							final HttpResponse response = handler.doRequest(request);
-
-							// レスポンスに切断要求が含まれているか
-							keepAlive &= this.isKeepingAlive(response);
-
 
 							final HttpHeader header = response.getHeader();
 							if(header.containsKey(HeaderName.ContentLength)){
@@ -189,6 +180,16 @@ class ServiceWorker implements Runnable, Closeable{
 							LOGGER.fine("run", "Return the {0}", response);
 							response.output(output);
 							output.flush();
+
+							if(!output.alive()){
+
+								break;
+
+							}else if(!this.isKeepingAlive(request) || !this.isKeepingAlive(response)){
+
+								break;
+
+							}
 
 						}
 
@@ -223,9 +224,9 @@ class ServiceWorker implements Runnable, Closeable{
 		}
 
 		// Notify the end event to all listeners
-		for(final EndEventListener listener : this.listeners){
+		for(final ServiceEventListener listener : this.listeners){
 
-			listener.update(this);
+			listener.onEnd(this);
 
 		}
 
@@ -253,9 +254,9 @@ class ServiceWorker implements Runnable, Closeable{
 	//============================================================================
 	// Public interface
 	//============================================================================
-	public interface EndEventListener{
+	public interface ServiceEventListener{
 
-		public void update(final ServiceWorker from);
+		public void onEnd(final ServiceWorker from);
 
 	}
 

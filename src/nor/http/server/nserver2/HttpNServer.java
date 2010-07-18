@@ -24,7 +24,7 @@ import nor.http.server.HttpRequestHandler;
 import nor.http.server.HttpServer;
 import nor.http.server.nserver2.PortListener;
 import nor.http.server.nserver2.SelectionWorker;
-import nor.http.server.nserver2.ThreadManager;
+import nor.http.server.nserver2.ConnectionManager;
 import nor.util.log.Logger;
 
 public class HttpNServer implements HttpServer{
@@ -41,7 +41,7 @@ public class HttpNServer implements HttpServer{
 
 
 	private Thread selectionThread;
-	private ThreadManager workerThreadManager;
+	private ConnectionManager workerThreadManager;
 
 	private static final Logger LOGGER =  Logger.getLogger(HttpNServer.class);
 
@@ -104,7 +104,7 @@ public class HttpNServer implements HttpServer{
 		LOGGER.config("start", "Load a constant: {0} = {1}", MinThreadsKey, mThreads);
 		LOGGER.config("start", "Load a constant: {0} = {1}", TimeoutKey, mThreads);
 
-		this.workerThreadManager = new ThreadManager(this.handler, mThreads, timeout);
+		this.workerThreadManager = new ConnectionManager(this.handler, mThreads, timeout);
 		this.selection = new SelectionWorker();
 
 		this.listener = new PortListener(hostname, port, this.workerThreadManager, this.selection);

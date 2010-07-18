@@ -92,13 +92,13 @@ public class HttpTServer implements HttpServer{
 		// ソケットの作成
 		final ServerSocket socket = new ServerSocket();
 		socket.setReuseAddress(true);
-		LOGGER.info("Create new socket.");
+		LOGGER.info("start", "Create new socket.");
 
 		socket.bind(new InetSocketAddress(hostname, port));
-		LOGGER.info("Bind the socket to port " + port);
+		LOGGER.info("start", "Bind the socket to port {0}", port);
 
 		this.listener = new ListenWorker(socket, this.handler, 0);
-		LOGGER.info("Start listening.");
+		LOGGER.info("start", "Start listening.");
 
 		this.listenThread = new Thread(this.listener);
 		this.listenThread.setName("ListenWorker");
@@ -132,7 +132,7 @@ public class HttpTServer implements HttpServer{
 
 			}
 
-			LOGGER.info("Closes.");
+			LOGGER.info("close", "Closes.");
 
 		}
 

@@ -360,7 +360,7 @@ class Connection implements Closeable{
 				 * In this case, the buffer has no content, then the load method returns -1.
 				 * Finally, it's expected to close this stream by uses.
 				 */
-				LOGGER.info(this.getClass(), "onRead", e.getMessage());
+				LOGGER.fine(this.getClass(), "onRead", "Socket error ({0}) by {1}", e.getMessage(), Connection.this);
 				LOGGER.catched(Level.FINE, this.getClass(), "onRead", e);
 
 				Connection.this.removeOps(SelectionKey.OP_READ);
@@ -516,7 +516,9 @@ class Connection implements Closeable{
 
 				throw e;
 
-			}else{
+			}else if(this.buffer.position() != 0){
+
+				LOGGER.finer("flush", "Start flush.");
 
 				this.buffer.flip();
 				Connection.this.addOps(SelectionKey.OP_WRITE);
@@ -532,6 +534,8 @@ class Connection implements Closeable{
 					Thread.currentThread().interrupt();
 
 				}
+
+				LOGGER.finer("flush", "End flush.");
 
 				if(!this.wrote){
 
@@ -616,7 +620,7 @@ class Connection implements Closeable{
 				 * Then the clear method of the buffer won't be called,
 				 * so that an IOException will be thrown from the flush method and this stream will be closed.
 				 */
-				LOGGER.info(this.getClass(), "onWrite", e.getMessage());
+				LOGGER.fine(this.getClass(), "onWrite", "Socket error ({0}) by {1}", e.getMessage(), Connection.this);
 				LOGGER.catched(Level.FINE, this.getClass(), "onWrite", e);
 
 				Connection.this.removeOps(SelectionKey.OP_WRITE);

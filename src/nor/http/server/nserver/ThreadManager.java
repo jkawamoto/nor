@@ -84,7 +84,7 @@ class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
 
 			}
 
-			LOGGER.fine("Offer a new connection and send notify message.");
+			LOGGER.fine("offer", "Offer a new connection and send notify message.");
 			this.notify();
 
 		}
@@ -103,13 +103,13 @@ class ThreadManager implements Closeable, Queue<Connection>, EndEventListener{
 				LOGGER.finer("poll", "Waiting = {0}, working = {1}, connection = {2}", this.waiting, this.workers.size(), this.size());
 				while(this.isEmpty() && this.waiting <= this.minThreads){
 
-					LOGGER.finest("Be going to wait.");
+					LOGGER.finest("poll", "Be going to wait.");
 
 					++this.waiting;
 					this.wait(this.timeout);
 					--this.waiting;
 
-					LOGGER.finest("Wake up.");
+					LOGGER.finest("poll", "Wake up.");
 
 				}
 				LOGGER.finer("poll", "Waiting = {0}, working = {1}, connection = {2}", this.waiting, this.workers.size(), this.size());

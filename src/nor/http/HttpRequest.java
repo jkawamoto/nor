@@ -149,7 +149,7 @@ public class HttpRequest extends HttpMessage{
 
 		}catch(final IllegalArgumentException e){
 
-			LOGGER.warning(e.getMessage());
+			LOGGER.warning("getMethod", e.getMessage());
 
 		}
 

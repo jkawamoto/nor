@@ -95,7 +95,7 @@ class Config {
 	 * @param filename 設定ファイル名
 	 */
 	Config(final File configFile){
-		LOGGER.entering(Config.class.getName(), "<init>", configFile);
+		LOGGER.entering("<init>", configFile);
 		assert configFile != null;
 
 		this.configFile = configFile;
@@ -108,7 +108,7 @@ class Config {
 
 			} catch (final IOException e) {
 
-				LOGGER.warning(e.getMessage());
+				LOGGER.warning("<init>", e.getMessage());
 				this.loadDefault();
 
 			}
@@ -119,7 +119,7 @@ class Config {
 
 		}
 
-		LOGGER.exiting(Config.class.getName(), "<init>");
+		LOGGER.exiting("<init>");
 	}
 
 	//============================================================================
@@ -160,12 +160,12 @@ class Config {
 	 * @return 有効の場合trueを返す
 	 */
 	public boolean isEnable(final Plugin plugin){
-		LOGGER.entering(Config.class.getName(), "isEnabel", plugin);
+		LOGGER.entering("isEnabel", plugin);
 		assert plugin != null;
 
 		final boolean ret = Boolean.parseBoolean(this.prop.getProperty(String.format(Template.PLUGIN_ENABEL, plugin.getClass().getName()), "true"));
 
-		LOGGER.exiting(Config.class.getName(), "isEnable", ret);
+		LOGGER.exiting("isEnable", ret);
 		return ret;
 	}
 
@@ -254,11 +254,11 @@ class Config {
 
 		} catch (final FileNotFoundException e) {
 
-			LOGGER.warning(e.getMessage());
+			LOGGER.warning("loadDefault", e.getMessage());
 
 		} catch (final IOException e) {
 
-			LOGGER.warning(e.getMessage());
+			LOGGER.warning("loadDefault", e.getMessage());
 
 		}
 

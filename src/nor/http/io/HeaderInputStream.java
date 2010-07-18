@@ -19,7 +19,8 @@ package nor.http.io;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.logging.Logger;
+
+import nor.util.log.Logger;
 
 import static nor.http.io.Chars.*;
 
@@ -49,7 +50,7 @@ public class HeaderInputStream extends InputStream{
 	private State state = State.SecondCR;
 
 	// ロガー
-	private static final Logger LOGGER = Logger.getLogger(HeaderInputStream.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(HeaderInputStream.class);
 
 	//====================================================================
 	//  Constractor
@@ -68,7 +69,7 @@ public class HeaderInputStream extends InputStream{
 	 */
 	@Override
 	public int read() throws IOException {
-		LOGGER.entering(HeaderInputStream.class.getName(), "read");
+		LOGGER.entering("read");
 
 		int ret = -1;
 		switch(this.state){
@@ -131,7 +132,7 @@ public class HeaderInputStream extends InputStream{
 
 		}
 
-		LOGGER.exiting(HeaderInputStream.class.getName(), "read", ret);
+		LOGGER.exiting("read", ret);
 		return ret;
 
 	}

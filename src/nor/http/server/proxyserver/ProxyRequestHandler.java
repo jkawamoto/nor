@@ -114,7 +114,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		LOGGER.entering("doRequest", request);
 		assert request != null;
 
-		LOGGER.finest(request.getHeadLine());
+		LOGGER.finest("doRequest", "{0}", request);
 
 		HttpResponse response = null;
 		try{
@@ -134,11 +134,11 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 			final Proxy proxy = this.router.query(request.getPath());
 			if(proxy != Proxy.NO_PROXY){
 
-				LOGGER.config("Use the proxy; " + proxy);
+				LOGGER.config("doRequest", "Use the proxy; {0}", proxy);
 
 			}
 
-			LOGGER.fine("Send the " + request.toString());
+			LOGGER.fine("doRequest", "Send the {0}", request);
 
 			// リクエストの送信とレスポンスの作成
 			final HttpURLConnection con = (HttpURLConnection)url.openConnection(proxy);
@@ -146,18 +146,18 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 			this.sendRequest(con, request);
 			response = this.receiveResponse(con, request);
 
-			LOGGER.fine("Receive the " + response.toString());
+			LOGGER.fine("doRequest", "Receive the {0}", response);
 
 		} catch (final IOException e) {
 
-			LOGGER.warning("doRequest", String.format("Catch a IOException({0})", e.getMessage()));
+			LOGGER.warning("doRequest", "Catch a IOException({0})", e.getMessage());
 			LOGGER.catched(Level.FINE, "doRequest", e);
 
 			response = HttpException.createResponse(request, Status.InternalServerError, e);
 
 		} catch (final HttpException e) {
 
-			LOGGER.warning("doRequest", String.format("Catch a HttpException({0})", e.getMessage()));
+			LOGGER.warning("doRequest", "Catch a HttpException({0})", e.getMessage());
 			LOGGER.catched(Level.FINE, "doRequest", e);
 
 			response = e.createResponse(request);
@@ -221,12 +221,12 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 		}catch(final SocketTimeoutException e){
 
-			LOGGER.warning(e.getMessage());
+			LOGGER.warning("sendRequest", e.getMessage());
 			throw new HttpException(Status.RequestTimeout, e);
 
 		}catch(final ConnectException e){
 
-			LOGGER.warning(e.getMessage());
+			LOGGER.warning("sendRequest", e.getMessage());
 			throw new HttpException(Status.RequestTimeout, e);
 
 		}catch(final IOException e){
@@ -270,7 +270,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 						if(Http.GZIP.equalsIgnoreCase(encode)){
 
-							LOGGER.info(con + ":"  + con.getResponseMessage() + " : " + con.getHeaderFields());
+							LOGGER.info("receiveResponse", "{0}: {1} : {2}", con, con.getResponseMessage(), con.getHeaderFields());
 							resStream = new GZIPInputStream(resStream);
 
 						}else if(Http.DEFLATE.equalsIgnoreCase(encode)){

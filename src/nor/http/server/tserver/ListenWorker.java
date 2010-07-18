@@ -97,11 +97,11 @@ final class ListenWorker implements Runnable, Closeable{
 
 		}catch(final SocketException e){
 
-			LOGGER.info("サーバの待ち受けが終了しました");
+			LOGGER.info("run", "サーバの待ち受けが終了しました");
 
 		}catch(final IOException e){
 
-			LOGGER.severe(e.getLocalizedMessage());
+			LOGGER.severe("run", e.getMessage());
 		}
 
 		LOGGER.exiting("run");

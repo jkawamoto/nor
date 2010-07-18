@@ -344,7 +344,7 @@ public class HttpHeader{
 					writer.append(key);
 					writer.append(": ");
 					writer.append(v.trim());
-					writer.newLine();
+					writer.append("\r\n");
 
 					LOGGER.finer("output", "Write[{0}: {1}]", key, v);
 
@@ -355,7 +355,7 @@ public class HttpHeader{
 				writer.append(key);
 				writer.append(": ");
 				writer.append(this.get(key));
-				writer.newLine();
+				writer.append("\r\n");
 
 				LOGGER.finer("output", "Write[{0}: {1}]", key, this.get(key));
 
@@ -387,7 +387,7 @@ public class HttpHeader{
 
 		} catch (final IOException e) {
 
-			LOGGER.warning(e.toString());
+			LOGGER.warning("toString", e.toString());
 			LOGGER.catched(Level.FINER, "toString", e);
 
 		}
