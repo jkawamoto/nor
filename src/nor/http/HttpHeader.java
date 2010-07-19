@@ -98,7 +98,7 @@ public class HttpHeader{
 				}else{
 
 					// TODO:
-					System.out.println(line);
+					LOGGER.fine("<init>", line);
 
 				}
 

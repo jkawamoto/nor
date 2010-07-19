@@ -34,6 +34,11 @@ import nor.network.SelectionEventHandlerAdapter;
 import nor.network.SelectionWorker;
 import nor.util.log.Logger;
 
+/**
+ *
+ * @author Junpei Kawamoto
+ * @since 0.2
+ */
 class Connection implements Closeable{
 
 	private boolean closed;

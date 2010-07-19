@@ -33,6 +33,11 @@ import nor.http.server.HttpRequestHandler;
 import nor.http.server.nserver2.RequestHandleWorker.ServiceEventListener;
 import nor.util.log.Logger;
 
+/**
+*
+* @author Junpei Kawamoto
+* @since 0.2
+*/
 class ConnectionManager implements Closeable, Queue<Connection>, ServiceEventListener{
 
 	private int waiting = 0;

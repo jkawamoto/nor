@@ -30,6 +30,11 @@ import nor.network.SelectionEventHandlerAdapter;
 import nor.network.SelectionWorker;
 import nor.util.log.Logger;
 
+/**
+*
+* @author Junpei Kawamoto
+* @since 0.2
+*/
 class Delegator implements Closeable{
 
 	private final DelegationHandler h1, h2;

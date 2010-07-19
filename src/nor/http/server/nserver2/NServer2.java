@@ -2,6 +2,11 @@ package nor.http.server.nserver2;
 
 import nor.util.log.Logger;
 
+/**
+*
+* @author Junpei Kawamoto
+* @since 0.2
+*/
 class NServer2 {
 
 	public static final int Timeout;

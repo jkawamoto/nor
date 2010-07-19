@@ -61,7 +61,6 @@ public class Logger{
 
 	}
 
-
 	//============================================================================
 	// Public methods
 	//============================================================================
@@ -83,9 +82,9 @@ public class Logger{
 
 	}
 
-	//============================================================================
-	//
-	//============================================================================
+	//----------------------------------------------------------------------------
+	// For logging of exceptions
+	//----------------------------------------------------------------------------
 	public void throwing(final String method, final Throwable e){
 
 		this.impl.throwing(this.classname, method, e);
@@ -123,10 +122,10 @@ public class Logger{
 	}
 
 
-	//============================================================================
+	//----------------------------------------------------------------------------
 	// Formatable logging methods.
 	// For format strings, you can use {0}, {1}, ... as place holders.
-	//============================================================================
+	//----------------------------------------------------------------------------
 	public void severe(final String method, final String format, final Object... args){
 
 		this.impl.logp(Level.SEVERE, this.classname, method, format, args);
@@ -169,8 +168,9 @@ public class Logger{
 
 	}
 
-	/////////////////////////////////////////////////////////////////////////////
-
+	//----------------------------------------------------------------------------
+	// Formatable logging methods for inner classes.
+	//----------------------------------------------------------------------------
 	public void severe(final Class<?> cls, final String method, final String format, final Object... args){
 
 		this.impl.logp(Level.SEVERE, cls.getName(), method, format, args);

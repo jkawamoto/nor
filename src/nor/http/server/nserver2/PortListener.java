@@ -31,6 +31,11 @@ import nor.network.SelectionEventHandlerAdapter;
 import nor.network.SelectionWorker;
 import nor.util.log.Logger;
 
+/**
+*
+* @author Junpei Kawamoto
+* @since 0.2
+*/
 class PortListener implements Closeable{
 
 	private final ConnectionManager manager;

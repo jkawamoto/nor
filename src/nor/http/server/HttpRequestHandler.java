@@ -24,10 +24,16 @@ import nor.http.HttpResponse;
  * Httpサーバにおいて，Httpリクエストのハンドラに必要なインタフェイス．
  * このインタフェースを実装するクラスはマルチスレッドでアクセスされることを意識する必要がある．
  * @author Junpei Kawamoto
- *
+ * @since 0.1
  */
 public interface HttpRequestHandler {
 
+	/**
+	 * リクエストを処理しレスポンスを返す．
+	 *
+	 * @param request Http リクエストインスタンス
+	 * @return 与えられたリクエストに対するレスポンス
+	 */
 	public HttpResponse doRequest(final HttpRequest request);
 
 }

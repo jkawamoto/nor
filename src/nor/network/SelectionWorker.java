@@ -77,50 +77,59 @@ public class SelectionWorker implements Runnable, Closeable{
 
 			while(this.running){
 
-				final int nc = this.selector.select(Timeout);
-				LOGGER.finest("run", "Begin a selection ({0} selected keys, {1} registrated keys)", nc, selector.keys().size());
+				try{
 
-				for(final SelectionKey key : this.selector.selectedKeys()){
+					final int nc = this.selector.select(Timeout);
+					LOGGER.finest("run", "Begin a selection ({0} selected keys, {1} registrated keys)", nc, selector.keys().size());
 
-					LOGGER.finer("run", "Selected key is {0}", key);
-					final SelectionEventHandler handler = (SelectionEventHandler)key.attachment();
-					if(key.isValid()){
+					for(final SelectionKey key : this.selector.selectedKeys()){
 
-						if(key.isAcceptable()){
+						LOGGER.finer("run", "Selected key is {0}", key);
+						final SelectionEventHandler handler = (SelectionEventHandler)key.attachment();
+						if(key.isValid()){
 
-							final ServerSocketChannel ch = (ServerSocketChannel)key.channel();
-							handler.onAccept(ch);
+							if(key.isAcceptable()){
 
-						}else if(key.isConnectable()){
+								final ServerSocketChannel ch = (ServerSocketChannel)key.channel();
+								handler.onAccept(ch);
 
-							final SocketChannel ch = (SocketChannel)key.channel();
-							handler.onConnect(ch);
+							}else if(key.isConnectable()){
 
-						}else if(key.isReadable()){
+								final SocketChannel ch = (SocketChannel)key.channel();
+								handler.onConnect(ch);
 
-							final ReadableByteChannel ch = (ReadableByteChannel)key.channel();
-							handler.onRead(ch);
+							}else if(key.isReadable()){
 
-						}else if(key.isWritable()){
+								final ReadableByteChannel ch = (ReadableByteChannel)key.channel();
+								handler.onRead(ch);
 
-							final WritableByteChannel ch = (WritableByteChannel)key.channel();
-							handler.onWrite(ch);
+							}else if(key.isWritable()){
+
+								final WritableByteChannel ch = (WritableByteChannel)key.channel();
+								handler.onWrite(ch);
+
+							}
 
 						}
 
 					}
 
-				}
+					this.selector.selectedKeys().clear();
+					LOGGER.finest("run", "Ends the selection");
 
-				this.selector.selectedKeys().clear();
-				LOGGER.finest("run", "Ends the selection");
+				}catch(final Exception e){
+
+					LOGGER.severe("run", e.getMessage());
+					LOGGER.catched(Level.FINE, "run", e);
+
+				}
 
 			}
 
-		}catch(final IOException e){
-
-			LOGGER.severe("run", e.getMessage());
-			LOGGER.catched(Level.FINE, "run", e);
+//		}catch(final IOException e){
+//
+//			LOGGER.severe("run", e.getMessage());
+//			LOGGER.catched(Level.FINE, "run", e);
 
 		}catch(final CancelledKeyException e){
 

@@ -46,6 +46,11 @@ import nor.util.io.NoCloseOutputStream;
 import nor.util.io.NoExceptionOutputStreamFilter;
 import nor.util.log.Logger;
 
+/**
+*
+* @author Junpei Kawamoto
+* @since 0.2
+*/
 class RequestHandleWorker implements Runnable, Closeable{
 
 	private boolean running = true;
