@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server.nserver2;
+package nor.http.server.nserver;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -46,8 +46,8 @@ class Delegator implements Closeable{
 	//============================================================================
 	public Delegator(final SelectionKey from, final SelectableChannel to, final SelectionWorker selector) throws IOException{
 
-		final ByteBuffer b1 = ByteBuffer.allocate(NServer2.BufferSize);
-		final ByteBuffer b2 = ByteBuffer.allocate(NServer2.BufferSize);
+		final ByteBuffer b1 = ByteBuffer.allocate(NServer.BufferSize);
+		final ByteBuffer b2 = ByteBuffer.allocate(NServer.BufferSize);
 
 		this.h1 = new DelegationHandler(from, b1, b2);
 		this.h2 = new DelegationHandler(to, b2, b1, selector);

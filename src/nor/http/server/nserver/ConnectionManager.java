@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server.nserver2;
+package nor.http.server.nserver;
 
 import java.io.Closeable;
 import java.util.Collection;
@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import nor.http.server.HttpRequestHandler;
-import nor.http.server.nserver2.RequestHandleWorker.ServiceEventListener;
+import nor.http.server.nserver.RequestHandleWorker.ServiceEventListener;
 import nor.util.log.Logger;
 
 /**

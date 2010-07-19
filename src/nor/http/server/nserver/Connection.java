@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server.nserver2;
+package nor.http.server.nserver;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -226,7 +226,7 @@ class Connection implements Closeable{
 
 			this.closed = false;
 
-			this.buffer = ByteBuffer.allocate(NServer2.BufferSize);
+			this.buffer = ByteBuffer.allocate(NServer.BufferSize);
 			this.buffer.limit(0);
 
 		}
@@ -408,7 +408,7 @@ class Connection implements Closeable{
 
 				try {
 
-					this.wait(NServer2.Timeout);
+					this.wait(NServer.Timeout);
 
 				}catch(final InterruptedException e) {
 
@@ -451,7 +451,7 @@ class Connection implements Closeable{
 			this.flushed = true;
 			this.wrote = false;
 
-			this.buffer = ByteBuffer.allocate(NServer2.BufferSize);
+			this.buffer = ByteBuffer.allocate(NServer.BufferSize);
 
 		}
 
@@ -550,7 +550,7 @@ class Connection implements Closeable{
 
 				try {
 
-					this.wait(NServer2.Timeout);
+					this.wait(NServer.Timeout);
 
 				} catch (final InterruptedException e) {
 

@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server.nserver2;
+package nor.http.server.nserver;
 
 import static nor.http.HeaderName.Connection;
 

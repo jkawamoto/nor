@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server.nserver2;
+package nor.http.server.nserver;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -95,7 +95,7 @@ public class HttpNServer implements HttpServer{
 
 		this.selection = new SelectionWorker();
 
-		this.workerThreadManager = new ConnectionManager(this.handler, NServer2.MinimusThreads, NServer2.Timeout);
+		this.workerThreadManager = new ConnectionManager(this.handler, NServer.MinimusThreads, NServer.Timeout);
 		this.listener = new PortListener(hostname, port, this.workerThreadManager, this.selection);
 
 		this.selectionThread = new Thread(this.selection);
