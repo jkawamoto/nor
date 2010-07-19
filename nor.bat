@@ -26,6 +26,6 @@ set CLASSPATH=%CLASSPATH%;%1
 goto :EOF
 :endsubs
 
-echo Nor (ver. 0.1)
+echo Nor (ver. 0.2)
 java -classpath "%CLASSPATH%" nor.core.Nor
 
