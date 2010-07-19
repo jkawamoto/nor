@@ -251,13 +251,13 @@ public class Nor{
 
 			p.close();
 
-			final File config = new File(this.confDir, String.format(ConfigFileTemplate, p.getClass().getCanonicalName()));
-			p.save(config);
+			// final File config = new File(this.confDir, String.format(ConfigFileTemplate, p.getClass().getCanonicalName()));
+			// p.save(config);
 
 		}
 
 		// 設定の保存
-		this.config.store();
+		// this.config.store();
 
 		LOGGER.exiting("close");
 	}

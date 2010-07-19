@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import nor.http.server.HttpRequestHandler;
-import nor.http.server.nserver2.ServiceWorker.ServiceEventListener;
+import nor.http.server.nserver2.RequestHandleWorker.ServiceEventListener;
 import nor.util.log.Logger;
 
 class ConnectionManager implements Closeable, Queue<Connection>, ServiceEventListener{
@@ -46,7 +46,7 @@ class ConnectionManager implements Closeable, Queue<Connection>, ServiceEventLis
 	private final Queue<Connection> queue = new LinkedList<Connection>();
 
 	private final ExecutorService pool;
-	private final Set<ServiceWorker> workers = new HashSet<ServiceWorker>();
+	private final Set<RequestHandleWorker> workers = new HashSet<RequestHandleWorker>();
 
 	private static final Logger LOGGER = Logger.getLogger(ConnectionManager.class);
 
@@ -81,7 +81,7 @@ class ConnectionManager implements Closeable, Queue<Connection>, ServiceEventLis
 
 				if(this.waiting == 0){
 
-					final ServiceWorker w = new ServiceWorker(this, this.handler);
+					final RequestHandleWorker w = new RequestHandleWorker(this, this.handler);
 					this.workers.add(w);
 					this.pool.execute(w);
 
@@ -174,7 +174,7 @@ class ConnectionManager implements Closeable, Queue<Connection>, ServiceEventLis
 	 * @param from the service worker sending this event.
 	 */
 	@Override
-	public void onEnd(final ServiceWorker from) {
+	public void onEnd(final RequestHandleWorker from) {
 
 		this.workers.remove(from);
 		LOGGER.fine("update", "Remove a worker thread (current: {0} threads).", this.workers.size());

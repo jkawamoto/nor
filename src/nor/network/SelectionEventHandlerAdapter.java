@@ -15,29 +15,33 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server.nserver2;
+package nor.network;
 
-import java.nio.channels.SelectableChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.nio.channels.WritableByteChannel;
 
-class SelectionEventHandlerAdapter implements SelectionEventHandler{
+
+public class SelectionEventHandlerAdapter implements SelectionEventHandler{
 
 	@Override
-	public void onAccept(final SelectableChannel ch){
+	public void onAccept(final ServerSocketChannel ch){
 
 	}
 
 	@Override
-	public void onConnect(final SelectableChannel ch){
+	public void onConnect(final SocketChannel ch){
 
 	}
 
 	@Override
-	public void onRead(final SelectableChannel ch){
+	public void onRead(final ReadableByteChannel ch){
 
 	}
 
 	@Override
-	public void onWrite(final SelectableChannel ch){
+	public void onWrite(final WritableByteChannel ch){
 
 	}
 

@@ -29,11 +29,15 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.logging.Level;
 
+import nor.network.SelectionEventHandler;
+import nor.network.SelectionEventHandlerAdapter;
+import nor.network.SelectionWorker;
 import nor.util.log.Logger;
 
 class Connection implements Closeable{
 
 	private boolean closed;
+	private SelectableChannel delegation;
 
 	private final SelectionWorker selector;
 	private final SelectionEventHandler handler;
@@ -48,24 +52,7 @@ class Connection implements Closeable{
 	//============================================================================
 	//  Constants
 	//============================================================================
-	private static final int BufferSize;
-	private static final int Timeout;
-
 	private static final String AlreadyClosed = "This stream has already closed.";
-
-	//============================================================================
-	//  Class constructor
-	//============================================================================
-	static{
-
-		final String classname = Connection.class.getName();
-		BufferSize = Integer.valueOf(System.getProperty(String.format("%s.BufferSize", classname)));
-		Timeout = Integer.valueOf(System.getProperty(String.format("%s.Timeout", classname)));
-
-		LOGGER.config("<class init>", "Load a constant: BufferSize = {0}", BufferSize);
-		LOGGER.config("<class init>", "Load a constant: Timeout = {0}", Timeout);
-
-	}
 
 	//============================================================================
 	//  Constructor
@@ -120,6 +107,19 @@ class Connection implements Closeable{
 
 	}
 
+	/**
+	 * Request binding this connection to the chennel.
+	 * close が呼ばれた後に効果が出る
+	 *
+	 * @param ch
+	 * @throws IOException
+	 */
+	public void requestDelegation(final SelectableChannel ch) throws IOException{
+
+		this.delegation = ch;
+
+	}
+
 	//============================================================================
 	//  Private methods for communicating to the inner streams
 	//============================================================================
@@ -158,8 +158,28 @@ class Connection implements Closeable{
 
 		if(this.in.closed() && this.out.closed()){
 
-			this.key.cancel();
-			this.key.attach(null);
+			try {
+
+				if(this.delegation != null){
+
+					LOGGER.fine("onCloseStream", "Close streams and delegate to {0}.", this.delegation);
+					new Delegator(this.key, this.delegation, this.selector);
+
+				}else{
+
+					this.key.cancel();
+					this.key.attach(null);
+					this.key.channel().close();
+
+				}
+
+			} catch (final IOException e) {
+
+				LOGGER.warning("onCloseStream", e.getMessage());
+				LOGGER.catched(Level.FINE, "onCloseStream", e);
+
+			}
+
 
 			this.closed = true;
 
@@ -173,21 +193,20 @@ class Connection implements Closeable{
 	private final class ConnectionHandler extends SelectionEventHandlerAdapter{
 
 		@Override
-		public void onRead(final SelectableChannel ch){
+		public void onRead(final ReadableByteChannel ch){
 
-			Connection.this.in.onRead((ReadableByteChannel)ch);
+			Connection.this.in.onRead(ch);
 
 		}
 
 		@Override
-		public void onWrite(SelectableChannel ch){
+		public void onWrite(final WritableByteChannel ch){
 
-			Connection.this.out.onWrite((WritableByteChannel)ch);
+			Connection.this.out.onWrite(ch);
 
 		}
 
 	}
-
 
 	private final class SocketChannelInputStream extends InputStream{
 
@@ -202,7 +221,7 @@ class Connection implements Closeable{
 
 			this.closed = false;
 
-			this.buffer = ByteBuffer.allocate(BufferSize);
+			this.buffer = ByteBuffer.allocate(NServer2.BufferSize);
 			this.buffer.limit(0);
 
 		}
@@ -384,7 +403,7 @@ class Connection implements Closeable{
 
 				try {
 
-					this.wait(Timeout);
+					this.wait(NServer2.Timeout);
 
 				}catch(final InterruptedException e) {
 
@@ -427,7 +446,7 @@ class Connection implements Closeable{
 			this.flushed = true;
 			this.wrote = false;
 
-			this.buffer = ByteBuffer.allocate(BufferSize);
+			this.buffer = ByteBuffer.allocate(NServer2.BufferSize);
 
 		}
 
@@ -526,7 +545,7 @@ class Connection implements Closeable{
 
 				try {
 
-					this.wait(Timeout);
+					this.wait(NServer2.Timeout);
 
 				} catch (final InterruptedException e) {
 

@@ -26,6 +26,9 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.logging.Level;
 
+import nor.network.SelectionEventHandler;
+import nor.network.SelectionEventHandlerAdapter;
+import nor.network.SelectionWorker;
 import nor.util.log.Logger;
 
 class PortListener implements Closeable{
@@ -66,8 +69,11 @@ class PortListener implements Closeable{
 	@Override
 	public void close() throws IOException {
 
+		final SelectableChannel ch = this.key.channel();
 		this.key.cancel();
 		this.key.attach(null);
+
+		ch.close();
 
 	}
 
@@ -77,12 +83,11 @@ class PortListener implements Closeable{
 	private final class ListenWorkerHandler extends SelectionEventHandlerAdapter{
 
 		@Override
-		public void onAccept(final SelectableChannel ch){
+		public void onAccept(final ServerSocketChannel ch){
 
 			try{
 
-				final ServerSocketChannel serverChannel = (ServerSocketChannel)ch;
-				final SocketChannel socketChannel = serverChannel.accept();
+				final SocketChannel socketChannel = ch.accept();
 				if(socketChannel != null){
 
 					LOGGER.finest("onAccept", "Receive an accsptable key from {0}", socketChannel.socket());

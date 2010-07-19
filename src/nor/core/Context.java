@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 import nor.util.log.Logger;
 
 
-class Context{
+public class Context{
 
 	/**
 	 * 現在のゲートウェイのホスト名

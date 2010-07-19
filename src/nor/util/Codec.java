@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -26,95 +26,93 @@ import org.apache.commons.codec.net.*;
 public final class Codec {
 	// ロガー
 	private static final Logger LOGGER = Logger.getLogger(Codec.class.getName());
-	
+
 	/**
 	 * エンコードタイプ
 	 */
 	public static final String DEFAULT_ENCODE = "utf-8";
 
-	
+
 	private static final URLCodec URLCodec = new URLCodec();
 	private static final BCodec BCodec = new BCodec();
 
 	public static String urlEncode(final String str){
-		
+
 		String ret = str;
 		try {
-			
+
 			ret = URLCodec.encode(str);
 
 		} catch (EncoderException e) {
-			
+
 			LOGGER.severe(e.getLocalizedMessage());
-			
+
 		}
-		
-		// TODO: サイトによってエンコードが異なる．クエリ等にそれが書かれている．どうやってはんだん？
-		
+
 		return ret;
-		
+
 	}
-	
+
 	public static String urlDecode(final String str){
-		
+
 		String ret = str;
 		try {
 
 			ret = URLCodec.decode(str);
 
 		} catch (DecoderException e) {
-			
+
 			LOGGER.severe(e.getLocalizedMessage());
-			
+
 		}
-		
+
 		return ret;
-		
+
 	}
-	
+
 	public static String base64Encode(final String str){
 
 		return Codec.base64Encode(str, Codec.DEFAULT_ENCODE);
-		
-		
+
+
 	}
-	
+
 	public static String base64Encode(final String str, final String enc){
-		
+
 		String ret = str;
 		try {
-			
+
 			ret = BCodec.encode(str, enc);
 
 		} catch (EncoderException e) {
-			
+
 			LOGGER.severe(e.getLocalizedMessage());
-			
+
 		}
-	
+
 		return ret;
-		
-		
+
+
 	}
 
 	public static String base64Decode(final String str){
-		
+
 		String ret = str;
 		try {
 
 			ret = BCodec.decode(str);
 
 		} catch (DecoderException e) {
-			
+
 			LOGGER.severe(e.getLocalizedMessage());
-			
+
 		}
-		
+
 		return ret;
-		
+
 	}
-	
-	
+
+
 }
 
 

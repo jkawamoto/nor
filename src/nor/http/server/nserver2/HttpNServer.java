@@ -22,9 +22,7 @@ import java.util.logging.Level;
 
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.HttpServer;
-import nor.http.server.nserver2.PortListener;
-import nor.http.server.nserver2.SelectionWorker;
-import nor.http.server.nserver2.ConnectionManager;
+import nor.network.SelectionWorker;
 import nor.util.log.Logger;
 
 public class HttpNServer implements HttpServer{
@@ -44,13 +42,6 @@ public class HttpNServer implements HttpServer{
 	private ConnectionManager workerThreadManager;
 
 	private static final Logger LOGGER =  Logger.getLogger(HttpNServer.class);
-
-	//============================================================================
-	//  Constants
-	//============================================================================
-	private static final String KeyTemplate = "%s.%s";
-	private static final String MinThreadsKey = "MinimusThreads";
-	private static final String TimeoutKey = "Timeout";
 
 	//============================================================================
 	//  コンストラクタ
@@ -97,16 +88,9 @@ public class HttpNServer implements HttpServer{
 
 		}
 
-		final String classname = this.getClass().getName();
-		final int mThreads = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, MinThreadsKey)));
-		final int timeout = Integer.valueOf(System.getProperty(String.format(KeyTemplate, classname, TimeoutKey)));
-
-		LOGGER.config("start", "Load a constant: {0} = {1}", MinThreadsKey, mThreads);
-		LOGGER.config("start", "Load a constant: {0} = {1}", TimeoutKey, mThreads);
-
-		this.workerThreadManager = new ConnectionManager(this.handler, mThreads, timeout);
 		this.selection = new SelectionWorker();
 
+		this.workerThreadManager = new ConnectionManager(this.handler, NServer2.MinimusThreads, NServer2.Timeout);
 		this.listener = new PortListener(hostname, port, this.workerThreadManager, this.selection);
 
 		this.selectionThread = new Thread(this.selection);

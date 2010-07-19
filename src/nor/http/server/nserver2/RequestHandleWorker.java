@@ -24,23 +24,29 @@ import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import nor.http.HeaderName;
 import nor.http.HttpHeader;
 import nor.http.HttpMessage;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
+import nor.http.Method;
+import nor.http.Status;
 import nor.http.server.HttpRequestHandler;
 import nor.util.io.NoCloseInputStream;
 import nor.util.io.NoCloseOutputStream;
 import nor.util.io.NoExceptionOutputStreamFilter;
 import nor.util.log.Logger;
 
-class ServiceWorker implements Runnable, Closeable{
+class RequestHandleWorker implements Runnable, Closeable{
 
 	private boolean running = true;
 
@@ -49,12 +55,12 @@ class ServiceWorker implements Runnable, Closeable{
 
 	private final List<ServiceEventListener> listeners = new ArrayList<ServiceEventListener>();
 
-	private static final Logger LOGGER = Logger.getLogger(ServiceWorker.class);
+	private static final Logger LOGGER = Logger.getLogger(RequestHandleWorker.class);
 
 	//============================================================================
 	// Constractor
 	//============================================================================
-	public ServiceWorker(final Queue<Connection> queue, final HttpRequestHandler handler){
+	public RequestHandleWorker(final Queue<Connection> queue, final HttpRequestHandler handler){
 
 		this.queue = queue;
 		this.handler = handler;
@@ -108,55 +114,32 @@ class ServiceWorker implements Runnable, Closeable{
 							LOGGER.fine("run", "Receive a null request");
 							break;
 
-//						}else if(request.getMethod() == Method.CONNECT){
-//
-//							final Pattern pat = Pattern.compile("(.+):(\\d+)");
-//							final Matcher m = pat.matcher(request.getPath());
-//
-//							if(m.find()){
-//
-//								final String host = m.group(1);
-//								final int port = Integer.valueOf(m.group(2));
-//								final InetSocketAddress addr = new InetSocketAddress(host, port);
-//								final SocketChannel schannel = SocketChannel.open(addr);
-//								schannel.configureBlocking(false);
-//
-//								final Selector sel = Selector.open();
-//
-//								schannel.register(sel, SelectionKey.OP_READ);
-//
-//								final ReadableByteChannel cin = Channels.newChannel(input);
-//								final WritableByteChannel cout = Channels.newChannel(output);
-//
-//								final ByteBuffer buf = ByteBuffer.allocate(1024*1024);
-//								while(true){
-//
-//									sel.select();
-//									for(SelectionKey k : sel.selectedKeys()){
-//
-//										buf.clear();
-//										if(k.isReadable()){
-//
-//											final SocketChannel c = (SocketChannel)k.channel();
-//											System.out.println("read" + c.read(buf));
-//											buf.flip();
-//											System.out.println("write" + cout.write(buf));
-//
-//										}else if(k.isWritable()){
-//
-//											final SocketChannel c = (SocketChannel)k.channel();
-//											System.out.println("Read" + cin.read(buf));
-//											buf.flip();
-//											System.out.println("Write" + c.write(buf));
-//
-//										}
-//
-//									}
-//									sel.selectedKeys().clear();
-//
-//								}
-//
-//							}
+						}else if(request.getMethod() == Method.CONNECT){
+
+							LOGGER.fine("run", "Receive a connect request: {0}", request);
+
+							final Pattern pat = Pattern.compile("(.+):(\\d+)");
+							final Matcher m = pat.matcher(request.getPath());
+
+							if(m.find()){
+
+								final String host = m.group(1);
+								final int port = Integer.valueOf(m.group(2));
+								final InetSocketAddress addr = new InetSocketAddress(host, port);
+								final SocketChannel ch = SocketChannel.open(addr);
+
+								/*
+								 * Notify the client of a connection established.
+								 */
+								final HttpResponse response = request.createResponse(Status.OK);
+								LOGGER.info("run", "{0} > {1} (unknown length)", request.getHeadLine(), response.getHeadLine());
+								response.output(output);
+								output.flush();
+
+								con.requestDelegation(ch);
+								break;
+
+							}
 
 						}else{
 
@@ -256,7 +239,7 @@ class ServiceWorker implements Runnable, Closeable{
 	//============================================================================
 	public interface ServiceEventListener{
 
-		public void onEnd(final ServiceWorker from);
+		public void onEnd(final RequestHandleWorker from);
 
 	}
 
