@@ -124,9 +124,14 @@ public class Nor{
 	private void init(){
 		LOGGER.entering("init");
 
+		/*
+		 * Create a proxy server.
+		 */
 		this.proxy = new ProxyServer(Nor.class.getSimpleName(), this.router);
 
-		// クラスパス上にあるプラグインを追加
+		/*
+		 * Add plugins which are on the classpath
+		 */
 		for(final Plugin p : ServiceLoader.load(Plugin.class)){
 
 			if(this.config.isEnable(p)){
@@ -144,7 +149,9 @@ public class Nor{
 
 		}
 
-		// ルーティングテーブルの読み込み
+		/*
+		 * Load a routing table.
+		 */
 		final String routings = this.config.get("nor.routing");
 		if(routings != null){
 

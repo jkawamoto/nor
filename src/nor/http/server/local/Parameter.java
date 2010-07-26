@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server.rest;
+package nor.http.server.local;
 
 import java.util.Collection;
 import java.util.Map;

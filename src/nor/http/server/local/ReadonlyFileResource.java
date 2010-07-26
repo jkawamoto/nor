@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server.rest;
+package nor.http.server.local;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.logging.Logger;
 
 import nor.http.ContentType;
 import nor.http.HeaderName;
@@ -33,8 +32,8 @@ import nor.http.HttpResponse;
 import nor.http.Status;
 import nor.http.error.HttpException;
 import nor.http.error.NotFoundException;
+import nor.util.log.Logger;
 
-// TODO: これはRead-onlyファイル。その他の種類も作成する。本来FileResourceはJavaにおけるFileクラスを表したものであるべき。
 /**
  * ファイルと関連付けられたリソースを表すクラス．
  *
@@ -42,12 +41,7 @@ import nor.http.error.NotFoundException;
  * @author KAWAMOTO Junpei
  *
  */
-public class FileResource extends Resource{
-
-	/**
-	 * リソースの名前
-	 */
-	private final String name;
+public class ReadonlyFileResource extends Resource{
 
 	/**
 	 * 関連付けられたファイル
@@ -68,7 +62,7 @@ public class FileResource extends Resource{
 	/**
 	 * ロガー
 	 */
-	private static final Logger LOGGER = Logger.getLogger(FileResource.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(ReadonlyFileResource.class);
 
 	//====================================================================
 	//  コンストラクタ
@@ -80,18 +74,17 @@ public class FileResource extends Resource{
 	 * @param file リソースが扱うファイル
 	 * @param type リソースのコンテンツタイプ
 	 */
-	public FileResource(final String name, final File file, final ContentType type){
-		LOGGER.entering(FileResource.class.getName(), "<init>", new Object[]{ name, file, type });
+	public ReadonlyFileResource(final String name, final File file, final ContentType type){
+		super(name);
+		LOGGER.entering("<init>", name, file, type);
 		assert name != null;
 		assert file != null;
 		assert type != null;
 
-		this.name = name;
 		this.file = file;
 		this.type = type;
 
-		LOGGER.exiting(FileResource.class.getName(), "<init>");
-
+		LOGGER.exiting("<init>");
 	}
 
 	/**
@@ -101,7 +94,7 @@ public class FileResource extends Resource{
 	 * @param file リソースが扱うファイル
 	 * @param type リソースのコンテンツタイプ
 	 */
-	public FileResource(final String name, final File file, final String type){
+	public ReadonlyFileResource(final String name, final File file, final String type){
 
 		this(name, file, new ContentType(type));
 
@@ -114,7 +107,7 @@ public class FileResource extends Resource{
 	 * @param file リソースが扱うファイル
 	 * @param type リソースのコンテンツタイプ
 	 */
-	public FileResource(final String name, final String file, final ContentType type){
+	public ReadonlyFileResource(final String name, final String file, final ContentType type){
 
 		this(name, new File(file), type);
 
@@ -127,7 +120,7 @@ public class FileResource extends Resource{
 	 * @param file リソースが扱うファイル
 	 * @param type リソースのコンテンツタイプ
 	 */
-	public FileResource(final String name, final String file, final String type){
+	public ReadonlyFileResource(final String name, final String file, final String type){
 
 		this(name, new File(file), new ContentType(type));
 
@@ -139,7 +132,7 @@ public class FileResource extends Resource{
 	 * @param file リソースが扱うファイル
 	 * @param type リソースのコンテンツタイプ
 	 */
-	public FileResource(final File file, final ContentType type){
+	public ReadonlyFileResource(final File file, final ContentType type){
 
 		this(file.getName(), file, type);
 
@@ -151,28 +144,9 @@ public class FileResource extends Resource{
 	 * @param file リソースが扱うファイル
 	 * @param type リソースのコンテンツタイプ
 	 */
-	public FileResource(final File file, final String type){
+	public ReadonlyFileResource(final File file, final String type){
 
-		this(file.getName(), file, new ContentType(type));
-
-	}
-
-	/**
-	 * コンストラクタ
-	 *
-	 * @param file リソースが扱うファイル
-	 * @param type リソースのコンテンツタイプ
-	 */
-	public FileResource(final String file, final ContentType type){
-		LOGGER.entering(FileResource.class.getName(), "<init>", new Object[]{file, type});
-		assert file != null;
-		assert type != null;
-
-		this.file = new File(file);
-		this.name = this.file.getName();
-		this.type = type;
-
-		LOGGER.exiting(FileResource.class.getName(), "<init>");
+		this(file.getName(), file, type);
 
 	}
 
@@ -182,7 +156,19 @@ public class FileResource extends Resource{
 	 * @param file リソースが扱うファイル
 	 * @param type リソースのコンテンツタイプ
 	 */
-	public FileResource(final String file, final String type){
+	public ReadonlyFileResource(final String file, final ContentType type){
+
+		this(new File(file), type);
+
+	}
+
+	/**
+	 * コンストラクタ
+	 *
+	 * @param file リソースが扱うファイル
+	 * @param type リソースのコンテンツタイプ
+	 */
+	public ReadonlyFileResource(final String file, final String type){
 
 		this(file, new ContentType(type));
 
@@ -192,8 +178,8 @@ public class FileResource extends Resource{
 	//  public メソッド
 	//====================================================================
 	@Override
-	public HttpResponse toGet(final String path, final HttpRequest request) throws HttpException{
-		LOGGER.entering(FileResource.class.getName(), "toGet", new Object[]{path, request});
+	public HttpResponse doGet(final String path, final HttpRequest request) throws HttpException{
+		LOGGER.entering("doGet", path, request);
 		assert path != null;
 		assert request != null;
 
@@ -206,7 +192,6 @@ public class FileResource extends Resource{
 				final HttpHeader header = ret.getHeader();
 				header.add(HeaderName.ContentType, this.type.toString());
 				header.add(HeaderName.LastModified, DATE_FORMAT.format(new Date(this.file.lastModified())));
-				header.add(HeaderName.Server, System.getProperty("app.name"));
 				header.add(HeaderName.ContentLength, Long.toString(this.file.length()));
 				header.add(HeaderName.Date, DATE_FORMAT.format(Calendar.getInstance().getTime()));
 
@@ -218,24 +203,7 @@ public class FileResource extends Resource{
 
 		}
 
-		if(ret == null){
-
-			throw new NotFoundException();
-
-		}
-
-		LOGGER.exiting(FileResource.class.getName(), "toGet", ret);
-		return ret;
-
-	}
-
-	@Override
-	public String getName(){
-		LOGGER.entering(FileResource.class.getName(), "getName");
-
-		final String ret = this.name;
-
-		LOGGER.exiting(FileResource.class.getName(), "getName", ret);
+		LOGGER.exiting("doGet", ret);
 		return ret;
 
 	}

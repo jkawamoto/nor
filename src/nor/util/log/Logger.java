@@ -82,6 +82,24 @@ public class Logger{
 
 	}
 
+	public void entering(final Class<?> cls, final String method, final Object ... params){
+
+		this.finest(cls, method, "ENTRY {0}", params);
+
+	}
+
+	public void exiting(final Class<?> cls, final String method){
+
+		this.finest(cls, method, "EXIT");
+
+	}
+
+	public void exiting(final Class<?> cls, final String method, final Object param){
+
+		this.finest(cls, method, "EXIT {0}", param);
+
+	}
+
 	//----------------------------------------------------------------------------
 	// For logging of exceptions
 	//----------------------------------------------------------------------------

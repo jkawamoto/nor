@@ -26,11 +26,12 @@ import java.net.URL;
 import java.util.regex.Pattern;
 
 import nor.core.plugin.Plugin;
-import nor.core.proxy.LocalContentsHandler.Contents;
 import nor.core.proxy.filter.MessageHandler;
 import nor.core.proxy.filter.RequestFilter;
 import nor.core.proxy.filter.ResponseFilter;
 import nor.http.server.HttpServer;
+import nor.http.server.local.ListResource;
+import nor.http.server.local.TextResource;
 import nor.http.server.nserver.HttpNServer;
 import nor.http.server.proxyserver.Router;
 import nor.http.server.tserver.HttpTServer;
@@ -55,7 +56,12 @@ public class ProxyServer implements Closeable{
 	/**
 	 * リクエストハンドラ
 	 */
-	private final ProxyHandler handler;
+	private final ProxyHandler proxy;
+
+	/**
+	 *
+	 */
+	private final LocalHandler local;
 
 	/**
 	 * 外部プロキシルーティングテーブル
@@ -80,15 +86,18 @@ public class ProxyServer implements Closeable{
 		assert router != null;
 
 		this.router = router;
-		this.handler = new ProxyHandler(name, HttpNServer.VERSION, this.router);
+		this.proxy = new ProxyHandler(name, HttpNServer.VERSION, this.router);
+		this.local = new LocalHandler();
+
+		this.proxy.attach(this.local);
 
 		if(useTServer){
 
-			this.server = new HttpTServer(this.handler);
+			this.server = new HttpTServer(this.proxy);
 
 		}else{
 
-			this.server = new HttpNServer(this.handler);
+			this.server = new HttpNServer(this.proxy);
 
 		}
 		LOGGER.exiting("<init>");
@@ -110,9 +119,11 @@ public class ProxyServer implements Closeable{
 		assert port > 0;
 
 		// PAC ファイルの登録
-		final LocalContentsHandler h  =new LocalContentsHandler();
-		h.put("/nor/core/proxy.pac", new Contents(this.getPAC(hostname, port), "application/x-javascript-config"));
-		this.handler.attach(h);
+		this.local.getRoot().add(new TextResource("/nor/core/proxy.pac", this.getPAC(hostname, port), "application/x-javascript-config"));
+
+//		final LocalContentsHandler h  =new LocalContentsHandler();
+//		h.put("/nor/core/proxy.pac", new Contents(this.getPAC(hostname, port), ));
+//		this.proxy.attach(h);
 
 		// サービスの開始
 		this.server.start(hostname, port);
@@ -134,6 +145,12 @@ public class ProxyServer implements Closeable{
 		LOGGER.exiting("close");
 	}
 
+	public ListResource localResourceRoot(){
+
+		return this.local.getRoot();
+
+	}
+
 	//--------------------------------------------------------------------
 	//  Pluginの管理
 	//--------------------------------------------------------------------
@@ -145,7 +162,7 @@ public class ProxyServer implements Closeable{
 
 			for(final MessageHandler h: hs){
 
-				this.handler.attach(h);
+				this.proxy.attach(h);
 
 			}
 
@@ -156,7 +173,7 @@ public class ProxyServer implements Closeable{
 
 			for(final RequestFilter f: rqs){
 
-				this.handler.attach(f);
+				this.proxy.attach(f);
 
 			}
 
@@ -167,7 +184,7 @@ public class ProxyServer implements Closeable{
 
 			for(final ResponseFilter f: res){
 
-				this.handler.attach(f);
+				this.proxy.attach(f);
 
 			}
 
@@ -184,7 +201,7 @@ public class ProxyServer implements Closeable{
 
 			for(final MessageHandler h: hs){
 
-				this.handler.detach(h);
+				this.proxy.detach(h);
 
 			}
 
@@ -195,7 +212,7 @@ public class ProxyServer implements Closeable{
 
 			for(final RequestFilter f: rqs){
 
-				this.handler.detach(f);
+				this.proxy.detach(f);
 
 			}
 
@@ -206,7 +223,7 @@ public class ProxyServer implements Closeable{
 
 			for(final ResponseFilter f: res){
 
-				this.handler.detach(f);
+				this.proxy.detach(f);
 
 			}
 
@@ -233,7 +250,7 @@ public class ProxyServer implements Closeable{
 		final String proxy = String.format("%s:%d", hostname, port);
 
 		final StringBuilder filtering_rule = new StringBuilder();
-		for(final String pat : this.handler.getHandlingURLPatterns()){
+		for(final String pat : this.proxy.getHandlingURLPatterns()){
 
 			filtering_rule.append("if(url.match(new RegExp(\"");
 			filtering_rule.append(pat.replace("\\", "\\\\"));
