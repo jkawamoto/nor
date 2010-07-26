@@ -83,8 +83,8 @@ public class HttpRequest extends HttpMessage{
 	 * @param input 文字列のHttpリクエストが入っているストリーム
 	 * @throws IOException ストリーム処理にエラーが起きた場合
 	 */
-	private HttpRequest(final InputStream input, final String prefix) throws IOException{
-		LOGGER.entering("<init>", input, prefix);
+	private HttpRequest(final InputStream input) throws IOException{
+		LOGGER.entering("<init>", input);
 		assert input != null;
 
 		// ヘッドラインの読み取り
@@ -96,7 +96,7 @@ public class HttpRequest extends HttpMessage{
 			if(m.matches()){
 
 				this.method = m.group(1);
-				this.path = prefix + m.group(2);
+				this.path = m.group(2);
 				this.version = m.group(3);
 
 				break;
@@ -346,11 +346,11 @@ public class HttpRequest extends HttpMessage{
 	 * @param prefix 将来のために予約されています
 	 * @return 作成されたリクエスト，不正なリクエストの場合は null
 	 */
-	public static HttpRequest create(final InputStream input, final String prefix){
+	public static HttpRequest create(final InputStream input){
 
 		try{
 
-			final HttpRequest ret = new HttpRequest(input, prefix);
+			final HttpRequest ret = new HttpRequest(input);
 			if(ret.getMethodString() == null){
 
 				return null;

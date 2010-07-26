@@ -100,13 +100,12 @@ final class ServiceWorker implements Runnable{
 
 			// 切断要求が来るまで持続接続する
 			boolean keepAlive = true;
-			String prefix = "";
 			while(keepAlive){
 
 				// リクエストオブジェクト
 				this.socket.setSoTimeout(ServiceWorker.Timeout);
 				// リクエストオブジェクト
-				final HttpRequest request = HttpRequest.create(input, prefix);
+				final HttpRequest request = HttpRequest.create(input);
 				if(request == null){
 
 					break;

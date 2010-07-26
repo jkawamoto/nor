@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
@@ -37,9 +38,23 @@ public class Stream {
 
 	public static void copy(final InputStream in, final OutputStream out, final int bufSize) throws IOException{
 
-		final ReadableByteChannel cin = Channels.newChannel(in);
-		final WritableByteChannel cout = Channels.newChannel(out);
-		copy(cin, cout, bufSize);
+		try{
+
+			final ReadableByteChannel cin = Channels.newChannel(in);
+			final WritableByteChannel cout = Channels.newChannel(out);
+			copy(cin, cout, bufSize);
+
+		}catch(final ClosedByInterruptException e){
+
+			throw new IOException(e);
+
+		}
+
+	}
+
+	public static void copy(final ReadableByteChannel in, final WritableByteChannel out) throws IOException{
+
+		Stream.copy(in, out, DefaultBufferSize);
 
 	}
 

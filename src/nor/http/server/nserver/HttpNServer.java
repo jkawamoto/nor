@@ -20,6 +20,7 @@ package nor.http.server.nserver;
 import java.io.IOException;
 import java.util.logging.Level;
 
+import nor.http.server.HttpConnectRequestHandler;
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.HttpServer;
 import nor.network.SelectionWorker;
@@ -38,6 +39,7 @@ public class HttpNServer implements HttpServer{
 	 * Httpリクエストに答えるハンドラ
 	 */
 	private final HttpRequestHandler handler;
+	private final HttpConnectRequestHandler connecter;
 
 	private SelectionWorker selection;
 	private PortListener listener;
@@ -60,12 +62,14 @@ public class HttpNServer implements HttpServer{
 	 * @see #start(String, int, int)
 	 * @see #close()
 	 */
-	public HttpNServer(final HttpRequestHandler handler){
-		LOGGER.entering("<init>", handler);
+	public HttpNServer(final HttpRequestHandler handler, final HttpConnectRequestHandler connecter){
+		LOGGER.entering("<init>", handler, connecter);
 		assert handler != null;
+		assert connecter != null;
 
 		// ハンドラの登録
 		this.handler = handler;
+		this.connecter = connecter;
 
 
 		LOGGER.exiting("<init>");
@@ -87,6 +91,9 @@ public class HttpNServer implements HttpServer{
 	public void start(final String hostname, final int port) throws IOException{
 		LOGGER.entering("start", hostname, (Object)port);
 
+		/*
+		 * If a server is already working, close it.
+		 */
 		if(this.selection != null || this.workerThreadManager != null){
 
 			this.close();
@@ -95,7 +102,7 @@ public class HttpNServer implements HttpServer{
 
 		this.selection = new SelectionWorker();
 
-		this.workerThreadManager = new ConnectionManager(this.handler, NServer.MinimusThreads, NServer.Timeout);
+		this.workerThreadManager = new ConnectionManager(this.handler, this.connecter, NServer.MinimusThreads, NServer.Timeout);
 		this.listener = new PortListener(hostname, port, this.workerThreadManager, this.selection);
 
 		this.selectionThread = new Thread(this.selection);
@@ -112,7 +119,7 @@ public class HttpNServer implements HttpServer{
 	 * @throws IOException サーバソケットを閉じている時にI/Oエラーが起きた場合
 	 */
 	@Override
-	public void close() throws IOException{
+	public void close(){
 		LOGGER.entering("close");
 
 		this.listener.close();
@@ -120,6 +127,7 @@ public class HttpNServer implements HttpServer{
 		if(this.selection != null){
 
 			this.selection.close();
+			this.selectionThread.interrupt();
 			try {
 
 				this.selectionThread.join();
@@ -133,6 +141,7 @@ public class HttpNServer implements HttpServer{
 			this.selection = null;
 
 		}
+
 		if(this.workerThreadManager != null){
 
 			this.workerThreadManager.close();

@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import nor.http.server.HttpConnectRequestHandler;
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.nserver.RequestHandleWorker.ServiceEventListener;
 import nor.util.log.Logger;
@@ -47,6 +48,7 @@ class ConnectionManager implements Closeable, Queue<Connection>, ServiceEventLis
 	private final int timeout;
 
 	private final HttpRequestHandler handler;
+	private final HttpConnectRequestHandler connecter;
 
 	private final Queue<Connection> queue = new LinkedList<Connection>();
 
@@ -58,10 +60,11 @@ class ConnectionManager implements Closeable, Queue<Connection>, ServiceEventLis
 	//============================================================================
 	// Constructor
 	//============================================================================
-	public ConnectionManager(final HttpRequestHandler handler, final int minThreads, final int timeout){
+	public ConnectionManager(final HttpRequestHandler handler, final HttpConnectRequestHandler connecter, final int minThreads, final int timeout){
 
 		this.pool = Executors.newCachedThreadPool();
 		this.handler = handler;
+		this.connecter = connecter;
 
 		this.minThreads = minThreads;
 		this.timeout = timeout;
@@ -85,8 +88,9 @@ class ConnectionManager implements Closeable, Queue<Connection>, ServiceEventLis
 			if(ret){
 
 				if(this.waiting == 0){
+//				if(this.workers.size() == 0){
 
-					final RequestHandleWorker w = new RequestHandleWorker(this, this.handler);
+					final RequestHandleWorker w = new RequestHandleWorker(this, this.handler, this.connecter);
 					this.workers.add(w);
 					this.pool.execute(w);
 
@@ -131,7 +135,7 @@ class ConnectionManager implements Closeable, Queue<Connection>, ServiceEventLis
 
 					ret = queue.poll();
 
-				}while(ret != null && ret.closed());
+				}while(this.running && ret != null && ret.closed());
 
 			}catch(final InterruptedException e){
 
@@ -153,11 +157,16 @@ class ConnectionManager implements Closeable, Queue<Connection>, ServiceEventLis
 	public void close(){
 
 		this.running = false;
-		this.pool.shutdownNow();
+		for(final RequestHandleWorker w : this.workers){
 
+			w.close();
+
+		}
+
+		this.pool.shutdownNow();
 		try {
 
-			if (!this.pool.awaitTermination(60, TimeUnit.SECONDS)){
+			if (!this.pool.awaitTermination(120, TimeUnit.SECONDS)){
 
 				LOGGER.warning("close", "Thread pool did not terminate.");
 

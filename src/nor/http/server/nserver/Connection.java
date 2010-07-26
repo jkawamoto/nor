@@ -91,6 +91,15 @@ class Connection implements Closeable{
 
 	}
 
+	/* ブロックする
+	 *
+	 */
+	public boolean waitForReady(final int timeout){
+
+		return true;
+
+	}
+
 	public boolean closed(){
 
 		return this.closed;
@@ -251,7 +260,7 @@ class Connection implements Closeable{
 
 				if(this.available() == 0){
 
-					this.load();
+					this.reload();
 					if(this.available() == 0){
 
 						return -1;
@@ -294,7 +303,7 @@ class Connection implements Closeable{
 
 				if(this.available() == 0){
 
-					this.load();
+					this.reload();
 					if(this.available() == 0){
 
 						return -1;
@@ -338,6 +347,40 @@ class Connection implements Closeable{
 
 				Connection.this.removeOps(SelectionKey.OP_READ);
 				Connection.this.onCloseStream();
+
+			}
+
+		}
+
+		public synchronized void reload() throws IOException{
+
+			if(!this.closed && this.available() == 0){
+
+				this.error = null;
+				Connection.this.addOps(SelectionKey.OP_READ);
+				Connection.this.wakeup();
+
+				try {
+
+					this.wait(NServer.Timeout);
+
+				}catch(final InterruptedException e) {
+
+					LOGGER.catched(Level.FINE, this.getClass(), "reload", e);
+					Thread.currentThread().interrupt();
+
+				}
+
+				if(this.error != null){
+
+					Connection.this.close();
+
+					final IOException e = new IOException("An error is occuered", this.error);
+					LOGGER.throwing(this.getClass(), "reload", e);
+
+					throw e;
+
+				}
 
 			}
 
@@ -390,43 +433,6 @@ class Connection implements Closeable{
 				Connection.this.removeOps(SelectionKey.OP_READ);
 				this.error = e;
 				this.notify();
-
-			}
-
-		}
-
-		//============================================================================
-		//  Private methods
-		//============================================================================
-		private synchronized void load() throws IOException{
-
-			if(!this.closed){
-
-				this.error = null;
-				Connection.this.addOps(SelectionKey.OP_READ);
-				Connection.this.wakeup();
-
-				try {
-
-					this.wait(NServer.Timeout);
-
-				}catch(final InterruptedException e) {
-
-					LOGGER.catched(Level.FINE, this.getClass(), "load", e);
-					Thread.currentThread().interrupt();
-
-				}
-
-				if(this.error != null){
-
-					Connection.this.close();
-
-					final IOException e = new IOException("An error is occuered", this.error);
-					LOGGER.throwing(this.getClass(), "load", e);
-
-					throw e;
-
-				}
 
 			}
 

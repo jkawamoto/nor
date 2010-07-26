@@ -72,13 +72,22 @@ class PortListener implements Closeable{
 	//  Public methods
 	//============================================================================
 	@Override
-	public void close() throws IOException {
+	public void close(){
 
 		final SelectableChannel ch = this.key.channel();
 		this.key.cancel();
 		this.key.attach(null);
+		this.key.selector().wakeup();
 
-		ch.close();
+		try{
+
+			ch.close();
+
+		}catch(final IOException e){
+
+			LOGGER.catched(Level.FINE, "close", e);
+
+		}
 
 	}
 

@@ -24,14 +24,11 @@ import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.SelectableChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import nor.http.HeaderName;
 import nor.http.HttpHeader;
@@ -40,6 +37,8 @@ import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.Method;
 import nor.http.Status;
+import nor.http.error.HttpException;
+import nor.http.server.HttpConnectRequestHandler;
 import nor.http.server.HttpRequestHandler;
 import nor.util.io.NoCloseInputStream;
 import nor.util.io.NoCloseOutputStream;
@@ -47,16 +46,17 @@ import nor.util.io.NoExceptionOutputStreamFilter;
 import nor.util.log.Logger;
 
 /**
-*
-* @author Junpei Kawamoto
-* @since 0.2
-*/
+ *
+ * @author Junpei Kawamoto
+ * @since 0.2
+ */
 class RequestHandleWorker implements Runnable, Closeable{
 
 	private boolean running = true;
 
 	private final Queue<Connection> queue;
 	private final HttpRequestHandler handler;
+	private final HttpConnectRequestHandler connecter;
 
 	private final List<ServiceEventListener> listeners = new ArrayList<ServiceEventListener>();
 
@@ -65,10 +65,11 @@ class RequestHandleWorker implements Runnable, Closeable{
 	//============================================================================
 	// Constractor
 	//============================================================================
-	public RequestHandleWorker(final Queue<Connection> queue, final HttpRequestHandler handler){
+	public RequestHandleWorker(final Queue<Connection> queue, final HttpRequestHandler handler, final HttpConnectRequestHandler connecter){
 
 		this.queue = queue;
 		this.handler = handler;
+		this.connecter = connecter;
 
 	}
 
@@ -106,14 +107,12 @@ class RequestHandleWorker implements Runnable, Closeable{
 					// 切断要求が来るまで持続接続する
 					while(this.running){
 
-						String prefix = "";
-
 						// ストリームの取得
 						final InputStream input = new BufferedInputStream(new NoCloseInputStream(con.getInputStream()));
 						final NoExceptionOutputStreamFilter output = new NoExceptionOutputStreamFilter(new BufferedOutputStream(new NoCloseOutputStream(con.getOutputStream())));
 
 						// リクエストオブジェクト
-						final HttpRequest request = HttpRequest.create(input, prefix);
+						final HttpRequest request = HttpRequest.create(input);
 						if(request == null){
 
 							LOGGER.fine("run", "Receive a null request");
@@ -123,28 +122,30 @@ class RequestHandleWorker implements Runnable, Closeable{
 
 							LOGGER.fine("run", "Receive a connect request: {0}", request);
 
-							final Pattern pat = Pattern.compile("(.+):(\\d+)");
-							final Matcher m = pat.matcher(request.getPath());
+							try{
 
-							if(m.find()){
-
-								final String host = m.group(1);
-								final int port = Integer.valueOf(m.group(2));
-								final InetSocketAddress addr = new InetSocketAddress(host, port);
-								final SocketChannel ch = SocketChannel.open(addr);
+								final SelectableChannel ch = this.connecter.doRequest(request);
 
 								/*
 								 * Notify the client of a connection established.
 								 */
-								final HttpResponse response = request.createResponse(Status.OK);
-								LOGGER.info("run", "{0} > {1} (unknown length)", request.getHeadLine(), response.getHeadLine());
+								final HttpResponse response = request.createResponse(Status.ConnectionEstablished);
 								response.output(output);
 								output.flush();
 
 								con.requestDelegation(ch);
-								break;
+
+								LOGGER.info("run", "{0} > {1} (unknown length)", request.getHeadLine(), response.getHeadLine());
+
+							}catch(final HttpException e){
+
+								final HttpResponse response = e.createResponse(request);
+								response.output(output);
+								output.flush();
 
 							}
+
+							break;
 
 						}else{
 
@@ -184,6 +185,15 @@ class RequestHandleWorker implements Runnable, Closeable{
 					}
 
 				}catch(final IOException e){
+
+					if(this.running){
+
+						LOGGER.warning("run", e.toString());
+						LOGGER.catched(Level.FINE, "run", e);
+
+					}
+
+				}catch(final VirtualMachineError e){
 
 					LOGGER.warning("run", e.toString());
 					LOGGER.catched(Level.FINE, "run", e);

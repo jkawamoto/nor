@@ -17,6 +17,8 @@
  */
 package nor.util.log;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
@@ -48,6 +50,13 @@ public class Logger{
 			return impl.getLogger();
 
 		}
+
+	}
+
+	public static void loadConfig(final InputStream in) throws SecurityException, IOException{
+
+		final LogManager m = LogManager.getLogManager();
+		m.readConfiguration(in);
 
 	}
 

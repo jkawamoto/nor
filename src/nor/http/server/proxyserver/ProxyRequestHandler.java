@@ -30,6 +30,7 @@ import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -222,16 +223,21 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		}catch(final SocketTimeoutException e){
 
 			LOGGER.warning("sendRequest", e.getMessage());
-			throw new HttpException(Status.RequestTimeout, e);
+			throw new HttpException(Status.GatewayTimeout, e);
 
 		}catch(final ConnectException e){
 
 			LOGGER.warning("sendRequest", e.getMessage());
-			throw new HttpException(Status.RequestTimeout, e);
+			throw new HttpException(Status.GatewayTimeout, e);
+
+		}catch(final UnknownHostException e){
+
+			throw new HttpException(Status.NotFound, e);
 
 		}catch(final IOException e){
 
 			throw new InternalServerErrorException(e);
+
 
 		}
 

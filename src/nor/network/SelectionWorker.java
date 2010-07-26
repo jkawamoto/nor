@@ -79,7 +79,8 @@ public class SelectionWorker implements Runnable, Closeable{
 
 				try{
 
-					final int nc = this.selector.select(Timeout);
+//					final int nc = this.selector.select(Timeout);
+					final int nc = this.selector.selectNow();
 					LOGGER.finest("run", "Begin a selection ({0} selected keys, {1} registrated keys)", nc, selector.keys().size());
 
 					for(final SelectionKey key : this.selector.selectedKeys()){
@@ -117,7 +118,7 @@ public class SelectionWorker implements Runnable, Closeable{
 					this.selector.selectedKeys().clear();
 					LOGGER.finest("run", "Ends the selection");
 
-				}catch(final Exception e){
+				}catch(final CancelledKeyException e){
 
 					LOGGER.severe("run", e.getMessage());
 					LOGGER.catched(Level.FINE, "run", e);
@@ -126,10 +127,10 @@ public class SelectionWorker implements Runnable, Closeable{
 
 			}
 
-//		}catch(final IOException e){
-//
-//			LOGGER.severe("run", e.getMessage());
-//			LOGGER.catched(Level.FINE, "run", e);
+		}catch(final IOException e){
+
+			LOGGER.severe("run", e.getMessage());
+			LOGGER.catched(Level.FINE, "run", e);
 
 		}catch(final CancelledKeyException e){
 

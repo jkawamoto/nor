@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -78,6 +79,7 @@ public class Nor{
 	//============================================================================
 	private static final String ConfigFileTemplate = "%s.conf";
 	private static final String DefaultConfigFile = "res/default.conf";
+	private static final String LoggindConfigFile = "res/logging.conf";
 
 	//============================================================================
 	//  Constractor
@@ -90,8 +92,30 @@ public class Nor{
 	private Nor(){
 		LOGGER.entering("<init>");
 
-		// Load default constants values
 		final Class<?> c = this.getClass();
+
+		// Load logging config
+		if(!System.getProperties().containsKey("java.util.logging.config.file")){
+
+			try {
+
+				Logger.loadConfig(c.getResourceAsStream(LoggindConfigFile));
+
+			} catch (final SecurityException e) {
+
+				LOGGER.warning("<init>", e.getMessage());
+				LOGGER.catched(Level.FINE, "<init>", e);
+
+			} catch (final IOException e) {
+
+				LOGGER.warning("<init>", e.getMessage());
+				LOGGER.catched(Level.FINE, "<init>", e);
+
+			}
+
+		}
+
+		// Load default constants values
 		final Properties def = new Properties();
 		try {
 
@@ -102,6 +126,7 @@ public class Nor{
 		} catch (final IOException e) {
 
 			LOGGER.warning("<init>", e.getMessage());
+			LOGGER.catched(Level.FINE, "<init>", e);
 
 		}
 
@@ -281,6 +306,8 @@ public class Nor{
 	public static void main(final String[] args) throws MalformedURLException {
 		LOGGER.entering("main", (Object[])args);
 
+		LOGGER.info("main", "Start up...");
+
 		// 唯一のインスタンスを作成
 		final Nor nor = new Nor();
 
@@ -331,6 +358,7 @@ public class Nor{
 			LOGGER.severe("main", e.getMessage());
 
 		}
+		LOGGER.info("main", "End.");
 
 		LOGGER.exiting("main");
 	}

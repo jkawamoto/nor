@@ -22,6 +22,22 @@ import java.io.IOException;
 
 public interface HttpServer extends Closeable{
 
+	/**
+	 * 待ち受けるホスト名とポート番号を指定してサーバを起動する．
+	 * サーバは別スレッドによって動作します．このメソッドはサーバが起動後すぐに処理を戻します．
+	 *
+	 * @param hostname 待ち受けホスト名
+	 * @param port 待ち受けポート番号
+	 * @throws IOException I/O エラーが発生した場合
+	 */
 	public void start(final String hostname, final int port) throws IOException;
+
+	/**
+	 * サーバを閉じる．
+	 *
+	 * @throws IOException I/O エラーが発生した場合．
+	 */
+	@Override
+	public void close() throws IOException;
 
 }

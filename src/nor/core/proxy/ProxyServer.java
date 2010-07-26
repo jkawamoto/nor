@@ -33,6 +33,7 @@ import nor.http.server.HttpServer;
 import nor.http.server.local.ListResource;
 import nor.http.server.local.TextResource;
 import nor.http.server.nserver.HttpNServer;
+import nor.http.server.proxyserver.ProxyConnectRequestHandler;
 import nor.http.server.proxyserver.Router;
 import nor.http.server.tserver.HttpTServer;
 import nor.util.log.Logger;
@@ -97,7 +98,7 @@ public class ProxyServer implements Closeable{
 
 		}else{
 
-			this.server = new HttpNServer(this.proxy);
+			this.server = new HttpNServer(this.proxy, new ProxyConnectRequestHandler(this.router));
 
 		}
 		LOGGER.exiting("<init>");
