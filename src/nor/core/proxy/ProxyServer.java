@@ -20,6 +20,7 @@ package nor.core.proxy;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.URL;
@@ -31,7 +32,6 @@ import nor.core.proxy.filter.RequestFilter;
 import nor.core.proxy.filter.ResponseFilter;
 import nor.http.server.HttpServer;
 import nor.http.server.local.ListResource;
-import nor.http.server.local.TextResource;
 import nor.http.server.nserver.HttpNServer;
 import nor.http.server.proxyserver.ProxyConnectRequestHandler;
 import nor.http.server.proxyserver.Router;
@@ -118,13 +118,6 @@ public class ProxyServer implements Closeable{
 		LOGGER.entering("start", hostname, (Object)port);
 		assert hostname != null && hostname.length() != 0;
 		assert port > 0;
-
-		// PAC ファイルの登録
-		this.local.getRoot().add(new TextResource("/nor/core/proxy.pac", this.getPAC(hostname, port), "application/x-javascript-config"));
-
-//		final LocalContentsHandler h  =new LocalContentsHandler();
-//		h.put("/nor/core/proxy.pac", new Contents(this.getPAC(hostname, port), ));
-//		this.proxy.attach(h);
 
 		// サービスの開始
 		this.server.start(hostname, port);
@@ -233,13 +226,28 @@ public class ProxyServer implements Closeable{
 		LOGGER.exiting("detach");
 	}
 
-	//====================================================================
-	//  Private methods
-	//====================================================================
-	private String getPAC(final String hostname, final int port) throws IOException{
+	/**
+	 * Get the PAC file for this proxy server.
+	 *
+	 * @param host The address of this server.
+	 * @param port The listening port.
+	 * @return A string of the PAC file.
+	 * @throws IOException When some I/O exception happens.
+	 */
+	public String getPAC(final String host, final int port, final boolean ssh) throws IOException{
 
 		final Class<?> c = this.getClass();
-		final BufferedReader rin = new BufferedReader(new InputStreamReader(c.getResourceAsStream("res/proxy.pac.template")));
+		InputStream in;
+		if(ssh){
+
+			in = c.getResourceAsStream("res/proxy.pac.template");
+
+		}else{
+
+			in = c.getResourceAsStream("res/no-ssh-proxy.pac.template");
+
+		}
+		final BufferedReader rin = new BufferedReader(new InputStreamReader(in));
 		final StringBuilder pac_template = new StringBuilder();
 		for(String buf = rin.readLine(); buf != null; buf = rin.readLine()){
 
@@ -248,7 +256,7 @@ public class ProxyServer implements Closeable{
 
 		}
 
-		final String proxy = String.format("%s:%d", hostname, port);
+		final String proxy = String.format("%s:%d", host, port);
 
 		final StringBuilder filtering_rule = new StringBuilder();
 		for(final String pat : this.proxy.getHandlingURLPatterns()){

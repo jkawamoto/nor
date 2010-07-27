@@ -134,7 +134,6 @@ class Delegator implements Closeable{
 						this.another.addOps(SelectionKey.OP_WRITE);
 
 					}
-					this.key.selector().wakeup();
 
 				}
 
@@ -169,7 +168,6 @@ class Delegator implements Closeable{
 						this.another.addOps(SelectionKey.OP_READ);
 
 					}
-					this.key.selector().wakeup();
 
 				}
 

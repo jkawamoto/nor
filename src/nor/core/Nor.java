@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 
 import nor.core.plugin.Plugin;
 import nor.core.proxy.ProxyServer;
+import nor.http.server.local.TextResource;
 import nor.http.server.proxyserver.Router;
 import nor.util.log.Logger;
 
@@ -259,7 +260,18 @@ public class Nor{
 	private void start() throws IOException{
 		LOGGER.entering("start");
 
-		this.proxy.start(this.config.getListenAddress(), this.config.getListenPort());
+		final String addr = this.config.getListenAddress();
+		final int port = this.config.getListenPort();
+
+		/*
+		 * Register the PAC file.
+		 */
+		this.proxy.localResourceRoot().add(new TextResource("/nor/core/proxy.pac", this.proxy.getPAC(addr, port, true), "application/x-javascript-config"));
+
+		/*
+		 * Start the web server.
+		 */
+		this.proxy.start(addr, port);
 
 		LOGGER.exiting("start");
 	}
