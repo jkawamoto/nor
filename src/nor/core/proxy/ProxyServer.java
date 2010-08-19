@@ -34,6 +34,7 @@ import nor.http.server.HttpServer;
 import nor.http.server.local.ListResource;
 import nor.http.server.nserver.HttpNServer;
 import nor.http.server.proxyserver.ProxyConnectRequestHandler;
+import nor.http.server.proxyserver.ProxyRequestHandler;
 import nor.http.server.proxyserver.Router;
 import nor.http.server.tserver.HttpTServer;
 import nor.util.log.Logger;
@@ -57,12 +58,12 @@ public class ProxyServer implements Closeable{
 	/**
 	 * リクエストハンドラ
 	 */
-	private final ProxyHandler proxy;
+	private final RequestHandler remoteHandler;
 
 	/**
 	 *
 	 */
-	private final LocalHandler local;
+	private final LocalContentsHandlerAdapter localHandler;
 
 	/**
 	 * 外部プロキシルーティングテーブル
@@ -77,28 +78,28 @@ public class ProxyServer implements Closeable{
 	//====================================================================
 	//  コンストラクタ
 	//====================================================================
-	public ProxyServer(final String name, final Router router){
-		this(name, router, false);
+	public ProxyServer(final ProxyRequestHandler handler, final Router router){
+		this(handler, router, false);
 	}
 
-	public ProxyServer(final String name, final Router router, final boolean useTServer){
-		LOGGER.entering("<init>", name, router, useTServer);
-		assert name != null;
+	public ProxyServer(final ProxyRequestHandler handler, final Router router, final boolean useTServer){
+		LOGGER.entering("<init>", handler, router, useTServer);
+		assert handler != null;
 		assert router != null;
 
 		this.router = router;
-		this.proxy = new ProxyHandler(name, HttpNServer.VERSION, this.router);
-		this.local = new LocalHandler();
+		this.remoteHandler = new RequestHandler(handler);
+		this.localHandler = new LocalContentsHandlerAdapter();
 
-		this.proxy.attach(this.local);
+		this.remoteHandler.attach(this.localHandler);
 
 		if(useTServer){
 
-			this.server = new HttpTServer(this.proxy);
+			this.server = new HttpTServer(this.remoteHandler);
 
 		}else{
 
-			this.server = new HttpNServer(this.proxy, new ProxyConnectRequestHandler(this.router));
+			this.server = new HttpNServer(this.remoteHandler, new ProxyConnectRequestHandler(this.router));
 
 		}
 		LOGGER.exiting("<init>");
@@ -141,7 +142,7 @@ public class ProxyServer implements Closeable{
 
 	public ListResource localResourceRoot(){
 
-		return this.local.getRoot();
+		return this.localHandler.getRoot();
 
 	}
 
@@ -156,7 +157,7 @@ public class ProxyServer implements Closeable{
 
 			for(final MessageHandler h: hs){
 
-				this.proxy.attach(h);
+				this.remoteHandler.attach(h);
 
 			}
 
@@ -167,7 +168,7 @@ public class ProxyServer implements Closeable{
 
 			for(final RequestFilter f: rqs){
 
-				this.proxy.attach(f);
+				this.remoteHandler.attach(f);
 
 			}
 
@@ -178,7 +179,7 @@ public class ProxyServer implements Closeable{
 
 			for(final ResponseFilter f: res){
 
-				this.proxy.attach(f);
+				this.remoteHandler.attach(f);
 
 			}
 
@@ -195,7 +196,7 @@ public class ProxyServer implements Closeable{
 
 			for(final MessageHandler h: hs){
 
-				this.proxy.detach(h);
+				this.remoteHandler.detach(h);
 
 			}
 
@@ -206,7 +207,7 @@ public class ProxyServer implements Closeable{
 
 			for(final RequestFilter f: rqs){
 
-				this.proxy.detach(f);
+				this.remoteHandler.detach(f);
 
 			}
 
@@ -217,7 +218,7 @@ public class ProxyServer implements Closeable{
 
 			for(final ResponseFilter f: res){
 
-				this.proxy.detach(f);
+				this.remoteHandler.detach(f);
 
 			}
 
@@ -259,7 +260,7 @@ public class ProxyServer implements Closeable{
 		final String proxy = String.format("%s:%d", host, port);
 
 		final StringBuilder filtering_rule = new StringBuilder();
-		for(final String pat : this.proxy.getHandlingURLPatterns()){
+		for(final String pat : this.remoteHandler.getHandlingURLPatterns()){
 
 			filtering_rule.append("if(url.match(new RegExp(\"");
 			filtering_rule.append(pat.replace("\\", "\\\\"));
@@ -294,7 +295,7 @@ public class ProxyServer implements Closeable{
 	public static void main(final String[] args){
 
 		final Router router = new Router();
-		final ProxyServer app = new ProxyServer("nor", router);
+		final ProxyServer app = new ProxyServer(new ProxyRequestHandler("nor", router), router);
 		try {
 
 			if(args.length < 2){

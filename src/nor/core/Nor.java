@@ -32,7 +32,10 @@ import java.util.regex.Pattern;
 
 import nor.core.plugin.Plugin;
 import nor.core.proxy.ProxyServer;
+import nor.http.HttpRequest;
+import nor.http.HttpResponse;
 import nor.http.server.local.TextResource;
+import nor.http.server.proxyserver.ProxyRequestHandler;
 import nor.http.server.proxyserver.Router;
 import nor.util.log.Logger;
 
@@ -47,11 +50,19 @@ import nor.util.log.Logger;
 public class Nor{
 
 	/**
-	 * ローカルプロキシ
+	 * Local proxy server.
 	 */
-	private ProxyServer proxy;
+	private ProxyServer server;
 
-	private Router router = new Router();
+	/**
+	 * Proxy request handler.
+	 */
+	private final ProxyRequestHandler handler;
+
+	/**
+	 * Request router.
+	 */
+	private final Router router = new Router();
 
 	private final File confDir;
 
@@ -137,6 +148,10 @@ public class Nor{
 
 		this.config = new Config(new File(this.confDir, String.format("%s.conf", this.getClass().getCanonicalName())));
 
+		// Create request handler
+		this.handler = new ProxyRequestHandler(Nor.class.getSimpleName(), this.router);
+
+
 		LOGGER.exiting("<init>");
 	}
 
@@ -153,7 +168,7 @@ public class Nor{
 		/*
 		 * Create a proxy server.
 		 */
-		this.proxy = new ProxyServer(Nor.class.getSimpleName(), this.router);
+		this.server = new ProxyServer(this.handler, this.router);
 
 		/*
 		 * Add plugins which are on the classpath
@@ -162,11 +177,9 @@ public class Nor{
 
 			if(this.config.isEnable(p)){
 
-				p.setExternalProxies(this.router);
-
 				final File config = new File(this.confDir, String.format(ConfigFileTemplate, p.getClass().getCanonicalName()));
 				p.load(config);
-				this.proxy.attach(p);
+				this.server.attach(p);
 				this.plugins.add(p);
 
 				LOGGER.info("init", "Loading a plugin {0}", p.getClass().getName());
@@ -220,12 +233,10 @@ public class Nor{
 			final Class<?> c = Class.forName(classname);
 			final Plugin p = (Plugin)c.newInstance();
 
-			p.setExternalProxies(this.router);
-
 			final File config = new File(this.confDir, String.format(ConfigFileTemplate, p.getClass().getCanonicalName()));
 			p.load(config);
 
-			this.proxy.attach(p);
+			this.server.attach(p);
 			this.plugins.add(p);
 
 			LOGGER.info("loadPlugin", "Loading a plugin {0}", p.getClass().getName());
@@ -266,12 +277,12 @@ public class Nor{
 		/*
 		 * Register the PAC file.
 		 */
-		this.proxy.localResourceRoot().add(new TextResource("/nor/core/proxy.pac", this.proxy.getPAC(addr, port, true), "application/x-javascript-config"));
+		this.server.localResourceRoot().add(new TextResource("/nor/core/proxy.pac", this.server.getPAC(addr, port, true), "application/x-javascript-config"));
 
 		/*
 		 * Start the web server.
 		 */
-		this.proxy.start(addr, port);
+		this.server.start(addr, port);
 
 		LOGGER.exiting("start");
 	}
@@ -288,7 +299,7 @@ public class Nor{
 		LOGGER.entering("close");
 
 		// サーバの終了
-		this.proxy.close();
+		this.server.close();
 
 		// プラグインの終了処理
 		for(final Plugin p : this.plugins){
@@ -306,6 +317,19 @@ public class Nor{
 		LOGGER.exiting("close");
 	}
 
+	//============================================================================
+	//  Class members
+	//============================================================================
+	private static Nor nor;
+
+	//============================================================================
+	//  Class methods
+	//============================================================================
+	public static HttpResponse request(final HttpRequest request){
+
+		return nor.handler.doRequest(request);
+
+	}
 
 	//============================================================================
 	//  main
@@ -321,7 +345,7 @@ public class Nor{
 		LOGGER.info("main", "Start up...");
 
 		// 唯一のインスタンスを作成
-		final Nor nor = new Nor();
+		nor = new Nor();
 
 		// 初期化
 		nor.init();

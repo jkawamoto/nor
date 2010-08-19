@@ -48,6 +48,7 @@ import nor.http.Status;
 import nor.http.error.HttpException;
 import nor.http.error.InternalServerErrorException;
 import nor.http.server.HttpRequestHandler;
+import nor.http.server.nserver.HttpNServer;
 import nor.util.log.Logger;
 
 
@@ -74,7 +75,6 @@ import nor.util.log.Logger;
 public class ProxyRequestHandler implements HttpRequestHandler{
 
 	private final String name;
-	private final String version;
 
 	private final Router router;
 
@@ -89,14 +89,12 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 	//============================================================================
 	//  public メソッド
 	//============================================================================
-	public ProxyRequestHandler(final String name, final String version, final Router router){
-		LOGGER.entering("<init>", name, version, router);
+	public ProxyRequestHandler(final String name, final Router router){
+		LOGGER.entering("<init>", name, router);
 		assert name != null && name.length() != 0;
-		assert version != null;
 		assert router != null;
 
 		this.name = name;
-		this.version = version;
 		this.router = router;
 
 		HttpURLConnection.setFollowRedirects(false);
@@ -127,8 +125,8 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 			}
 
-			// ヘッダーの書き換え
-			this.cleanHeader(request);
+			// ヘッダの整理
+			this.editHeader(request);
 
 			// URLコネクションの作成
 			final URL url = new URL(request.getPath());
@@ -166,7 +164,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		}
 
 		// ヘッダの整理
-		this.cleanHeader(response);
+		this.editHeader(response);
 
 		LOGGER.exiting("doRequest", response);
 		return response;
@@ -323,7 +321,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 	}
 
-	private void cleanHeader(final HttpRequest request){
+	private void editHeader(final HttpRequest request){
 		LOGGER.entering("cleanHeader", request);
 		assert request != null;
 
@@ -373,7 +371,10 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		}
 
 		// プロキシ通過スタンプ
-		header.add(Via, String.format(VIA_FORMAT, this.version, this.name));
+		header.add(Via, String.format(VIA_FORMAT, request.getVersion(), this.name));
+
+		// プロトコルバージョンの設定
+		request.setVersion(HttpNServer.VERSION);
 
 		LOGGER.exiting("cleanHeader");
 	}
@@ -384,7 +385,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 	 *
 	 * @param response 整理するレスポンス
 	 */
-	private void cleanHeader(final HttpResponse response){
+	private void editHeader(final HttpResponse response){
 		LOGGER.entering("cleanHeader", response);
 		assert response != null;
 
@@ -405,7 +406,10 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		}
 
 		// プロキシ通過スタンプ
-		header.add(Via, String.format(VIA_FORMAT, this.version, this.name));
+		header.add(Via, String.format(VIA_FORMAT, response.getVersion(), this.name));
+
+		// プロトコルバージョンの設定
+		response.setVersion(HttpNServer.VERSION);
 
 		LOGGER.exiting("cleanHeader");
 	}

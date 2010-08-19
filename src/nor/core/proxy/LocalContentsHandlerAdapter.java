@@ -31,14 +31,14 @@ import nor.http.server.local.LocalContentsHandler;
  * @author Junpei Kawamoto
  *
  */
-class LocalHandler extends MessageHandlerAdapter{
+class LocalContentsHandlerAdapter extends MessageHandlerAdapter{
 
 	private final LocalContentsHandler impl = new LocalContentsHandler();
 
 	//============================================================================
 	//  Constructor
 	//============================================================================
-	public LocalHandler() {
+	public LocalContentsHandlerAdapter() {
 		super("^/.*");
 	}
 

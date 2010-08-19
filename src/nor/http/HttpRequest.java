@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 
@@ -74,6 +75,39 @@ public class HttpRequest extends HttpMessage{
 	//====================================================================
 	//	コンストラクタ
 	//====================================================================
+	public HttpRequest(final String method, final URL url){
+		this(method, url, "");
+	}
+
+	public HttpRequest(final String method, final URL url, final String body){
+		this(method, url, new ByteArrayInputStream(body.getBytes()));
+
+		this.header.set(HeaderName.ContentLength, Integer.toString(body.getBytes().length));
+
+	}
+
+	public HttpRequest(final String method, final URL url, final InputStream body){
+
+		this.method = method;
+		this.path = url.toString();
+
+		this.header = new HttpHeader();
+		this.body = new HttpBody(body);
+
+	}
+
+	public HttpRequest(final Method method, final URL url){
+		this(method.toString(), url);
+	}
+
+	public HttpRequest(final Method method, final URL url, final String body){
+		this(method.toString(), url, body);
+	}
+
+	public HttpRequest(final Method method, final URL url, final InputStream body){
+		this(method.toString(), url, body);
+	}
+
 	/**
 	 * ストリームからHttpリクエストを読み込む．
 	 * このコンストラクタは引数で指定されたストリームを読み込み同じ内容の
@@ -172,6 +206,11 @@ public class HttpRequest extends HttpMessage{
 		LOGGER.exiting("setPath");
 	}
 
+	public void setVersion(final String version){
+
+		this.version = version;
+
+	}
 
 	/* (非 Javadoc)
 	 * @see nor.http.HttpMessage#toString()

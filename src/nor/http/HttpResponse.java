@@ -225,6 +225,13 @@ public class HttpResponse extends HttpMessage{
 
 	}
 
+	public void setVersion(final String version){
+
+		this.version = version;
+
+	}
+
+
 	//--------------------------------------------------------------------
 	//	HttpMessage インタフェースの実装
 	//--------------------------------------------------------------------

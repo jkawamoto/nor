@@ -23,15 +23,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.Proxy;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Properties;
 
 import nor.core.proxy.filter.MessageHandler;
 import nor.core.proxy.filter.RequestFilter;
 import nor.core.proxy.filter.ResponseFilter;
-import nor.util.Querable;
 
 /**
  * すべてのプラグインの基底クラス．
@@ -56,8 +52,6 @@ public abstract class Plugin implements Closeable{
 	 * プラグインの設定が格納されます．
 	 */
 	protected final Properties properties = new Properties();
-
-	protected Querable<Proxy> externalProxies;
 
 	/**
 	 * 設定ファイルを読み込む．
@@ -89,8 +83,6 @@ public abstract class Plugin implements Closeable{
 
 		}
 
-		this.init();
-
 	}
 
 	/**
@@ -118,14 +110,6 @@ public abstract class Plugin implements Closeable{
 			e.printStackTrace();
 
 		}
-
-	}
-
-	/**
-	 * プラグインを初期化する．
-	 * プラグインがロードされ，設定を読み込んだ後に呼び出されます．
-	 */
-	public void init(){
 
 	}
 
@@ -169,41 +153,6 @@ public abstract class Plugin implements Closeable{
 	public ResponseFilter[] responseFilters(){
 
 		return null;
-
-	}
-
-	/**
-	 * リモートプロキシへテーブルを設定する．
-	 * このメソッドはフレームワークから呼び出され，プラグイン開発者が使用する必要はありません．
-	 * また，オーバーライドすることもできません．
-	 *
-	 * @param externalProxies 設定するリモートプロキシテーブル
-	 */
-	public final void setExternalProxies(final Querable<Proxy> externalProxies){
-
-		this.externalProxies = externalProxies;
-
-	}
-
-	/**
-	 * コネクションを開く．
-	 * プラグインが独自にリモートサーバへ接続する場合，このメソッドを用いて下さい．
-	 *
-	 * @param url 接続先 URL
-	 * @return URL コネクションオブジェクト
-	 * @throws IOException I/O エラーが発生した場合
-	 */
-	protected URLConnection openConnection(final URL url) throws IOException{
-
-		if(this.externalProxies != null){
-
-			return url.openConnection(this.externalProxies.query(url.toString()));
-
-		}else{
-
-			return url.openConnection();
-
-		}
 
 	}
 

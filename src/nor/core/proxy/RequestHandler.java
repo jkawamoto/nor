@@ -43,8 +43,6 @@ import nor.http.HttpMessage;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.server.HttpRequestHandler;
-import nor.http.server.proxyserver.ProxyRequestHandler;
-import nor.http.server.proxyserver.Router;
 import nor.util.log.Logger;
 
 /**
@@ -53,7 +51,7 @@ import nor.util.log.Logger;
  * @author Junpei Kawamoto
  *
  */
-class ProxyHandler implements HttpRequestHandler{
+class RequestHandler implements HttpRequestHandler{
 
 	/**
 	 * Httpリクエストに対するフィルタ
@@ -72,14 +70,14 @@ class ProxyHandler implements HttpRequestHandler{
 
 
 	/**
-	 * ローカルプロキシハンドラ
+	 * Default request handler
 	 */
-	private final ProxyRequestHandler proxyHandler;
+	private final HttpRequestHandler defaultHandler;
 
 	/**
 	 * ロガー
 	 */
-	private static final Logger LOGGER = Logger.getLogger(ProxyHandler.class);
+	private static final Logger LOGGER = Logger.getLogger(RequestHandler.class);
 
 	private static final String Handler = "x-nor-handler";
 	private static final String Filter = "x-nor-filter";
@@ -89,13 +87,11 @@ class ProxyHandler implements HttpRequestHandler{
 	//====================================================================
 	//  Constructer
 	//====================================================================
-	public ProxyHandler(final String name, final String version, final Router router){
-		LOGGER.entering("<init>", name, version, router);
-		assert name != null;
-		assert version != null;
-		assert router != null;
+	public RequestHandler(final HttpRequestHandler defaultHandler){
+		LOGGER.entering("<init>", defaultHandler);
+		assert defaultHandler != null;
 
-		this.proxyHandler = new ProxyRequestHandler(name, version, router);
+		this.defaultHandler = defaultHandler;
 
 		LOGGER.exiting("<init>");
 	}
@@ -137,7 +133,7 @@ class ProxyHandler implements HttpRequestHandler{
 		// 他のハンドラでリクエストが処理されなかった場合はデフォルトプロキシが処理する
 		if(response == null){
 
-			response = this.proxyHandler.doRequest(request);
+			response = this.defaultHandler.doRequest(request);
 
 		}
 		assert response != null;
