@@ -23,12 +23,12 @@ import java.io.OutputStream;
 
 public class LimitedOutputStream extends FilterOutputStream{
 
-	private final int limit;
-	private int remains;
+	private final long limit;
+	private long remains;
 
 	private static final String EXCEPTION_MSG = "Over size limit (limit: %d bytes, trying: %d bytes).";
 
-	public LimitedOutputStream(final OutputStream out, final int size) {
+	public LimitedOutputStream(final OutputStream out, final long size) {
 
 		super(out);
 		this.limit = size;
@@ -88,7 +88,7 @@ public class LimitedOutputStream extends FilterOutputStream{
 
 	}
 
-	public int remains(){
+	public long remains(){
 
 		return this.remains;
 

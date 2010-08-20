@@ -75,11 +75,11 @@ public class HttpHeader{
 	 * @param reader ヘッダ情報を読み取るストリーム
 	 * @throws IOException ストリーム処理中にI/Oエラーが発生した場合
 	 */
-	HttpHeader(final BufferedReader reader) throws IOException{
-		LOGGER.entering("<init>", reader);
-		assert reader != null;
+	HttpHeader(final BufferedReader rin) throws IOException{
+		LOGGER.entering("<init>", rin);
+		assert rin != null;
 
-		for(String line = reader.readLine(); line != null; line = reader.readLine()){
+		for(String line = rin.readLine(); line != null; line = rin.readLine()){
 
 			if(line.length() != 0){
 

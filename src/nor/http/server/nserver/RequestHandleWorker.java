@@ -130,7 +130,7 @@ class RequestHandleWorker implements Runnable, Closeable{
 								 * Notify the client of a connection established.
 								 */
 								final HttpResponse response = request.createResponse(Status.ConnectionEstablished);
-								response.output(output);
+								response.writeTo(output);
 								output.flush();
 
 								con.requestDelegation(ch);
@@ -140,7 +140,7 @@ class RequestHandleWorker implements Runnable, Closeable{
 							}catch(final HttpException e){
 
 								final HttpResponse response = e.createResponse(request);
-								response.output(output);
+								response.writeTo(output);
 								output.flush();
 
 							}
@@ -167,7 +167,8 @@ class RequestHandleWorker implements Runnable, Closeable{
 
 							// レスポンスの書き出し
 							LOGGER.fine("run", "Return the {0}", response);
-							response.output(output);
+							response.writeTo(output);
+							response.close();
 							output.flush();
 
 							if(!output.alive()){

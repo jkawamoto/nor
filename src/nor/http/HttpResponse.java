@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import nor.http.error.HttpException;
 import nor.http.error.InternalServerErrorException;
 import nor.http.io.HeaderInputStream;
+import nor.util.io.LimitedInputStream;
 import nor.util.log.Logger;
 
 /**
@@ -38,30 +39,35 @@ import nor.util.log.Logger;
  */
 public class HttpResponse extends HttpMessage{
 
-	// ロガー
-	private static final Logger LOGGER = Logger.getLogger(HttpResponse.class);
-
 	/**
-	 * このレスポンスの基になった要求
+	 * Request of this response.
 	 */
 	private final HttpRequest request;
 
 	/**
-	 * レスポンス情報
+	 * Status code.
 	 */
 	private int code;
+
+	/**
+	 * Status message.
+	 */
 	private String message;
+
+	/**
+	 * Version.
+	 */
 	private String version;
 
 	/**
-	 * Http ヘッダ．
+	 * Header object.
 	 */
 	private final HttpHeader header;
 
 	/**
-	 * Http ボディ．
+	 * Logger.
 	 */
-	private final HttpBody body;
+	private static final Logger LOGGER = Logger.getLogger(HttpResponse.class);
 
 	//====================================================================
 	//  コンストラクタ
@@ -124,7 +130,8 @@ public class HttpResponse extends HttpMessage{
 				this.getHeader().set(HeaderName.ContentLength, "0");
 
 			}
-			this.body = new HttpBody(input, this.header);
+
+			this.setBody(HttpMessage.decodeStream(input, this.header));
 
 
 		}catch(final IOException e){
@@ -141,6 +148,7 @@ public class HttpResponse extends HttpMessage{
 	 * @param request
 	 * @param status
 	 * @param body 内容コーディング，転送コーディングともに解決済みの入力ストリーム
+	 * @throws HttpException
 	 */
 	HttpResponse(final HttpRequest request, final Status status, final InputStream body){
 		assert request != null;
@@ -152,7 +160,30 @@ public class HttpResponse extends HttpMessage{
 		this.version = Http.Version;
 
 		this.header = new HttpHeader();
-		this.body = new HttpBody(body);
+		this.setBody(body);
+
+	}
+
+	/**
+	 *
+	 * @param request
+	 * @param status
+	 * @param body 内容コーディング，転送コーディングともに解決済みの入力ストリーム
+	 * @throws HttpException
+	 */
+	HttpResponse(final HttpRequest request, final Status status, final InputStream body, final long length){
+		assert request != null;
+		assert status != null;
+
+		this.request = request;
+		this.code = status.getCode();
+		this.message = status.getMessage();
+		this.version = Http.Version;
+
+		this.header = new HttpHeader();
+		this.header.set(HeaderName.ContentLength, Long.toString(length));
+
+		this.setBody(new LimitedInputStream(body, length));
 
 	}
 
@@ -276,16 +307,6 @@ public class HttpResponse extends HttpMessage{
 	public HttpHeader getHeader() {
 
 		return this.header;
-
-	}
-
-	/* (非 Javadoc)
-	 * @see nor.http.HttpMessage#getBody()
-	 */
-	@Override
-	public HttpBody getBody() {
-
-		return this.body;
 
 	}
 

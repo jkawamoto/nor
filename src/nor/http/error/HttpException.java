@@ -121,7 +121,7 @@ public class HttpException extends Exception{
 			header.set(HeaderName.ContentLength, Integer.toString(msg.length));
 			header.set(HeaderName.Server, Http.ServerName);
 
-			ret.getBody().setStream(new ByteArrayInputStream(msg));
+			ret.setBody(new ByteArrayInputStream(msg));
 
 		}else{
 

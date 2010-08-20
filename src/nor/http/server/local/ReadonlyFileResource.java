@@ -188,11 +188,10 @@ public class ReadonlyFileResource extends Resource{
 
 			try{
 
-				ret = request.createResponse(Status.OK, new FileInputStream(this.file));
+				ret = request.createResponse(Status.OK, new FileInputStream(this.file), this.file.length());
 				final HttpHeader header = ret.getHeader();
 				header.add(HeaderName.ContentType, this.type.toString());
 				header.add(HeaderName.LastModified, DATE_FORMAT.format(new Date(this.file.lastModified())));
-				header.add(HeaderName.ContentLength, Long.toString(this.file.length()));
 				header.add(HeaderName.Date, DATE_FORMAT.format(Calendar.getInstance().getTime()));
 
 			}catch(final FileNotFoundException e){

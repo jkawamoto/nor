@@ -37,7 +37,6 @@ import nor.core.proxy.filter.ReadonlyStringFilter;
 import nor.core.proxy.filter.RequestFilter;
 import nor.core.proxy.filter.ResponseFilter;
 import nor.http.HeaderName;
-import nor.http.HttpBody;
 import nor.http.HttpHeader;
 import nor.http.HttpMessage;
 import nor.http.HttpRequest;
@@ -349,18 +348,18 @@ class RequestHandler implements HttpRequestHandler{
 		}
 
 		// フィルタリング要求があった場合，入力ストリームにフィルタを接続 (バイナリストリーム > テキストストリームの順)
-		final HttpBody body = msg.getBody();
-		InputStream in = body.getStream();
+		InputStream in = msg.getBody();
 
-
+		// バイナリフィルタの設定
 		final List<EditingByteFilter> editingByteFilters = register.getEditingByteFilters();
 		final List<ReadonlyByteFilter> readonlyByteFilters = register.getReadonlyByteFilters();
 		if(editingByteFilters.size() != 0 || readonlyByteFilters.size() != 0){
 
-			in = new FilteringByteInputStream(body.getStream(), editingByteFilters, readonlyByteFilters);
+			in = new FilteringByteInputStream(in, editingByteFilters, readonlyByteFilters);
 
 		}
 
+		// テキストフィルタの設定
 		final List<EditingStringFilter> editingStringFilters = register.getEditingStringFilters();
 		final List<ReadonlyStringFilter> readonlyStringFilters = register.getReadonlyStringFilters();
 		if(editingStringFilters.size() != 0 || readonlyStringFilters.size() != 0){
@@ -395,7 +394,7 @@ class RequestHandler implements HttpRequestHandler{
 			}
 
 		}
-		msg.getBody().setStream(in);
+		msg.setBody(in);
 
 
 		if(header.containsKey(HeaderName.ContentLength)){

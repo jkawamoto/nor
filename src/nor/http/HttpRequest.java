@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 
 import nor.http.error.HttpException;
 import nor.http.io.HeaderInputStream;
+import nor.util.io.LimitedInputStream;
 import nor.util.log.Logger;
 
 /**
@@ -42,12 +43,12 @@ import nor.util.log.Logger;
 public class HttpRequest extends HttpMessage{
 
 	/**
-	 * HTTPリクエストメソッド
+	 * Request method
 	 */
 	private String method;
 
 	/**
-	 * 要求パス
+	 * Request path (URL)
 	 */
 	private String path;
 
@@ -57,18 +58,12 @@ public class HttpRequest extends HttpMessage{
 	private String version;
 
 	/**
-	 * Http ヘッダ．
+	 * Header object
 	 */
 	private final HttpHeader header;
 
 	/**
-	 * Http ボディ．
-	 */
-	private final HttpBody body;
-
-
-	/**
-	 * ロガー
+	 * Logger
 	 */
 	private static final Logger LOGGER = Logger.getLogger(HttpRequest.class);
 
@@ -80,19 +75,30 @@ public class HttpRequest extends HttpMessage{
 	}
 
 	public HttpRequest(final String method, final URL url, final String body){
-		this(method, url, new ByteArrayInputStream(body.getBytes()));
-
-		this.header.set(HeaderName.ContentLength, Integer.toString(body.getBytes().length));
-
+		this(method, url, new ByteArrayInputStream(body.getBytes()), body.getBytes().length);
 	}
 
 	public HttpRequest(final String method, final URL url, final InputStream body){
 
 		this.method = method;
 		this.path = url.toString();
+		this.version = Http.Version;
 
 		this.header = new HttpHeader();
-		this.body = new HttpBody(body);
+		this.setBody(body);
+
+	}
+
+	public HttpRequest(final String method, final URL url, final InputStream body, final long length){
+
+		this.method = method;
+		this.path = url.toString();
+		this.version = Http.Version;
+
+		this.header = new HttpHeader();
+		this.header.set(HeaderName.ContentLength, Long.toString(length));
+
+		this.setBody(new LimitedInputStream(body, length));
 
 	}
 
@@ -108,6 +114,9 @@ public class HttpRequest extends HttpMessage{
 		this(method.toString(), url, body);
 	}
 
+	//====================================================================
+	//	Private constructors
+	//====================================================================
 	/**
 	 * ストリームからHttpリクエストを読み込む．
 	 * このコンストラクタは引数で指定されたストリームを読み込み同じ内容の
@@ -139,11 +148,12 @@ public class HttpRequest extends HttpMessage{
 
 		}
 
-		// ヘッダの読み取り
+		// Set headers
 		this.header = new HttpHeader(in);
 
-		// ボディの読み取り
-		this.body = new HttpBody(input, this.header);
+		// Set body
+		this.setBody(HttpMessage.decodeStream(input, this.header));
+
 
 		LOGGER.exiting("<init>");
 	}
@@ -274,6 +284,13 @@ public class HttpRequest extends HttpMessage{
 
 	}
 
+	public HttpResponse createResponse(final Status status, final InputStream body, final long length){
+
+		final HttpResponse ret = new HttpResponse(this, status, body, length);
+		return ret;
+
+	}
+
 	/**
 	 * ステータス情報のみからレスポンスを作成する．
 	 * 空のヘッダとメッセージボディからなるレスポンスを作成します．
@@ -302,10 +319,7 @@ public class HttpRequest extends HttpMessage{
 	public HttpResponse createResponse(final Status status, final String body){
 
 		final byte[] b = body.getBytes();
-		final HttpResponse ret = this.createResponse(status, new ByteArrayInputStream(b));
-
-		final HttpHeader header = ret.getHeader();
-		header.set(HeaderName.ContentLength, Integer.toString(b.length));
+		final HttpResponse ret = this.createResponse(status, new ByteArrayInputStream(b), b.length);
 
 		return ret;
 
@@ -362,16 +376,6 @@ public class HttpRequest extends HttpMessage{
 	public HttpHeader getHeader() {
 
 		return this.header;
-
-	}
-
-	/* (非 Javadoc)
-	 * @see nor.http.HttpMessage#getBody()
-	 */
-	@Override
-	public HttpBody getBody() {
-
-		return this.body;
 
 	}
 

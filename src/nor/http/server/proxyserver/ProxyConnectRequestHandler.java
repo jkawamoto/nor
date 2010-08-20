@@ -68,11 +68,13 @@ public class ProxyConnectRequestHandler implements HttpConnectRequestHandler{
 					final InputStream input = Channels.newInputStream(ch);
 					final OutputStream output = Channels.newOutputStream(ch);
 
-					request.output(output);
+					request.writeTo(output);
 					output.flush();
+					request.close();
 
 					final HttpResponse response = request.createResponse(input);
-					response.output(output);
+					response.writeTo(output);
+					response.close();
 
 					return ch;
 

@@ -39,7 +39,6 @@ import java.util.zip.GZIPInputStream;
 
 import nor.http.HeaderName;
 import nor.http.Http;
-import nor.http.HttpBody;
 import nor.http.HttpHeader;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
@@ -183,40 +182,11 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 	 */
 	private void sendRequest(final HttpURLConnection con, final HttpRequest request) throws HttpException{
 
-		// リクエストヘッダの登録
-		final HttpHeader header = request.getHeader();
-		final HttpBody body = request.getBody();
-		for(final String key : header.keySet()){
+		try {
 
-			con.addRequestProperty(key, header.get(key));
-
-		}
-
-		try{
-
-			// ボディがある場合は送信
-			if(header.containsKey(HeaderName.ContentLength)){
-
-				final int length = Integer.parseInt(header.get(HeaderName.ContentLength));
-				con.setFixedLengthStreamingMode(length);
-				con.setDoOutput(true);
-				con.connect();
-
-				body.output(con.getOutputStream(), header);
-
-			}else if(header.containsKey(HeaderName.TransferEncoding)){
-
-				con.setDoOutput(true);
-				con.connect();
-
-				body.output(con.getOutputStream(), header);
-
-			}else{
-
-				con.connect();
-
-			}
-			body.close();
+			request.writeTo(con);
+			request.close();
+			con.connect();
 
 		}catch(final SocketTimeoutException e){
 
@@ -238,6 +208,64 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 
 		}
+
+		//		これをHttpMessageのwriteToにうつす．(connect以外)
+		//
+		//		// リクエストヘッダの登録
+		//		final HttpHeader header = request.getHeader();
+		//		final HttpBody body = request.getBody();
+		//		for(final String key : header.keySet()){
+		//
+		//			con.addRequestProperty(key, header.get(key));
+		//
+		//		}
+		//
+		//		try{
+		//
+		//			// ボディがある場合は送信
+		//			if(header.containsKey(HeaderName.ContentLength)){
+		//
+		//				final int length = Integer.parseInt(header.get(HeaderName.ContentLength));
+		//				con.setFixedLengthStreamingMode(length);
+		//				con.setDoOutput(true);
+		//				con.connect();
+		//
+		//				body.output(con.getOutputStream(), header);
+		//
+		//			}else if(header.containsKey(HeaderName.TransferEncoding)){
+		//
+		//				con.setDoOutput(true);
+		//				con.connect();
+		//
+		//				body.output(con.getOutputStream(), header);
+		//
+		//			}else{
+		//
+		//				con.connect();
+		//
+		//			}
+		//			body.close();
+		//
+		//		}catch(final SocketTimeoutException e){
+		//
+		//			LOGGER.warning("sendRequest", e.getMessage());
+		//			throw new HttpException(Status.GatewayTimeout, e);
+		//
+		//		}catch(final ConnectException e){
+		//
+		//			LOGGER.warning("sendRequest", e.getMessage());
+		//			throw new HttpException(Status.GatewayTimeout, e);
+		//
+		//		}catch(final UnknownHostException e){
+		//
+		//			throw new HttpException(Status.NotFound, e);
+		//
+		//		}catch(final IOException e){
+		//
+		//			throw new InternalServerErrorException(e);
+		//
+		//
+		//		}
 
 	}
 

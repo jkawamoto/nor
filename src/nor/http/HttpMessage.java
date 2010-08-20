@@ -18,10 +18,22 @@
 package nor.http;
 
 import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.util.zip.DeflaterInputStream;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
+import nor.http.io.ChunkedInputStream;
+import nor.http.io.ChunkedOutputStream;
+import nor.util.io.LimitedInputStream;
+import nor.util.io.LimitedOutputStream;
+import nor.util.io.Stream;
 import nor.util.log.Logger;
 
 
@@ -35,9 +47,11 @@ import nor.util.log.Logger;
  * @since 0.1
  *
  */
-public abstract class HttpMessage{
+public abstract class HttpMessage implements Closeable{
 
 	private static final Logger LOGGER = Logger.getLogger(HttpMessage.class);
+
+	private InputStream input;
 
 	//====================================================================
 	//	Constructors
@@ -49,6 +63,18 @@ public abstract class HttpMessage{
 	//====================================================================
 	//	Public methods
 	//====================================================================
+	public InputStream getBody(){
+
+		return this.input;
+
+	}
+
+	public void setBody(final InputStream body){
+
+		this.input = body;
+
+	}
+
 	/**
 	 * メッセージをストリームに書き出す．
 	 * このオブジェクトが表すメッセージをストリームに書き出します．メッセージの書き出しは破壊的操作になります．
@@ -58,7 +84,7 @@ public abstract class HttpMessage{
 	 * @param output 書き出し先の出力ストリーム
 	 * @throws IOException ストリームの書き出しにエラーが発生した場合
 	 */
-	public void output(final OutputStream output) throws IOException{
+	public void writeTo(final OutputStream output) throws IOException{
 		LOGGER.entering("writeMessage", output);
 		assert output != null;
 
@@ -81,14 +107,67 @@ public abstract class HttpMessage{
 		writer.close();
 
 		// ボディの書き出し
-		this.getBody().output(output, this.getHeader());
-		this.getBody().close();
-
-		output.close();
+		this.writeBodyTo(output);
 
 		LOGGER.exiting("writeMessage");
 	}
 
+	public void writeTo(final HttpURLConnection con) throws IOException{
+
+		// リクエストヘッダの登録
+		final HttpHeader header = this.getHeader();
+		for(final String key : header.keySet()){
+
+			con.addRequestProperty(key, header.get(key));
+
+		}
+
+		// ボディがある場合は送信
+		if(header.containsKey(HeaderName.ContentLength)){
+
+			final int length = Integer.parseInt(header.get(HeaderName.ContentLength));
+			con.setFixedLengthStreamingMode(length);
+			con.setDoOutput(true);
+
+			this.writeBodyTo(con.getOutputStream());
+
+		}else if(header.containsKey(HeaderName.TransferEncoding)){
+
+			con.setDoOutput(true);
+
+			this.writeBodyTo(con.getOutputStream());
+
+		}
+
+	}
+
+	@Override
+	public void close() throws IOException{
+
+//		this.getBody().close();
+		this.input.close();
+
+	}
+
+	/**
+	 * オブジェクトの文字列表現を返す．
+	 * このメソッドでは，ヘッドラインとヘッダのみからなる文字列を返します．
+	 */
+	@Override
+	public String toString(){
+		LOGGER.entering("toString");
+
+		final StringBuilder ret = new StringBuilder();
+
+		ret.append(this.getHeadLine());
+		ret.append("\n");
+		ret.append(this.getHeader());
+		ret.append("\n");
+
+		LOGGER.exiting("toString", ret.toString());
+		return ret.toString();
+
+	}
 
 	//====================================================================
 	//	Public abstract methods
@@ -115,13 +194,6 @@ public abstract class HttpMessage{
 	public abstract HttpHeader getHeader();
 
 	/**
-	 * メッセージボディを取得する．
-	 *
-	 * @return ボディオブジェクト
-	 */
-	public abstract HttpBody getBody();
-
-	/**
 	 * メッセージのヘッドラインを取得する．
 	 * ヘッドラインはリクエストとレスポンスで異なっています．
 	 * リクエストでは，
@@ -138,23 +210,91 @@ public abstract class HttpMessage{
 	 */
 	public abstract String getHeadLine();
 
-	/**
-	 * オブジェクトの文字列表現を返す．
-	 * このメソッドでは，ヘッドラインとヘッダのみからなる文字列を返します．
-	 */
-	@Override
-	public String toString(){
-		LOGGER.entering("toString");
+	//====================================================================
+	//	Private methods
+	//====================================================================
+	private void writeBodyTo(final OutputStream out) throws IOException{
 
-		final StringBuilder ret = new StringBuilder();
+		final HttpHeader header = this.getHeader();
+		OutputStream cout = out;
+		if(header.containsKey(HeaderName.ContentLength)){
 
-		ret.append(this.getHeadLine());
-		ret.append("\n");
-		ret.append(this.getHeader());
-		ret.append("\n");
+			// ContentLengthが指定されていればそのサイズだけ送る
+			final String length = header.get(HeaderName.ContentLength).split(",")[0];
+			cout = new LimitedOutputStream(cout, Integer.parseInt(length));
 
-		LOGGER.exiting("toString", ret.toString());
-		return ret.toString();
+		}else if(Http.CHUNKED.equalsIgnoreCase(header.get(HeaderName.TransferEncoding))){
+
+			// TransferEncodingにchunkが指定されていればChunk形式で送る
+			cout = new ChunkedOutputStream(cout);
+
+		}
+
+		// 内容コーディングが指定されていれば従う
+		if(header.containsKey(HeaderName.ContentEncoding)){
+
+			final String encode = header.get(HeaderName.ContentEncoding);
+			if(Http.GZIP.equalsIgnoreCase(encode)){
+
+				cout = new GZIPOutputStream(cout, Stream.DefaultBufferSize);
+
+			}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
+
+				cout = new DeflaterOutputStream(cout);
+
+			}
+
+		}
+
+		Stream.copy(this.input, cout);
+		cout.flush();
+		cout.close();
+
+	}
+
+	//====================================================================
+	//	Package-private static methods
+	//====================================================================
+	static InputStream decodeStream(final InputStream input, final HttpHeader header){
+
+		InputStream cin = input;
+
+		// 転送エンコーディングの解決
+		if(header.containsKey(HeaderName.TransferEncoding)){
+
+			cin = new ChunkedInputStream(cin);
+
+		}else if(header.containsKey(HeaderName.ContentLength)){
+
+			final String length = header.get(HeaderName.ContentLength);
+			cin = new LimitedInputStream(cin, Long.valueOf(length));
+
+		}
+
+		// 内容エンコーディングの解決
+		if(header.containsKey(HeaderName.ContentEncoding)){
+
+			final String encode = header.get(HeaderName.ContentEncoding);
+			if(Http.GZIP.equalsIgnoreCase(encode)){
+
+				try {
+
+					cin = new GZIPInputStream(cin);
+
+				} catch (final IOException e) {
+					// TODO 自動生成された catch ブロック
+					e.printStackTrace();
+				}
+
+			}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
+
+				cin = new DeflaterInputStream(cin);
+
+			}
+
+		}
+
+		return cin;
 
 	}
 

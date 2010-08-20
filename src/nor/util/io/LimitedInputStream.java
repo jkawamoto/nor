@@ -32,7 +32,7 @@ public class LimitedInputStream extends SequentialInputStream{
 	/**
 	 * 残り読み可能サイズ
 	 */
-	private int remains;
+	private long remains;
 
 	/**
 	 * 限定入力ストリームを作成する．
@@ -40,7 +40,7 @@ public class LimitedInputStream extends SequentialInputStream{
 	 * @param in 入力元のストリーム
 	 * @param size 読み込むサイズ
 	 */
-	public LimitedInputStream(final InputStream in, final int size){
+	public LimitedInputStream(final InputStream in, final long size){
 		super(in);
 
 		this.remains = size;
@@ -75,7 +75,16 @@ public class LimitedInputStream extends SequentialInputStream{
 		int ret = -1;
 		if(this.remains != 0){
 
-			ret = this.in.read(b, off, Math.min(this.remains, len));
+			if(this.remains > Integer.MAX_VALUE){
+
+				ret = this.in.read(b, off, len);
+
+			}else{
+
+				ret = this.in.read(b, off, Math.min((int)this.remains, len));
+
+			}
+
 			if(ret != -1){
 
 				this.remains -= ret;
@@ -103,7 +112,7 @@ public class LimitedInputStream extends SequentialInputStream{
 			}else{
 
 				ret = n;
-				this.remains -= (int)n;
+				this.remains -= n;
 
 			}
 
@@ -120,11 +129,19 @@ public class LimitedInputStream extends SequentialInputStream{
 	@Override
 	public int available() throws IOException {
 
-		return Math.min(super.available(), this.remains);
+		if(this.remains > Integer.MAX_VALUE){
+
+			return super.available();
+
+		}else{
+
+			return Math.min(super.available(), (int)this.remains);
+
+		}
 
 	}
 
-	public int remains(){
+	public long remains(){
 
 		return this.remains;
 
