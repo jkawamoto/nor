@@ -51,7 +51,7 @@ public abstract class HttpMessage implements Closeable{
 
 	private static final Logger LOGGER = Logger.getLogger(HttpMessage.class);
 
-	private InputStream input;
+	private InputStream body;
 
 	//====================================================================
 	//	Constructors
@@ -65,13 +65,16 @@ public abstract class HttpMessage implements Closeable{
 	//====================================================================
 	public InputStream getBody(){
 
-		return this.input;
+		final InputStream ret = this.body;
+		this.body = null;
+
+		return ret;
 
 	}
 
 	public void setBody(final InputStream body){
 
-		this.input = body;
+		this.body = body;
 
 	}
 
@@ -89,6 +92,13 @@ public abstract class HttpMessage implements Closeable{
 		assert output != null;
 
 		final HttpHeader header = this.getHeader();
+
+		if(this.body == null){
+
+			header.set(HeaderName.ContentLength, "0");
+			header.remove(HeaderName.TransferEncoding);
+
+		}
 
 		// ヘッドラインの書き出し
 		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output));
@@ -116,6 +126,12 @@ public abstract class HttpMessage implements Closeable{
 
 		// リクエストヘッダの登録
 		final HttpHeader header = this.getHeader();
+		if(this.body == null){
+
+			header.remove(HeaderName.ContentLength);
+			header.remove(HeaderName.TransferEncoding);
+
+		}
 		for(final String key : header.keySet()){
 
 			con.addRequestProperty(key, header.get(key));
@@ -144,8 +160,7 @@ public abstract class HttpMessage implements Closeable{
 	@Override
 	public void close() throws IOException{
 
-//		this.getBody().close();
-		this.input.close();
+		this.body.close();
 
 	}
 
@@ -246,7 +261,7 @@ public abstract class HttpMessage implements Closeable{
 
 		}
 
-		Stream.copy(this.input, cout);
+		Stream.copy(this.body, cout);
 		cout.flush();
 		cout.close();
 

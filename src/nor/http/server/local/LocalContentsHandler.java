@@ -17,6 +17,8 @@
  */
 package nor.http.server.local;
 
+import java.nio.channels.SocketChannel;
+
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
 import nor.http.Status;
@@ -100,6 +102,12 @@ public class LocalContentsHandler implements HttpRequestHandler{
 		return ret;
 	}
 
+	@Override
+	public SocketChannel doConnectRequest(HttpRequest request) throws HttpException {
+
+		throw new HttpException(Status.MethodNotAllowed);
+
+	}
 
 
 	/**

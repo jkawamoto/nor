@@ -17,8 +17,11 @@
  */
 package nor.http.server;
 
+import java.nio.channels.SocketChannel;
+
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
+import nor.http.error.HttpException;
 
 /**
  * Httpサーバにおいて，Httpリクエストのハンドラに必要なインタフェイス．
@@ -35,6 +38,16 @@ public interface HttpRequestHandler {
 	 * @return 与えられたリクエストに対するレスポンス
 	 */
 	public HttpResponse doRequest(final HttpRequest request);
+
+
+	/**
+	 * Connect リクエストを処理しソケットチャンネルを返す．
+	 *
+	 * @param request A connect request
+	 * @return SocketChannel connected to the requested host.
+	 * @throws HttpException If some IO error happens.
+	 */
+	public SocketChannel doConnectRequest(final HttpRequest request) throws HttpException;
 
 }
 

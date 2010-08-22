@@ -23,17 +23,24 @@ import static nor.http.HeaderName.KeepAlive;
 import static nor.http.HeaderName.ProxyConnection;
 import static nor.http.HeaderName.Via;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.channels.Channels;
+import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.DeflaterInputStream;
 import java.util.zip.GZIPInputStream;
 
@@ -48,6 +55,8 @@ import nor.http.error.HttpException;
 import nor.http.error.InternalServerErrorException;
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.nserver.HttpNServer;
+import nor.util.io.NoCloseInputStream;
+import nor.util.io.NoCloseOutputStream;
 import nor.util.log.Logger;
 
 
@@ -170,6 +179,83 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 	}
 
+
+	/* (非 Javadoc)
+	 * @see nor.http.server.HttpRequestHandler#doConnectRequest(nor.http.HttpRequest)
+	 */
+	@Override
+	public SocketChannel doConnectRequest(final HttpRequest request) throws HttpException {
+		assert request != null;
+
+		final Pattern pat = Pattern.compile("(.+):(\\d+)");
+		final Matcher m = pat.matcher(request.getPath());
+
+		if(m.find()){
+
+			try{
+
+				final String host = m.group(1);
+				final int port = Integer.valueOf(m.group(2));
+
+				final Proxy p = this.router.query(request.getPath());
+				if(p == Proxy.NO_PROXY){
+
+					final InetSocketAddress addr = new InetSocketAddress(host, port);
+					final SocketChannel ch = SocketChannel.open(addr);
+
+					return ch;
+
+				}else{
+
+					/*
+					 * TODO: 以下は未完成
+					 */
+					final SocketChannel ch = SocketChannel.open(p.address());
+
+					// Send a CONNECT request
+					final InputStream input = new NoCloseInputStream(Channels.newInputStream(ch));
+					final OutputStream output = new NoCloseOutputStream(Channels.newOutputStream(ch));
+
+					request.writeTo(output);
+					output.flush();
+					output.close();
+					request.close();
+
+					final HttpResponse response = request.createResponse(input);
+					if(response.getStatus() == Status.OK || response.getStatus() == Status.ConnectionEstablished){
+
+						final OutputStream dest = new ByteArrayOutputStream();
+						response.writeTo(dest);
+						response.close();
+						input.close();
+						dest.close();
+
+						return ch;
+
+					}else{
+
+						throw new HttpException(response.getStatus());
+
+					}
+
+				}
+
+
+			}catch(final IOException e){
+
+				LOGGER.catched(Level.FINE, "doRequest", e);
+				throw new HttpException(Status.BadGateway, e);
+
+			}
+
+		}else{
+
+			throw new HttpException(Status.BadRequest);
+
+		}
+
+	}
+
 	//============================================================================
 	//  private メソッド
 	//============================================================================
@@ -208,64 +294,6 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 
 		}
-
-		//		これをHttpMessageのwriteToにうつす．(connect以外)
-		//
-		//		// リクエストヘッダの登録
-		//		final HttpHeader header = request.getHeader();
-		//		final HttpBody body = request.getBody();
-		//		for(final String key : header.keySet()){
-		//
-		//			con.addRequestProperty(key, header.get(key));
-		//
-		//		}
-		//
-		//		try{
-		//
-		//			// ボディがある場合は送信
-		//			if(header.containsKey(HeaderName.ContentLength)){
-		//
-		//				final int length = Integer.parseInt(header.get(HeaderName.ContentLength));
-		//				con.setFixedLengthStreamingMode(length);
-		//				con.setDoOutput(true);
-		//				con.connect();
-		//
-		//				body.output(con.getOutputStream(), header);
-		//
-		//			}else if(header.containsKey(HeaderName.TransferEncoding)){
-		//
-		//				con.setDoOutput(true);
-		//				con.connect();
-		//
-		//				body.output(con.getOutputStream(), header);
-		//
-		//			}else{
-		//
-		//				con.connect();
-		//
-		//			}
-		//			body.close();
-		//
-		//		}catch(final SocketTimeoutException e){
-		//
-		//			LOGGER.warning("sendRequest", e.getMessage());
-		//			throw new HttpException(Status.GatewayTimeout, e);
-		//
-		//		}catch(final ConnectException e){
-		//
-		//			LOGGER.warning("sendRequest", e.getMessage());
-		//			throw new HttpException(Status.GatewayTimeout, e);
-		//
-		//		}catch(final UnknownHostException e){
-		//
-		//			throw new HttpException(Status.NotFound, e);
-		//
-		//		}catch(final IOException e){
-		//
-		//			throw new InternalServerErrorException(e);
-		//
-		//
-		//		}
 
 	}
 

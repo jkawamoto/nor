@@ -38,7 +38,6 @@ import nor.http.HttpResponse;
 import nor.http.Method;
 import nor.http.Status;
 import nor.http.error.HttpException;
-import nor.http.server.HttpConnectRequestHandler;
 import nor.http.server.HttpRequestHandler;
 import nor.util.io.NoCloseInputStream;
 import nor.util.io.NoCloseOutputStream;
@@ -56,7 +55,6 @@ class RequestHandleWorker implements Runnable, Closeable{
 
 	private final Queue<Connection> queue;
 	private final HttpRequestHandler handler;
-	private final HttpConnectRequestHandler connecter;
 
 	private final List<ServiceEventListener> listeners = new ArrayList<ServiceEventListener>();
 
@@ -65,11 +63,10 @@ class RequestHandleWorker implements Runnable, Closeable{
 	//============================================================================
 	// Constractor
 	//============================================================================
-	public RequestHandleWorker(final Queue<Connection> queue, final HttpRequestHandler handler, final HttpConnectRequestHandler connecter){
+	public RequestHandleWorker(final Queue<Connection> queue, final HttpRequestHandler handler){
 
 		this.queue = queue;
 		this.handler = handler;
-		this.connecter = connecter;
 
 	}
 
@@ -124,7 +121,7 @@ class RequestHandleWorker implements Runnable, Closeable{
 
 							try{
 
-								final SelectableChannel ch = this.connecter.doRequest(request);
+								final SelectableChannel ch = this.handler.doConnectRequest(request);
 
 								/*
 								 * Notify the client of a connection established.

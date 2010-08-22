@@ -18,6 +18,7 @@
 package nor.core.proxy;
 
 import java.io.InputStream;
+import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -41,6 +42,7 @@ import nor.http.HttpHeader;
 import nor.http.HttpMessage;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
+import nor.http.error.HttpException;
 import nor.http.server.HttpRequestHandler;
 import nor.util.log.Logger;
 
@@ -144,6 +146,17 @@ class RequestHandler implements HttpRequestHandler{
 		return response;
 
 	}
+
+	/* (非 Javadoc)
+	 * @see nor.http.server.HttpRequestHandler#doConnectRequest(nor.http.HttpRequest)
+	 */
+	@Override
+	public SocketChannel doConnectRequest(HttpRequest request) throws HttpException {
+
+		return this.defaultHandler.doConnectRequest(request);
+
+	}
+
 
 	public String[] getHandlingURLPatterns(){
 
