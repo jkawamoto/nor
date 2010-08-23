@@ -178,7 +178,7 @@ public class Nor{
 			if(this.config.isEnable(p)){
 
 				final File config = new File(this.confDir, String.format(ConfigFileTemplate, p.getClass().getCanonicalName()));
-				p.load(config);
+				p.init(config);
 				this.server.attach(p);
 				this.plugins.add(p);
 
@@ -234,7 +234,7 @@ public class Nor{
 			final Plugin p = (Plugin)c.newInstance();
 
 			final File config = new File(this.confDir, String.format(ConfigFileTemplate, p.getClass().getCanonicalName()));
-			p.load(config);
+			p.init(config);
 
 			this.server.attach(p);
 			this.plugins.add(p);
@@ -305,9 +305,6 @@ public class Nor{
 		for(final Plugin p : this.plugins){
 
 			p.close();
-
-			// final File config = new File(this.confDir, String.format(ConfigFileTemplate, p.getClass().getCanonicalName()));
-			// p.save(config);
 
 		}
 

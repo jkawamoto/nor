@@ -19,11 +19,6 @@ package nor.core.plugin;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Properties;
 
 import nor.core.proxy.filter.MessageHandler;
 import nor.core.proxy.filter.RequestFilter;
@@ -33,15 +28,6 @@ import nor.core.proxy.filter.ResponseFilter;
  * すべてのプラグインの基底クラス．
  *
  * プラグインは，メッセージハンドラ，リクエストフィルタそしてレスポンスフィルタの三機能を提供することができます．
- * それぞれは，次のように働きます．
- * <pre>
- *
- * Client(Browser)
- *
- * </pre>
- *
- * プラグインの設定は， properties フィールドを用いてください．
- * 将来的には，コンピュータが接続しているネットワークごとに異なる設定を保存することができるようになります．
  *
  * @author Junpei Kawamoto
  * @since 0.1
@@ -49,76 +35,25 @@ import nor.core.proxy.filter.ResponseFilter;
 public abstract class Plugin implements Closeable{
 
 	/**
-	 * プラグインの設定が格納されます．
-	 */
-	protected final Properties properties = new Properties();
-
-	/**
-	 * 設定ファイルを読み込む．
+	 * 与えられた設定ファイルを元に初期化する．
 	 * このメソッドはフレームワークから呼び出されます．
-	 * デフォルトでは，Properties 形式のファイルを仮定しており，フィールド properties に読み込みます．
-	 * 異なる形式の設定ファイルを使用する場合は，このメソッドをオーバーライドしてください．
+	 * nor では，ユーザが使用しているネットワーク環境ごとに別々の設定ファイルを使用します．
+	 * そのため，設定を保存するためにはこのメソッドに渡されるファイルを使用して下さい．
 	 *
 	 * @param conf 設定ファイル
 	 */
-	public void load(final File conf){
-
-		if(conf.exists()){
-
-			try {
-
-				this.properties.load(new FileInputStream(conf));
-
-			} catch (final FileNotFoundException e) {
-
-				// TODO 自動生成された catch ブロック
-				e.printStackTrace();
-
-			} catch (final IOException e) {
-
-				// TODO 自動生成された catch ブロック
-				e.printStackTrace();
-
-			}
-
-		}
-
-	}
-
-	/**
-	 * 設定ファイルを保存する．
-	 * このメソッドはフレームワークから呼び出されます．
-	 * デフォルトでは，Properties 形式のファイルを仮定しており，フィールド properties の内容を書き出します．
-	 * 異なる形式の設定ファイルを使用する場合は，このメソッドをオーバーライドしてください．
-	 *
-	 * @param conf 設定ファイル
-	 */
-	public void save(final File conf){
-
-		try {
-
-			this.properties.store(new FileOutputStream(conf), "");
-
-		} catch (final FileNotFoundException e) {
-
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
-
-		} catch (final IOException e) {
-
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
-
-		}
+	public void init(final File conf){
 
 	}
 
 	/**
 	 * プラグインの終了処理を行う．
 	 * システムが終了プロセスに入った場合に呼び出されます．
-	 * 設定の保存はこのメソッドの終了後に行われます．
-	 * したがって，このメソッド内で properties フィールドへデータを保存することができます．
+	 * プラグイン設定の保存はこのメソッドで行って下さい．
+	 * 保存先のファイルはあらためて通知されないため，init メソッドの引数を記録しておいて下さい．
+	 *
 	 */
+	@Override
 	public void close(){
 
 	}
