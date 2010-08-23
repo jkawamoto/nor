@@ -23,7 +23,6 @@ import static nor.http.HeaderName.KeepAlive;
 import static nor.http.HeaderName.ProxyConnection;
 import static nor.http.HeaderName.Via;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,10 +30,10 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.nio.channels.Channels;
 import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +54,7 @@ import nor.http.error.HttpException;
 import nor.http.error.InternalServerErrorException;
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.nserver.HttpNServer;
+import nor.util.io.LimitedInputStream;
 import nor.util.io.NoCloseInputStream;
 import nor.util.io.NoCloseOutputStream;
 import nor.util.log.Logger;
@@ -207,15 +207,14 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 				}else{
 
-					/*
-					 * TODO: 以下は未完成
-					 */
-					final SocketChannel ch = SocketChannel.open(p.address());
+					final SocketChannel ch = SocketChannel.open();
+					final Socket s = ch.socket();
+					s.connect(p.address());
 
 					// Send a CONNECT request
-					final InputStream input = new NoCloseInputStream(Channels.newInputStream(ch));
-					final OutputStream output = new NoCloseOutputStream(Channels.newOutputStream(ch));
-
+					final InputStream input = new NoCloseInputStream(s.getInputStream());
+					final OutputStream output = new NoCloseOutputStream(s.getOutputStream());
+					request.setBody(new LimitedInputStream(request.getBody(), 0));
 					request.writeTo(output);
 					output.flush();
 					output.close();
@@ -223,12 +222,6 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 					final HttpResponse response = request.createResponse(input);
 					if(response.getStatus() == Status.OK || response.getStatus() == Status.ConnectionEstablished){
-
-						final OutputStream dest = new ByteArrayOutputStream();
-						response.writeTo(dest);
-						response.close();
-						input.close();
-						dest.close();
 
 						return ch;
 

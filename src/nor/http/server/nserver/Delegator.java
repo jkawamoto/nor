@@ -84,6 +84,7 @@ class Delegator implements Closeable{
 		//============================================================================
 		public DelegationHandler(final SelectableChannel ch, final ByteBuffer read, final ByteBuffer write, final SelectionWorker selector) throws IOException{
 
+			ch.configureBlocking(false);
 			this.key = selector.register(ch, SelectionKey.OP_READ, this);
 
 			this.read = read;
