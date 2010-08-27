@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@ import java.io.Writer;
 
 public class CopyingStreamWriter extends FilterWriter{
 
-	private final StringBuilder _copy = new StringBuilder();
+	private final StringBuilder copy = new StringBuilder();
 
 	public CopyingStreamWriter(final Writer out) {
 
@@ -38,7 +38,7 @@ public class CopyingStreamWriter extends FilterWriter{
 	public void write(char[] cbuf, int off, int len) throws IOException {
 
 		super.write(cbuf, off, len);
-		this._copy.append(cbuf, off, len);
+		this.copy.append(cbuf, off, len);
 
 	}
 
@@ -49,7 +49,7 @@ public class CopyingStreamWriter extends FilterWriter{
 	public void write(int c) throws IOException {
 
 		super.write(c);
-		this._copy.append(c);
+		this.copy.append(c);
 
 	}
 
@@ -60,7 +60,7 @@ public class CopyingStreamWriter extends FilterWriter{
 	public void write(String str, int off, int len) throws IOException {
 
 		super.write(str, off, len);
-		this._copy.append(str, off, len);
+		this.copy.append(str, off, len);
 
 	}
 
@@ -82,7 +82,7 @@ public class CopyingStreamWriter extends FilterWriter{
 	@Override
 	public Writer append(CharSequence csq, int start, int end) throws IOException {
 
-		this._copy.append(csq, start, end);
+		this.copy.append(csq, start, end);
 		return super.append(csq, start, end);
 
 	}
@@ -93,7 +93,7 @@ public class CopyingStreamWriter extends FilterWriter{
 	@Override
 	public Writer append(CharSequence csq) throws IOException {
 
-		this._copy.append(csq);
+		this.copy.append(csq);
 		return super.append(csq);
 
 	}
@@ -105,7 +105,7 @@ public class CopyingStreamWriter extends FilterWriter{
 	public void write(char[] cbuf) throws IOException {
 
 		super.write(cbuf);
-		this._copy.append(cbuf);
+		this.copy.append(cbuf);
 
 	}
 
@@ -122,7 +122,7 @@ public class CopyingStreamWriter extends FilterWriter{
 
 	public String copy(){
 
-		return this._copy.toString();
+		return this.copy.toString();
 
 
 	}

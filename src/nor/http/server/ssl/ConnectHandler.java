@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -24,61 +24,61 @@ import java.io.OutputStream;
 import nor.http.HttpRequest;
 
 public interface ConnectHandler {
-	
+
 	public Result doConnect(final HttpRequest request, final InputStream in, final OutputStream out) throws IOException;
-	
+
 	public class Result{
-		
+
 		private boolean end;
-		
+
 		private final String prefix;
 
 		private final InputStream in;
 		private final OutputStream out;
-		
-		
+
+
 		public Result(){
-			
+
 			this.end = false;
 			this.prefix = null;
 			this.in = null;
 			this.out = null;
-			
+
 		}
-		
+
 		public Result(final String prefix, final InputStream in, final OutputStream out){
-			
+
 			this.end = true;
 			this.prefix = prefix;
 			this.in = in;
 			this.out = out;
-			
+
 		}
 
 		public boolean isEnd(){
-			
+
 			return this.end;
-			
+
 		}
-		
+
 		public String getPrefix(){
-			
+
 			return this.prefix;
-			
+
 		}
-		
+
 		public InputStream getInputStream(){
-			
+
 			return this.in;
-			
+
 		}
-		
+
 		public OutputStream getOutputStream(){
-			
+
 			return this.out;
-			
+
 		}
-		
+
 	}
 
 }

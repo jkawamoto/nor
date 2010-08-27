@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ import java.io.InputStream;
 
 public class CopyingInputStream extends SequentialInputStream{
 
-	private final ByteArrayOutputStream _copy = new ByteArrayOutputStream();
+	private final ByteArrayOutputStream copy = new ByteArrayOutputStream();
 
 	/**
 	 * @param in
@@ -44,7 +44,7 @@ public class CopyingInputStream extends SequentialInputStream{
 		final int ret = this.in.read();
 		if(ret != -1){
 
-			this._copy.write(ret);
+			this.copy.write(ret);
 
 		}
 
@@ -61,7 +61,7 @@ public class CopyingInputStream extends SequentialInputStream{
 		final int ret = this.in.read(b, off, len);
 		if(ret != -1){
 
-			this._copy.write(b, off, ret);
+			this.copy.write(b, off, ret);
 
 		}
 
@@ -74,7 +74,7 @@ public class CopyingInputStream extends SequentialInputStream{
 	 */
 	public byte[] getCopy(){
 
-		return this._copy.toByteArray();
+		return this.copy.toByteArray();
 
 	}
 

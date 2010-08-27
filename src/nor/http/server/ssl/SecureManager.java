@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -184,7 +184,7 @@ public class SecureManager {
 				UNWRAP : while(true){
 
 					// アプリケーションデータへの変換
-					final SSLEngineResult result = this._engine.unwrap(netDataBuffer, appDataBuffer);	
+					final SSLEngineResult result = this._engine.unwrap(netDataBuffer, appDataBuffer);
 					//System.out.println(">> " + result);
 
 					switch (result.getStatus()) {
@@ -210,7 +210,7 @@ public class SecureManager {
 						// ハンドシェーク中ではない
 						return;
 
-					case FINISHED:							
+					case FINISHED:
 						// ハンドシェークの終了
 						return;
 
@@ -297,11 +297,11 @@ public class SecureManager {
 
 				int ret = 0;
 				if(_inBuffer.remaining() == 0){
-					
+
 					if(this._isClosed){
-						
+
 						ret = -1;
-						
+
 					}else{
 
 						this.readNetData();
@@ -332,7 +332,7 @@ public class SecureManager {
 
 				}
 
-				//_netIn.close();				
+				//_netIn.close();
 
 				LOGGER.exiting(SecureInputStream.class.getName(), "close");
 
@@ -343,7 +343,7 @@ public class SecureManager {
 				final byte[] netData = new byte[_engine.getSession().getPacketBufferSize()];
 				final int netDataSize = _netIn.read(netData);
 				final ByteBuffer netDataBuffer = ByteBuffer.wrap(netData, 0, netDataSize);
-				
+
 				this._inBuffer.clear();
 
 				//System.out.println("read net data");
@@ -365,11 +365,11 @@ public class SecureManager {
 					case BUFFER_UNDERFLOW:
 						System.out.println("underflow");
 						break;
-	
+
 					case OK:
 						//System.out.println("ok");
 						//System.out.println(result.bytesConsumed());
-						
+
 						totalReadSize += result.bytesConsumed();
 						//System.out.println("total");
 						//System.out.println(totalReadSize);
@@ -378,7 +378,7 @@ public class SecureManager {
 
 							break UNWRAP;
 						}
-						
+
 						break;
 
 					case CLOSED:
@@ -392,13 +392,13 @@ public class SecureManager {
 							this._isClosed = true;
 
 						}
-						
+
 						break UNWRAP;
 
 					}
 
 				}
-				
+
 				this._inBuffer.limit(this._inBuffer.position());
 				this._inBuffer.position(0);
 
@@ -453,7 +453,7 @@ public class SecureManager {
 						if(totalDataSize == rawAppData.length){
 
 							break WRAP;
-						
+
 						}
 					}
 

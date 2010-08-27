@@ -36,8 +36,9 @@ public interface HttpRequestHandler {
 	 *
 	 * @param request Http リクエストインスタンス
 	 * @return 与えられたリクエストに対するレスポンス
+	 * @throws HttpException If some IO error happens.
 	 */
-	public HttpResponse doRequest(final HttpRequest request);
+	public HttpResponse doRequest(final HttpRequest request) throws HttpException;
 
 
 	/**

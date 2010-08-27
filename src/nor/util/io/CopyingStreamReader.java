@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@ import java.nio.CharBuffer;
 
 public class CopyingStreamReader extends SequentialReader{
 
-	private final StringBuilder _copy = new StringBuilder();
+	private final StringBuilder copy = new StringBuilder();
 
 	public CopyingStreamReader(final Reader in){
 
@@ -38,7 +38,7 @@ public class CopyingStreamReader extends SequentialReader{
 	public int read() throws IOException {
 
 		final int ret = this.in.read();
-		this._copy.append((char)ret);
+		this.copy.append((char)ret);
 
 		return ret;
 
@@ -51,7 +51,7 @@ public class CopyingStreamReader extends SequentialReader{
 	public int read(char[] cbuf) throws IOException {
 
 		final int ret = this.in.read(cbuf);
-		this._copy.append(cbuf, 0, ret);
+		this.copy.append(cbuf, 0, ret);
 
 		return ret;
 
@@ -64,7 +64,7 @@ public class CopyingStreamReader extends SequentialReader{
 	public int read(char[] cbuf, int off, int len) throws IOException {
 
 		final int ret = this.in.read(cbuf, off, len);
-		this._copy.append(cbuf, off, ret);
+		this.copy.append(cbuf, off, ret);
 
 		return ret;
 
@@ -77,7 +77,7 @@ public class CopyingStreamReader extends SequentialReader{
 	public int read(CharBuffer target) throws IOException {
 
 		final int ret = this.in.read(target);
-		this._copy.append(target);
+		this.copy.append(target);
 
 		return ret;
 

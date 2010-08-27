@@ -113,11 +113,11 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 	//============================================================================
 	//  public メソッド
 	//============================================================================
-	/* (non-Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.HttpRequestHandleable#doRequest(jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.HttpRequest)
+	/* (非 Javadoc)
+	 * @see nor.http.server.HttpRequestHandler#doRequest(nor.http.HttpRequest)
 	 */
 	@Override
-	public HttpResponse doRequest(final HttpRequest request){
+	public HttpResponse doRequest(final HttpRequest request) throws HttpException{
 		LOGGER.entering("doRequest", request);
 		assert request != null;
 
@@ -160,14 +160,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 			LOGGER.warning("doRequest", "Catch a IOException({0})", e.getMessage());
 			LOGGER.catched(Level.FINE, "doRequest", e);
 
-			response = HttpException.createResponse(request, Status.InternalServerError, e);
-
-		} catch (final HttpException e) {
-
-			LOGGER.warning("doRequest", "Catch a HttpException({0})", e.getMessage());
-			LOGGER.catched(Level.FINE, "doRequest", e);
-
-			response = e.createResponse(request);
+			throw new HttpException(Status.InternalServerError, e);
 
 		}
 

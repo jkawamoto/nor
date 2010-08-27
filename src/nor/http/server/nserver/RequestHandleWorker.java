@@ -115,11 +115,13 @@ class RequestHandleWorker implements Runnable, Closeable{
 							LOGGER.fine("run", "Receive a null request");
 							break;
 
-						}else if(request.getMethod() == Method.CONNECT){
+						}
 
-							LOGGER.fine("run", "Receive a connect request: {0}", request);
+						try{
 
-							try{
+							if(request.getMethod() == Method.CONNECT){
+
+								LOGGER.fine("run", "Receive a connect request: {0}", request);
 
 								final SelectableChannel ch = this.handler.doConnectRequest(request);
 
@@ -134,49 +136,48 @@ class RequestHandleWorker implements Runnable, Closeable{
 
 								LOGGER.info("run", "{0} > {1} (unknown length)", request.getHeadLine(), response.getHeadLine());
 
-							}catch(final HttpException e){
-
-								final HttpResponse response = e.createResponse(request);
-								response.writeTo(output);
-								output.flush();
-
-							}
-
-							break;
-
-						}else{
-
-							LOGGER.fine("run", "Receive a {0}", request);
-
-							// リクエストの実行
-							final HttpResponse response = handler.doRequest(request);
-
-							final HttpHeader header = response.getHeader();
-							if(header.containsKey(HeaderName.ContentLength)){
-
-								LOGGER.info("run", "{0} > {1} ({2} bytes)", request.getHeadLine(), response.getHeadLine(), header.get(HeaderName.ContentLength));
+								break;
 
 							}else{
 
-								LOGGER.info("run", "{0} > {1} (unknown length)", request.getHeadLine(), response.getHeadLine());
+								LOGGER.fine("run", "Receive a {0}", request);
+
+								// リクエストの実行
+								final HttpResponse response = handler.doRequest(request);
+
+								final HttpHeader header = response.getHeader();
+
+								// レスポンスの書き出し
+								LOGGER.fine("run", "Return the {0}", response);
+								response.writeTo(output);
+								response.close();
+								output.flush();
+
+								if(header.containsKey(HeaderName.ContentLength)){
+
+									LOGGER.info("run", "{0} > {1} ({2} bytes)", request.getHeadLine(), response.getHeadLine(), header.get(HeaderName.ContentLength));
+
+								}else{
+
+									LOGGER.info("run", "{0} > {1} (unknown length)", request.getHeadLine(), response.getHeadLine());
+
+								}
+
+								if(!output.alive() || !this.isKeepingAlive(request) || !this.isKeepingAlive(response)){
+
+									break;
+
+								}
 
 							}
 
-							// レスポンスの書き出し
-							LOGGER.fine("run", "Return the {0}", response);
+						}catch(final HttpException e){
+
+							final HttpResponse response = e.createResponse(request);
 							response.writeTo(output);
-							response.close();
 							output.flush();
 
-							if(!output.alive()){
-
-								break;
-
-							}else if(!this.isKeepingAlive(request) || !this.isKeepingAlive(response)){
-
-								break;
-
-							}
+							break;
 
 						}
 
@@ -245,7 +246,6 @@ class RequestHandleWorker implements Runnable, Closeable{
 		return !msg.getHeader().containsValue(Connection, "close");
 
 	}
-
 
 	//============================================================================
 	// Public interface
