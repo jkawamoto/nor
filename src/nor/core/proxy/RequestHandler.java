@@ -100,10 +100,10 @@ class RequestHandler implements HttpRequestHandler{
 	//====================================================================
 	//  public メソッド
 	//====================================================================
-	/* (non-Javadoc)
-	 * @see jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.HttpRequestHandleable#doRequest(jp.ac.kyoto_u.i.soc.db.j.kawamoto.httpserver.HttpRequest)
+	/* (非 Javadoc)
+	 * @see nor.http.server.HttpRequestHandler#doRequest(nor.http.HttpRequest)
 	 */
-	public HttpResponse doRequest(final HttpRequest request) {
+	public HttpResponse doRequest(final HttpRequest request) throws HttpException {
 		LOGGER.entering("doRequest", request);
 		assert request != null;
 

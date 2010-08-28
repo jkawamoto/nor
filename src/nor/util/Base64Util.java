@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -33,8 +33,8 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeUtility;
 
 /**
- * 
- * @author KAWAMOTO Junpei
+ *
+ * @author Junpei Kawamoto
  *
  */
 public class Base64Util {
@@ -43,17 +43,17 @@ public class Base64Util {
 	private static final Logger LOGGER = Logger.getLogger(Base64Util.class.getName());
 
 	/**
-	 * 
+	 *
 	 */
 	private static final String ENCODING = "base64";
-	
+
 	/**
-	 * 
+	 *
 	 */
 	private static final String CHARSET = "utf-8";
 
 	/**
-	 * 
+	 *
 	 * @param value
 	 * @return
 	 * @throws MessagingException
@@ -62,22 +62,22 @@ public class Base64Util {
 	public static String decode(final String value) throws MessagingException, IOException {
 		LOGGER.entering(Base64Util.class.getName(), "decode", value);
 		assert value != null;
-		
+
 		String tmp = value;
 		while((tmp.length() % 4) != 0){
-		
+
 			tmp += "=";
-			
+
 		}
-		
+
 		final String ret = new String(decode(tmp.getBytes()), CHARSET);
-		
+
 		LOGGER.exiting(Base64Util.class.getName(), "decode", ret);
 		return ret;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param value
 	 * @return
 	 * @throws MessagingException
@@ -98,15 +98,15 @@ public class Base64Util {
 			out.write(buf, 0, len);
 
 		}
-		
+
 		final byte[] ret = out.toByteArray();
-		
+
 		LOGGER.exiting(Base64Util.class.getName(), "decode", ret);
 		return ret;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param value
 	 * @return
 	 * @throws MessagingException
@@ -117,13 +117,13 @@ public class Base64Util {
 		assert value != null;
 
 		final String ret = encode(value.getBytes());
-		
+
 		LOGGER.exiting(Base64Util.class.getName(), "encode", ret);
 		return ret;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param value
 	 * @return
 	 * @throws MessagingException
@@ -140,43 +140,43 @@ public class Base64Util {
 		out.close();
 
 		final String ret = bao.toString(CHARSET);
-		
+
 		LOGGER.exiting(Base64Util.class.getName(), "encode", value);
 		return ret;
 	}
-	
+
 	public static String[] decodeRawText(final String text){
-		
+
 		Pattern pat = Pattern.compile("[A-Za-z0-9+/=]+");
 		Matcher m = pat.matcher(text);
-		
+
 		final List<String> list = new ArrayList<String>();
 		while(m.find()){
-			
+
 			final String target = m.group(0);
 			try {
-				
+
 				list.add(Base64Util.decode(target));
 
 			} catch (MessagingException e){
-				
+
 				// デコードエラーの場合は元のデータを用いる
 				list.add(target);
-				
+
 			} catch (IOException e){
 
 				// デコードエラーの場合は元のデータを用いる
 				list.add(target);
-				
+
 			}
-			
+
 		}
-		
+
 		final String[] ret = new String[list.size()];
 		list.toArray(ret);
-		
+
 		return ret;
-		
+
 	}
-	
+
 }

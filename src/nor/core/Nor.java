@@ -34,6 +34,7 @@ import nor.core.plugin.Plugin;
 import nor.core.proxy.ProxyServer;
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
+import nor.http.error.HttpException;
 import nor.http.server.local.TextResource;
 import nor.http.server.proxyserver.ProxyRequestHandler;
 import nor.http.server.proxyserver.Router;
@@ -324,7 +325,15 @@ public class Nor{
 	//============================================================================
 	public static HttpResponse request(final HttpRequest request){
 
-		return nor.handler.doRequest(request);
+		try {
+
+			return nor.handler.doRequest(request);
+
+		} catch (HttpException e) {
+
+			return e.createResponse(request);
+
+		}
 
 	}
 

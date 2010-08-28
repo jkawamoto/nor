@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
+import nor.http.error.HttpException;
 import nor.http.server.HttpRequestHandler;
 import nor.util.io.NoCloseInputStream;
 import nor.util.io.NoCloseOutputStream;
@@ -119,17 +120,27 @@ final class ServiceWorker implements Runnable{
 				// リクエストに切断要求が含まれているか
 				keepAlive &= this.isKeepingAlive(request);
 
-				// リクエストの実行
-				final HttpResponse response = this.handler.doRequest(request);
+				try{
 
-				// レスポンスに切断要求が含まれているか
-				keepAlive &= this.isKeepingAlive(response);
+					// リクエストの実行
+					final HttpResponse response = this.handler.doRequest(request);
 
-				// レスポンスの書き出し
-				this.socket.setSoTimeout(5000);
-				response.writeTo(output);
+					// レスポンスに切断要求が含まれているか
+					keepAlive &= this.isKeepingAlive(response);
+
+					// レスポンスの書き出し
+					this.socket.setSoTimeout(5000);
+					response.writeTo(output);
+
+				}catch(final HttpException e){
+
+					final HttpResponse response = e.createResponse(request);
+					response.writeTo(output);
+					output.flush();
+
+				}
+
 				this.socket.setSoTimeout(0);
-
 				this.socket.getOutputStream().flush();
 
 			}

@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2010 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ import java.io.OutputStream;
 
 public class CopyingOutputStream extends FilterOutputStream{
 
-	private final ByteArrayOutputStream _copy = new ByteArrayOutputStream();
+	private final ByteArrayOutputStream copy = new ByteArrayOutputStream();
 
 	/**
 	 * @param out
@@ -42,7 +42,7 @@ public class CopyingOutputStream extends FilterOutputStream{
 	public void write(int b) throws IOException {
 
 		this.out.write(b);
-		this._copy.write(b);
+		this.copy.write(b);
 
 	}
 
@@ -53,7 +53,7 @@ public class CopyingOutputStream extends FilterOutputStream{
 	public void write(byte[] b, int off, int len) throws IOException {
 
 		this.out.write(b, off, len);
-		this._copy.write(b, off, len);
+		this.copy.write(b, off, len);
 
 	}
 
@@ -62,7 +62,7 @@ public class CopyingOutputStream extends FilterOutputStream{
 	 */
 	public byte[] getCopy(){
 
-		return this._copy.toByteArray();
+		return this.copy.toByteArray();
 
 	}
 
