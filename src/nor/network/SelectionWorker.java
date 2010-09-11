@@ -27,6 +27,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.Properties;
 import java.util.logging.Level;
 
 import nor.util.log.Logger;
@@ -49,7 +50,19 @@ public class SelectionWorker implements Runnable, Closeable{
 	static{
 
 		final String classname = SelectionWorker.class.getName();
-		Timeout = Integer.valueOf(System.getProperty(String.format("%s.Timeout", classname)));
+		final Properties defaults = new Properties();
+		try {
+
+			defaults.load(SelectionWorker.class.getResourceAsStream("res/default.conf"));
+
+		} catch (final IOException e) {
+
+			LOGGER.severe("<class init>", "Cannot load default configs ({0})", e);
+
+		}
+
+		final String tout = String.format("%s.Timeout", classname);
+		Timeout = Integer.valueOf(System.getProperty(tout, defaults.getProperty(tout)));
 
 		LOGGER.config("<class init>", "Load a constant: Timeout = {0}", Timeout);
 
@@ -79,8 +92,7 @@ public class SelectionWorker implements Runnable, Closeable{
 
 				try{
 
-//					final int nc = this.selector.select(Timeout);
-					final int nc = this.selector.selectNow();
+					final int nc = this.selector.select(Timeout);
 					LOGGER.finest("run", "Begin a selection ({0} selected keys, {1} registrated keys)", nc, selector.keys().size());
 
 					for(final SelectionKey key : this.selector.selectedKeys()){

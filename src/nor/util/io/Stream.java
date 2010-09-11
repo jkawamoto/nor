@@ -28,7 +28,7 @@ import java.nio.channels.WritableByteChannel;
 
 public class Stream {
 
-	public static final int DefaultBufferSize;
+	public static final int DefaultBufferSize = 65536;
 
 	public static void copy(final InputStream in, final OutputStream out) throws IOException{
 
@@ -89,16 +89,6 @@ public class Stream {
 			}
 
 		}
-
-	}
-
-	//============================================================================
-	//  Class constructor
-	//============================================================================
-	static{
-
-		final String classname = Stream.class.getName();
-		DefaultBufferSize = Integer.valueOf(System.getProperty(String.format("%s.DefaultBufferSize", classname)));
 
 	}
 

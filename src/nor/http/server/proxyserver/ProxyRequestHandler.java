@@ -37,6 +37,7 @@ import java.net.UnknownHostException;
 import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -497,7 +498,19 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 	static{
 
 		final String classname = ProxyRequestHandler.class.getName();
-		Timeout = Integer.valueOf(System.getProperty(String.format("%s.Timeout", classname)));
+		final Properties defaults = new Properties();
+		try {
+
+			defaults.load(ProxyRequestHandler.class.getResourceAsStream("res/default.conf"));
+
+		} catch (final IOException e) {
+
+			LOGGER.severe("<class init>", "Cannot load default configs ({0})", e);
+
+		}
+
+		final String tout = String.format("%s.Timeout", classname);
+		Timeout = Integer.valueOf(System.getProperty(tout, defaults.getProperty(tout)));
 
 		LOGGER.config("<init>", "Load a constant: Timeout = {0}", Timeout);
 

@@ -17,6 +17,9 @@
  */
 package nor.http.server.nserver;
 
+import java.io.IOException;
+import java.util.Properties;
+
 import nor.util.log.Logger;
 
 /**
@@ -40,9 +43,25 @@ class NServer {
 		final Logger LOGGER = Logger.getLogger(NServer.class);
 
 		final String classname = NServer.class.getName();
-		BufferSize = Integer.valueOf(System.getProperty(String.format("%s.BufferSize", classname)));
-		Timeout = Integer.valueOf(System.getProperty(String.format("%s.Timeout", classname)));
-		MinimusThreads = Integer.valueOf(System.getProperty(String.format("%s.MinimusThreads", classname)));
+		final Properties defaults = new Properties();
+		try {
+
+			defaults.load(NServer.class.getResourceAsStream("res/default.conf"));
+
+		} catch (final IOException e) {
+
+			LOGGER.severe("<class init>", "Cannot load default configs ({0})", e);
+
+		}
+
+		final String bsize = String.format("%s.BufferSize", classname);
+		BufferSize = Integer.valueOf(System.getProperty(bsize, defaults.getProperty(bsize)));
+
+		final String tout = String.format("%s.Timeout", classname);
+		Timeout = Integer.valueOf(System.getProperty(tout, defaults.getProperty(tout)));
+
+		final String mthreads = String.format("%s.MinimusThreads", classname);
+		MinimusThreads = Integer.valueOf(System.getProperty(mthreads, defaults.getProperty(mthreads)));
 
 		LOGGER.config("<class init>", "Load a constant: BufferSize = {0}", BufferSize);
 		LOGGER.config("<class init>", "Load a constant: Timeout = {0}", Timeout);
