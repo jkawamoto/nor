@@ -160,7 +160,11 @@ public abstract class HttpMessage implements Closeable{
 	@Override
 	public void close() throws IOException{
 
-		this.body.close();
+		if(this.body != null){
+
+			this.body.close();
+
+		}
 
 	}
 
@@ -230,40 +234,45 @@ public abstract class HttpMessage implements Closeable{
 	//====================================================================
 	private void writeBodyTo(final OutputStream out) throws IOException{
 
-		final HttpHeader header = this.getHeader();
-		OutputStream cout = out;
-		if(header.containsKey(HeaderName.ContentLength)){
+		if(this.body != null){
 
-			// ContentLengthが指定されていればそのサイズだけ送る
-			final String length = header.get(HeaderName.ContentLength).split(",")[0];
-			cout = new LimitedOutputStream(cout, Integer.parseInt(length));
+			final HttpHeader header = this.getHeader();
+			OutputStream cout = out;
+			if(header.containsKey(HeaderName.ContentLength)){
 
-		}else if(Http.CHUNKED.equalsIgnoreCase(header.get(HeaderName.TransferEncoding))){
+				// ContentLengthが指定されていればそのサイズだけ送る
+				final String length = header.get(HeaderName.ContentLength).split(",")[0];
+				cout = new LimitedOutputStream(cout, Integer.parseInt(length));
 
-			// TransferEncodingにchunkが指定されていればChunk形式で送る
-			cout = new ChunkedOutputStream(cout);
+			}else if(Http.CHUNKED.equalsIgnoreCase(header.get(HeaderName.TransferEncoding))){
 
-		}
-
-		// 内容コーディングが指定されていれば従う
-		if(header.containsKey(HeaderName.ContentEncoding)){
-
-			final String encode = header.get(HeaderName.ContentEncoding);
-			if(Http.GZIP.equalsIgnoreCase(encode)){
-
-				cout = new GZIPOutputStream(cout, Stream.DefaultBufferSize);
-
-			}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
-
-				cout = new DeflaterOutputStream(cout);
+				// TransferEncodingにchunkが指定されていればChunk形式で送る
+				cout = new ChunkedOutputStream(cout);
 
 			}
 
-		}
+			// 内容コーディングが指定されていれば従う
+			if(header.containsKey(HeaderName.ContentEncoding)){
 
-		Stream.copy(this.body, cout);
-		cout.flush();
-		cout.close();
+				final String encode = header.get(HeaderName.ContentEncoding);
+				if(Http.GZIP.equalsIgnoreCase(encode)){
+
+					cout = new GZIPOutputStream(cout, Stream.DefaultBufferSize);
+
+				}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
+
+					cout = new DeflaterOutputStream(cout);
+
+				}
+
+			}
+
+			Stream.copy(this.body, cout);
+			cout.flush();
+			cout.close();
+
+		}
+		out.close();
 
 	}
 

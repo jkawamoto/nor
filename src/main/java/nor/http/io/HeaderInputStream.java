@@ -45,9 +45,10 @@ public class HeaderInputStream extends InputStream{
 	 *  ただし、いきなり改行がくる可能性もある（ヘッダが空の場合）従って初期状態は SecondCR から始まる．
 	 */
 	private enum State{
-		Default, FirstCR, FirstLF, SecondCR, SecondLF
+		Default, FirstCR, FirstLF, SecondCR, SecondLF, NULL
 	}
 	private State state = State.SecondCR;
+	private int nullCount = 0;
 
 	// ロガー
 	private static final Logger LOGGER = Logger.getLogger(HeaderInputStream.class);
@@ -71,59 +72,111 @@ public class HeaderInputStream extends InputStream{
 	public int read() throws IOException {
 		LOGGER.entering("read");
 
-		int ret = -1;
+		if(this.state == State.SecondLF){
+
+			return -1;
+
+		}
+
+		int ret = this.in.read();
 		switch(this.state){
 		case Default:
 
-			ret = this.in.read();
-			if(ret == CR){
+			switch(ret){
+			case CR:
 
 				this.state = State.FirstCR;
+				break;
+
+			case 0:
+
+				this.state = State.NULL;
+				break;
 
 			}
 			break;
 
 		case FirstCR:
 
-			ret = this.in.read();
-			if(ret == LF){
+			switch(ret){
+			case LF:
 
 				this.state = State.FirstLF;
+				break;
 
-			}else{
+			case 0:
+
+				this.state = State.NULL;
+				break;
+
+			default:
 
 				this.state = State.Default;
+				break;
 
 			}
 			break;
 
 		case FirstLF:
 
-			ret = this.in.read();
-			if(ret == CR){
+			switch(ret){
+			case CR:
 
 				this.state = State.SecondCR;
+				break;
 
-			}else{
+			case 0:
+
+				this.state = State.NULL;
+				break;
+
+			default:
 
 				this.state = State.Default;
+				break;
 
 			}
 			break;
 
 		case SecondCR:
 
-			ret = this.in.read();
-			if(ret == LF){
+			switch(ret){
+			case LF:
 
 				this.state = State.SecondLF;
+				break;
 
-			}else{
+			case 0:
+
+				this.state = State.NULL;
+				break;
+
+			default:
 
 				this.state = State.Default;
+				break;
 
 			}
 			break;
+
+		case NULL:
+
+			switch(ret){
+			case 0:
+
+				if(++nullCount > 100){
+
+					ret = -1;
+
+				}
+
+			default:
+
+				nullCount = 0;
+				this.state = State.Default;
+				break;
+
+			}
 
 		}
 		if(ret == -1){
@@ -133,6 +186,7 @@ public class HeaderInputStream extends InputStream{
 		}
 
 		LOGGER.exiting("read", ret);
+		if(ret == 0 && nullCount > 0) System.out.println(Thread.currentThread().getName() + " recieve null packet:" + nullCount);
 		return ret;
 
 	}

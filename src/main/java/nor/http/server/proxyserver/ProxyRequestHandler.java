@@ -298,6 +298,8 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		HttpResponse ret = null;
 		try {
 
+			LOGGER.info("receiveResponse", "{0}: {1} : {2}", con, con.getResponseMessage(), con.getHeaderFields());
+
 			final int code = con.getResponseCode();
 			InputStream resStream = null;
 			if(code == -1){
@@ -317,7 +319,6 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 						if(Http.GZIP.equalsIgnoreCase(encode)){
 
-							LOGGER.info("receiveResponse", "{0}: {1} : {2}", con, con.getResponseMessage(), con.getHeaderFields());
 							resStream = new GZIPInputStream(resStream);
 
 						}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
@@ -335,6 +336,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 				resStream = con.getErrorStream();
 
 			}
+
 			ret = request.createResponse(Status.valueOf(code), resStream);
 
 			// ヘッダの登録

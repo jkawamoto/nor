@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ class NServer {
 
 	public static final int Timeout;
 	public static final int BufferSize;
-	public static final int MinimusThreads;
+	public static final int MaxThreads;
 
 	private NServer(){
 
@@ -60,12 +60,12 @@ class NServer {
 		final String tout = String.format("%s.Timeout", classname);
 		Timeout = Integer.valueOf(System.getProperty(tout, defaults.getProperty(tout)));
 
-		final String mthreads = String.format("%s.MinimusThreads", classname);
-		MinimusThreads = Integer.valueOf(System.getProperty(mthreads, defaults.getProperty(mthreads)));
+		final String mthreads = String.format("%s.MaxThreads", classname);
+		MaxThreads = Integer.valueOf(System.getProperty(mthreads, defaults.getProperty(mthreads)));
 
 		LOGGER.config("<class init>", "Load a constant: BufferSize = {0}", BufferSize);
 		LOGGER.config("<class init>", "Load a constant: Timeout = {0}", Timeout);
-		LOGGER.config("<class init>", "Load a constant: MinimusThreads = {0}", MinimusThreads);
+		LOGGER.config("<class init>", "Load a constant: MaxThreads = {0}", MaxThreads);
 
 	}
 

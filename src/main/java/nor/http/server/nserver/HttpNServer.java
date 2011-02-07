@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@ import java.util.logging.Level;
 
 import nor.http.server.HttpRequestHandler;
 import nor.http.server.HttpServer;
+import nor.network.Connection;
+import nor.network.PortListener;
 import nor.network.SelectionWorker;
 import nor.util.log.Logger;
 
@@ -39,7 +41,7 @@ public class HttpNServer implements HttpServer{
 	 */
 	private final HttpRequestHandler handler;
 
-	private SelectionWorker selection;
+	private SelectionWorker selecter;
 	private PortListener listener;
 
 
@@ -88,18 +90,28 @@ public class HttpNServer implements HttpServer{
 		/*
 		 * If a server is already working, close it.
 		 */
-		if(this.selection != null || this.workerThreadManager != null){
+		if(this.selecter != null || this.workerThreadManager != null){
 
 			this.close();
 
 		}
 
-		this.selection = new SelectionWorker();
+		this.selecter = new SelectionWorker();
+		this.workerThreadManager = new ConnectionManager(this.handler, NServer.MaxThreads, NServer.Timeout);
 
-		this.workerThreadManager = new ConnectionManager(this.handler, NServer.MinimusThreads, NServer.Timeout);
-		this.listener = new PortListener(hostname, port, this.workerThreadManager, this.selection);
+		this.listener = this.selecter.createPortListener(hostname, port);
+		this.listener.addHandler(new PortListener.AcceptEventHandler() {
 
-		this.selectionThread = new Thread(this.selection);
+			@Override
+			public void onAccept(final Connection con) {
+
+				HttpNServer.this.workerThreadManager.offer(con);
+
+			}
+
+		});
+
+		this.selectionThread = new Thread(this.selecter);
 		this.selectionThread.start();
 
 		LOGGER.exiting("service");
@@ -113,14 +125,13 @@ public class HttpNServer implements HttpServer{
 	 * @throws IOException サーバソケットを閉じている時にI/Oエラーが起きた場合
 	 */
 	@Override
-	public void close(){
+	public void close() throws IOException{
 		LOGGER.entering("close");
 
 		this.listener.close();
 
-		if(this.selection != null){
+		if(this.selecter != null){
 
-			this.selection.close();
 			this.selectionThread.interrupt();
 			try {
 
@@ -129,10 +140,11 @@ public class HttpNServer implements HttpServer{
 			} catch (final InterruptedException e) {
 
 				LOGGER.catched(Level.WARNING, "close", e);
+				Thread.currentThread().interrupt();
 
 			}
 
-			this.selection = null;
+			this.selecter = null;
 
 		}
 

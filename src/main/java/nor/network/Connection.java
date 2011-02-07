@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package nor.http.server.nserver;
+package nor.network;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -29,9 +29,6 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.logging.Level;
 
-import nor.network.SelectionEventHandler;
-import nor.network.SelectionEventHandlerAdapter;
-import nor.network.SelectionWorker;
 import nor.util.log.Logger;
 
 /**
@@ -39,18 +36,20 @@ import nor.util.log.Logger;
  * @author Junpei Kawamoto
  * @since 0.2
  */
-class Connection implements Closeable{
+public class Connection implements Closeable{
 
 	private boolean closed;
 	private SelectableChannel delegation;
 
 	private final SelectionWorker selector;
-	private final SelectionEventHandler handler;
 
 	private final SocketChannelInputStream in;
 	private final SocketChannelOutputStream out;
 
 	private final SelectionKey key;
+
+	private static final int BUFFER_SIZE = 1024*256;
+	private static final int TIMEOUT = 30000;
 
 	private static final Logger LOGGER = Logger.getLogger(Connection.class);
 
@@ -62,17 +61,32 @@ class Connection implements Closeable{
 	//============================================================================
 	//  Constructor
 	//============================================================================
-	public Connection(final SocketChannel ch, final SelectionWorker selector) throws IOException{
+	Connection(final SocketChannel ch, final SelectionWorker selector) throws IOException{
 
 		this.closed = false;
 
 		this.selector = selector;
-		this.handler = new ConnectionHandler();
 
 		this.in = new SocketChannelInputStream();
 		this.out = new SocketChannelOutputStream();
 
-		this.key = this.selector.register(ch, 0, this.handler);
+		this.key = this.selector.register(ch, 0, new SelectionEventHandlerAdapter(){
+
+			@Override
+			public void onRead(final ReadableByteChannel ch){
+
+				Connection.this.in.onRead(ch);
+
+			}
+
+			@Override
+			public void onWrite(final WritableByteChannel ch){
+
+				Connection.this.out.onWrite(ch);
+
+			}
+
+		});
 
 	}
 
@@ -91,14 +105,14 @@ class Connection implements Closeable{
 
 	}
 
-	/* ブロックする
-	 *
-	 */
-	public boolean waitForReady(final int timeout){
-
-		return true;
-
-	}
+//	/* ブロックする
+//	 *
+//	 */
+//	public boolean waitForReady(final int timeout){
+//
+//		return true;
+//
+//	}
 
 	public boolean closed(){
 
@@ -142,6 +156,7 @@ class Connection implements Closeable{
 		if(this.key.isValid()){
 
 			this.key.interestOps(this.key.interestOps() | ops);
+			this.key.selector().wakeup();
 
 		}
 
@@ -152,14 +167,9 @@ class Connection implements Closeable{
 		if(this.key.isValid()){
 
 			this.key.interestOps(this.key.interestOps() & ~ops);
+			this.key.selector().wakeup();
 
 		}
-
-	}
-
-	private void wakeup(){
-
-		this.key.selector().wakeup();
 
 	}
 
@@ -177,7 +187,7 @@ class Connection implements Closeable{
 				if(this.delegation != null){
 
 					LOGGER.fine("onCloseStream", "Close streams and delegate to {0}.", this.delegation);
-					new Delegator(this.key, this.delegation, this.selector);
+					//new Delegator(this.key, this.delegation, this.selector);
 
 				}else{
 
@@ -204,24 +214,6 @@ class Connection implements Closeable{
 	//============================================================================
 	//  Private inner classes
 	//============================================================================
-	private final class ConnectionHandler extends SelectionEventHandlerAdapter{
-
-		@Override
-		public void onRead(final ReadableByteChannel ch){
-
-			Connection.this.in.onRead(ch);
-
-		}
-
-		@Override
-		public void onWrite(final WritableByteChannel ch){
-
-			Connection.this.out.onWrite(ch);
-
-		}
-
-	}
-
 	private final class SocketChannelInputStream extends InputStream{
 
 		private boolean closed;
@@ -235,43 +227,39 @@ class Connection implements Closeable{
 
 			this.closed = false;
 
-			this.buffer = ByteBuffer.allocate(NServer.BufferSize);
+			this.buffer = ByteBuffer.allocate(BUFFER_SIZE);
 			this.buffer.limit(0);
 
 		}
 
 		//============================================================================
-		//  public methods
+		//  Public methods
 		//============================================================================
 		//----------------------------------------------------------------------------
-		//  InputStream のオーバーライド
+		//  Override methods of InputStream
 		//----------------------------------------------------------------------------
 		@Override
 		public int read() throws IOException {
 
-			if(this.closed){
+			if(this.closed || Thread.currentThread().isInterrupted()){
 
-				final IOException e = new IOException(AlreadyClosed);
-				LOGGER.throwing(this.getClass(), "read", e);
+				// If this stream is already closed, return -1
+				return -1;
 
-				throw e;
+			}
 
-			}else{
+			if(this.available() == 0){
 
+				this.reload();
 				if(this.available() == 0){
 
-					this.reload();
-					if(this.available() == 0){
-
-						return -1;
-
-					}
+					return -1;
 
 				}
 
-				return this.buffer.get() & 0xff;
-
 			}
+
+			return this.buffer.get() & 0xff;
 
 		}
 
@@ -292,49 +280,38 @@ class Connection implements Closeable{
 
 				throw e;
 
-			}else if(this.closed){
+			}else if(this.closed || Thread.currentThread().isInterrupted()){
 
-				final IOException e = new IOException(AlreadyClosed);
-				LOGGER.throwing(this.getClass(), "read", e);
+				// If this stream is already closed, return -1
+				return -1;
 
-				throw e;
+			}
 
-			}else{
+			if(this.available() == 0){
 
+				this.reload();
 				if(this.available() == 0){
 
-					this.reload();
-					if(this.available() == 0){
-
-						return -1;
-
-					}
-
-				}
-
-				// 有効サイズと len の小さい方分だけコピーする
-				final int available = this.available();
-				if(len > available){
-
-					this.buffer.get(b, off, available);
-					return available;
-
-				}else{
-
-					this.buffer.get(b, off, len);
-					return len;
+					return -1;
 
 				}
 
 			}
+
+			// Copy the smaller size from specified one and available one.
+			final int copySize = Math.min(len, this.available());
+			this.buffer.get(b, off, copySize);
+			return copySize;
 
 		}
 
 		@Override
 		public int available(){
 
-			return this.buffer.limit() - this.buffer.position();
+			final int res = this.buffer.limit() - this.buffer.position();
+			assert res >= 0;
 
+			return res;
 		}
 
 		@Override
@@ -352,50 +329,16 @@ class Connection implements Closeable{
 
 		}
 
-		public synchronized void reload() throws IOException{
-
-			if(!this.closed && this.available() == 0){
-
-				this.error = null;
-				Connection.this.addOps(SelectionKey.OP_READ);
-				Connection.this.wakeup();
-
-				try {
-
-					this.wait(NServer.Timeout);
-
-				}catch(final InterruptedException e) {
-
-					LOGGER.catched(Level.FINE, this.getClass(), "reload", e);
-					Thread.currentThread().interrupt();
-
-				}
-
-				if(this.error != null){
-
-					Connection.this.close();
-
-					final IOException e = new IOException("An error is occuered", this.error);
-					LOGGER.throwing(this.getClass(), "reload", e);
-
-					throw e;
-
-				}
-
-			}
-
-		}
-
 		//----------------------------------------------------------------------------
 		//  Connection との通信
 		//----------------------------------------------------------------------------
-		public boolean closed(){
+		boolean closed(){
 
 			return this.closed;
 
 		}
 
-		public synchronized void onRead(final ReadableByteChannel channel){
+		synchronized void onRead(final ReadableByteChannel channel){
 
 			try{
 
@@ -438,13 +381,48 @@ class Connection implements Closeable{
 
 		}
 
+		//============================================================================
+		//  Private methods
+		//============================================================================
+		private synchronized void reload() throws IOException{
+
+			if(!this.closed && this.available() == 0){
+
+				this.error = null;
+				Connection.this.addOps(SelectionKey.OP_READ);
+
+				try {
+
+					this.wait(TIMEOUT);
+
+				}catch(final InterruptedException e) {
+
+					LOGGER.catched(Level.FINE, this.getClass(), "reload", e);
+					Thread.currentThread().interrupt();
+
+				}
+
+				if(this.error != null || Thread.currentThread().isInterrupted()){
+
+					Connection.this.close();
+
+					final IOException e = new IOException("An error is occuered", this.error);
+					LOGGER.throwing(this.getClass(), "reload", e);
+
+					throw e;
+
+				}
+
+			}
+
+		}
+
 	}
 
 	private final class SocketChannelOutputStream extends OutputStream{
 
 		private boolean closed;
-		private boolean flushed;
-		private boolean wrote;
+		private IOException error;
 
 		private final ByteBuffer buffer;
 
@@ -454,10 +432,8 @@ class Connection implements Closeable{
 		public SocketChannelOutputStream(){
 
 			this.closed = false;
-			this.flushed = true;
-			this.wrote = false;
 
-			this.buffer = ByteBuffer.allocate(NServer.BufferSize);
+			this.buffer = ByteBuffer.allocate(BUFFER_SIZE);
 
 		}
 
@@ -470,14 +446,38 @@ class Connection implements Closeable{
 		@Override
 		public void write(int b) throws IOException {
 
-			if(this.closed){
+			if(this.closed || Thread.currentThread().isInterrupted()){
 
 				final IOException e = new IOException(AlreadyClosed);
 				LOGGER.throwing(this.getClass(), "write", e);
 
 				throw e;
 
-			}else{
+			}
+
+			if(this.available() == 0){
+
+				this.flush();
+
+			}
+
+			this.buffer.put((byte)b);
+
+		}
+
+		@Override
+		public void write(byte[] b, int off, int len) throws IOException {
+
+			if(this.closed || Thread.currentThread().isInterrupted()){
+
+				final IOException e = new IOException(AlreadyClosed);
+				LOGGER.throwing(this.getClass(), "write", e);
+
+				throw e;
+
+			}
+
+			while(len != 0){
 
 				if(this.available() == 0){
 
@@ -485,50 +485,10 @@ class Connection implements Closeable{
 
 				}
 
-				this.buffer.put((byte)b);
-				this.flushed = false;
-
-			}
-
-		}
-
-		@Override
-		public void write(byte[] b, int off, int len) throws IOException {
-
-			if(this.closed){
-
-				final IOException e = new IOException(AlreadyClosed);
-				LOGGER.throwing(this.getClass(), "write", e);
-
-				throw e;
-
-			}else{
-
-				while(len != 0){
-
-					if(this.available() == 0){
-
-						this.flush();
-
-					}
-
-					final int size = this.available();
-					if(len > size){
-
-						this.buffer.put(b, off, size);
-						off += size;
-						len -= size;
-
-					}else{
-
-						this.buffer.put(b, off, len);
-						off += len;
-						len -= len;
-
-					}
-					this.flushed = false;
-
-				}
+				final int putSize = Math.min(len, this.available());
+				this.buffer.put(b, off, putSize);
+				off += putSize;
+				len -= putSize;
 
 			}
 
@@ -537,8 +497,6 @@ class Connection implements Closeable{
 		@Override
 		public synchronized void flush() throws IOException {
 
-			this.flushed = true;
-
 			if(this.closed){
 
 				final IOException e = new IOException(AlreadyClosed);
@@ -546,17 +504,19 @@ class Connection implements Closeable{
 
 				throw e;
 
-			}else if(this.buffer.position() != 0){
+			}
+
+			if(this.buffer.position() != 0){
 
 				LOGGER.finer("flush", "Start flush.");
 
+				this.error = null;
 				this.buffer.flip();
 				Connection.this.addOps(SelectionKey.OP_WRITE);
-				Connection.this.wakeup();
 
 				try {
 
-					this.wait(NServer.Timeout);
+					this.wait(TIMEOUT);
 
 				} catch (final InterruptedException e) {
 
@@ -567,7 +527,7 @@ class Connection implements Closeable{
 
 				LOGGER.finer("flush", "End flush.");
 
-				if(!this.wrote){
+				if(this.error != null || Thread.currentThread().isInterrupted()){
 
 					/*
 					 * If onWrite method failed, this connection will be closed.
@@ -575,7 +535,7 @@ class Connection implements Closeable{
 					 */
 					Connection.this.close();
 
-					final IOException e = new IOException("Do not write to the stream.");
+					final IOException e = new IOException("Do not write to the stream.", this.error);
 					LOGGER.throwing(this.getClass(), "flush", e);
 
 					throw e;
@@ -591,8 +551,9 @@ class Connection implements Closeable{
 
 			try{
 
-				if(!this.flushed){
+				if(this.buffer.position() > 0){
 
+					// If the buffer has some data, transfer them.
 					this.flush();
 
 				}
@@ -616,17 +577,16 @@ class Connection implements Closeable{
 		//----------------------------------------------------------------------------
 		// Connection との通信
 		//----------------------------------------------------------------------------
-		public boolean closed(){
+		boolean closed(){
 
 			return this.closed;
 
 		}
 
-		public synchronized void onWrite(final WritableByteChannel channel){
+		synchronized void onWrite(final WritableByteChannel channel){
 
 			try{
 
-				this.wrote = false;
 				channel.write(this.buffer);
 
 				/*
@@ -634,11 +594,9 @@ class Connection implements Closeable{
 				 */
 				if(this.available() == 0){
 
-					Connection.this.removeOps(SelectionKey.OP_WRITE);
-
 					this.buffer.clear();
-					this.wrote = true;
 
+					Connection.this.removeOps(SelectionKey.OP_WRITE);
 					this.notify();
 
 				}
@@ -654,6 +612,7 @@ class Connection implements Closeable{
 				LOGGER.catched(Level.FINE, this.getClass(), "onWrite", e);
 
 				Connection.this.removeOps(SelectionKey.OP_WRITE);
+				this.error = e;
 				this.notify();
 
 			}

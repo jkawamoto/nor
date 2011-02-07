@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -272,9 +272,15 @@ public enum Status{
 	NonStandard(-1, "Nonstandard status");
 
 
+	//====================================================================
+	// Private members
+	//====================================================================
 	private final int code;
 	private final String msg;
 
+	//====================================================================
+	// Constructor
+	//====================================================================
 	private Status(final int code, final String msg){
 
 		this.code = code;
@@ -282,6 +288,9 @@ public enum Status{
 
 	}
 
+	//====================================================================
+	// Public methods
+	//====================================================================
 	/**
 	 * ステータスコードを取得する．
 	 *
@@ -304,6 +313,19 @@ public enum Status{
 
 	}
 
+	/* (非 Javadoc)
+	 * @see java.lang.Enum#toString()
+	 */
+	@Override
+	public String toString(){
+
+		return String.format("%d %s", this.code, this.msg);
+
+	}
+
+	//====================================================================
+	// Public class methods
+	//====================================================================
 	/**
 	 * 指定したコード番号を持つこの型の列挙型定数を返します．
 	 *
@@ -323,16 +345,6 @@ public enum Status{
 		}
 
 		return Status.NonStandard;
-
-	}
-
-	/* (非 Javadoc)
-	 * @see java.lang.Enum#toString()
-	 */
-	@Override
-	public String toString(){
-
-		return String.format("%d %s", this.code, this.msg);
 
 	}
 
