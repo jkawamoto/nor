@@ -3,6 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nor</groupId>
 	<artifactId>nor</artifactId>
+	<name>nor</name>
 	<version>0.2.2.20110214</version>
 
 	<build>
@@ -126,10 +127,10 @@
 			<id>shell.sourceforge.jp</id>
 			<name>Nor Maven Snapshot Repository</name>
 			<url>scp://shell.sourceforge.jp/home/groups/n/no/nor/htdocs/maven2-snapshot</url>
-			<layout>legacy</layout>
 		</snapshotRepository>
 	</distributionManagement>
 
+	<url>http://sourceforge.jp/projects/nor/simple/</url>
 	<licenses>
 		<license>
 			<name>GNU General Public License, version 3</name>
