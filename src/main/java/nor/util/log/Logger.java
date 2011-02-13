@@ -75,37 +75,52 @@ public class Logger{
 	//============================================================================
 	public void entering(final String method, final Object ... params){
 
-		this.finest(method, "ENTRY {0}", params);
+		if(params.length == 0){
 
+			this.finer(method, "ENTRY");
+
+		}else{
+
+			this.finer(method, "ENTRY {0}", params);
+
+		}
 	}
 
 	public void exiting(final String method){
 
-		this.finest(method, "EXIT");
+		this.finer(method, "EXIT");
 
 	}
 
 	public void exiting(final String method, final Object param){
 
-		this.finest(method, "EXIT {0}", param);
+		this.finer(method, "EXIT {0}", param);
 
 	}
 
 	public void entering(final Class<?> cls, final String method, final Object ... params){
 
-		this.finest(cls, method, "ENTRY {0}", params);
+		if(params.length == 0){
+
+			this.finer(cls, method, "ENTRY");
+
+		}else{
+
+			this.finer(cls, method, "ENTRY {0}", params);
+
+		}
 
 	}
 
 	public void exiting(final Class<?> cls, final String method){
 
-		this.finest(cls, method, "EXIT");
+		this.finer(cls, method, "EXIT");
 
 	}
 
 	public void exiting(final Class<?> cls, final String method, final Object param){
 
-		this.finest(cls, method, "EXIT {0}", param);
+		this.finer(cls, method, "EXIT {0}", param);
 
 	}
 

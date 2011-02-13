@@ -38,18 +38,13 @@ import nor.util.log.Logger;
  */
 public class Connection implements Closeable{
 
-	private boolean closed;
+	private boolean closed = false;
 	private SelectableChannel delegation;
-
-	private final SelectionWorker selector;
 
 	private final SocketChannelInputStream in;
 	private final SocketChannelOutputStream out;
 
 	private final SelectionKey key;
-
-	private static final int BUFFER_SIZE = 1024*256;
-	private static final int TIMEOUT = 30000;
 
 	private static final Logger LOGGER = Logger.getLogger(Connection.class);
 
@@ -62,15 +57,12 @@ public class Connection implements Closeable{
 	//  Constructor
 	//============================================================================
 	Connection(final SocketChannel ch, final SelectionWorker selector) throws IOException{
-
-		this.closed = false;
-
-		this.selector = selector;
+		LOGGER.entering("<init>", ch, selector);
 
 		this.in = new SocketChannelInputStream();
 		this.out = new SocketChannelOutputStream();
 
-		this.key = this.selector.register(ch, 0, new SelectionEventHandlerAdapter(){
+		this.key = selector.register(ch, 0, new SelectionEventHandlerAdapter(){
 
 			@Override
 			public void onRead(final ReadableByteChannel ch){
@@ -88,6 +80,7 @@ public class Connection implements Closeable{
 
 		});
 
+		LOGGER.exiting("<init>");
 	}
 
 	//============================================================================
@@ -105,15 +98,6 @@ public class Connection implements Closeable{
 
 	}
 
-//	/* ブロックする
-//	 *
-//	 */
-//	public boolean waitForReady(final int timeout){
-//
-//		return true;
-//
-//	}
-
 	public boolean closed(){
 
 		return this.closed;
@@ -122,17 +106,22 @@ public class Connection implements Closeable{
 
 	@Override
 	public void close() throws IOException{
+		LOGGER.entering("close");
 
 		this.in.close();
 		this.out.close();
 
+		LOGGER.exiting("close");
 	}
 
 	@Override
 	public String toString(){
+		LOGGER.entering("toString");
 
-		return String.format("%s(key = %s)", this.getClass().getSimpleName(), this.key);
+		final String res = String.format("%s(key = %s)", this.getClass().getSimpleName(), this.key);
 
+		LOGGER.exiting("toString", res);
+		return res;
 	}
 
 	/**
@@ -224,12 +213,14 @@ public class Connection implements Closeable{
 		//  Constractor
 		//============================================================================
 		public SocketChannelInputStream(){
+			LOGGER.entering(SocketChannelInputStream.class, "<init>");
 
 			this.closed = false;
 
-			this.buffer = ByteBuffer.allocate(BUFFER_SIZE);
+			this.buffer = ByteBuffer.allocate(Network.BufferSize);
 			this.buffer.limit(0);
 
+			LOGGER.exiting(SocketChannelInputStream.class, "<init>");
 		}
 
 		//============================================================================
@@ -240,10 +231,12 @@ public class Connection implements Closeable{
 		//----------------------------------------------------------------------------
 		@Override
 		public int read() throws IOException {
+			LOGGER.entering(SocketChannelInputStream.class, "read");
 
 			if(this.closed || Thread.currentThread().isInterrupted()){
 
 				// If this stream is already closed, return -1
+				LOGGER.exiting(SocketChannelInputStream.class, "read", -1);
 				return -1;
 
 			}
@@ -253,18 +246,21 @@ public class Connection implements Closeable{
 				this.reload();
 				if(this.available() == 0){
 
+					LOGGER.exiting(SocketChannelInputStream.class, "read", -1);
 					return -1;
 
 				}
 
 			}
 
-			return this.buffer.get() & 0xff;
-
+			final int res = this.buffer.get() & 0xff;
+			LOGGER.exiting(SocketChannelInputStream.class, "read", res);
+			return res;
 		}
 
 		@Override
 		public int read(byte[] b, int off, int len) throws IOException {
+			LOGGER.entering(SocketChannelInputStream.class, "read", b, off, len);
 
 			if(b == null){
 
@@ -283,6 +279,7 @@ public class Connection implements Closeable{
 			}else if(this.closed || Thread.currentThread().isInterrupted()){
 
 				// If this stream is already closed, return -1
+				LOGGER.exiting(SocketChannelInputStream.class, "read", -1);
 				return -1;
 
 			}
@@ -292,6 +289,7 @@ public class Connection implements Closeable{
 				this.reload();
 				if(this.available() == 0){
 
+					LOGGER.exiting(SocketChannelInputStream.class, "read", -1);
 					return -1;
 
 				}
@@ -301,21 +299,25 @@ public class Connection implements Closeable{
 			// Copy the smaller size from specified one and available one.
 			final int copySize = Math.min(len, this.available());
 			this.buffer.get(b, off, copySize);
-			return copySize;
 
+			LOGGER.exiting(SocketChannelInputStream.class, "read", copySize);
+			return copySize;
 		}
 
 		@Override
 		public int available(){
+			LOGGER.entering(SocketChannelInputStream.class, "available");
 
 			final int res = this.buffer.limit() - this.buffer.position();
 			assert res >= 0;
 
+			LOGGER.exiting(SocketChannelInputStream.class, "available", res);
 			return res;
 		}
 
 		@Override
 		public void close(){
+			LOGGER.entering(SocketChannelInputStream.class, "close");
 
 			if(!this.closed){
 
@@ -327,6 +329,7 @@ public class Connection implements Closeable{
 
 			}
 
+			LOGGER.exiting(SocketChannelInputStream.class, "close");
 		}
 
 		//----------------------------------------------------------------------------
@@ -393,7 +396,7 @@ public class Connection implements Closeable{
 
 				try {
 
-					this.wait(TIMEOUT);
+					this.wait(Network.Timeout);
 
 				}catch(final InterruptedException e) {
 
@@ -430,11 +433,12 @@ public class Connection implements Closeable{
 		//  Constractor
 		//============================================================================
 		public SocketChannelOutputStream(){
+			LOGGER.entering(SocketChannelOutputStream.class, "<init>");
 
 			this.closed = false;
+			this.buffer = ByteBuffer.allocate(Network.BufferSize);
 
-			this.buffer = ByteBuffer.allocate(BUFFER_SIZE);
-
+			LOGGER.exiting(SocketChannelOutputStream.class, "<init>");
 		}
 
 		//============================================================================
@@ -445,6 +449,7 @@ public class Connection implements Closeable{
 		//----------------------------------------------------------------------------
 		@Override
 		public void write(int b) throws IOException {
+			LOGGER.entering(SocketChannelOutputStream.class, "write", b);
 
 			if(this.closed || Thread.currentThread().isInterrupted()){
 
@@ -463,10 +468,12 @@ public class Connection implements Closeable{
 
 			this.buffer.put((byte)b);
 
+			LOGGER.exiting(SocketChannelOutputStream.class, "write");
 		}
 
 		@Override
 		public void write(byte[] b, int off, int len) throws IOException {
+			LOGGER.entering(SocketChannelOutputStream.class, "write", b, off, len);
 
 			if(this.closed || Thread.currentThread().isInterrupted()){
 
@@ -492,10 +499,12 @@ public class Connection implements Closeable{
 
 			}
 
+			LOGGER.exiting(SocketChannelOutputStream.class, "write");
 		}
 
 		@Override
 		public synchronized void flush() throws IOException {
+			LOGGER.entering(SocketChannelOutputStream.class, "flush");
 
 			if(this.closed){
 
@@ -516,7 +525,7 @@ public class Connection implements Closeable{
 
 				try {
 
-					this.wait(TIMEOUT);
+					this.wait(Network.Timeout);
 
 				} catch (final InterruptedException e) {
 
@@ -544,10 +553,12 @@ public class Connection implements Closeable{
 
 			}
 
+			LOGGER.exiting(SocketChannelOutputStream.class, "flush");
 		}
 
 		@Override
 		public void close() throws IOException {
+			LOGGER.entering(SocketChannelOutputStream.class, "close");
 
 			try{
 
@@ -572,6 +583,7 @@ public class Connection implements Closeable{
 
 			}
 
+			LOGGER.exiting(SocketChannelOutputStream.class, "close");
 		}
 
 		//----------------------------------------------------------------------------

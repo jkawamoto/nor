@@ -51,11 +51,13 @@ public class PortListener implements Closeable{
 	/**
 	 * Create a port listener.
 	 * @param addr The address listened to
-	 * @param manager
 	 * @param selector The selector object to which this listener will be registerd.
 	 * @throws IOException
 	 */
 	PortListener(final SocketAddress addr, /*final ConnectionManager manager,*/ final SelectionWorker selector) throws IOException{
+		LOGGER.entering("<init>", addr, selector);
+		assert addr != null;
+		assert selector != null;
 
 		// Create a server socket channel
 		final ServerSocketChannel channel = ServerSocketChannel.open();
@@ -105,7 +107,7 @@ public class PortListener implements Closeable{
 		});
 
 		LOGGER.info("<init>", "Bind socket to {0}", addr);
-
+		LOGGER.exiting("<init>");
 	}
 
 	//============================================================================
@@ -113,6 +115,7 @@ public class PortListener implements Closeable{
 	//============================================================================
 	@Override
 	public void close() throws IOException{
+		LOGGER.entering("close");
 
 		final SelectableChannel ch = this.key.channel();
 		this.key.cancel();
@@ -121,25 +124,33 @@ public class PortListener implements Closeable{
 
 		ch.close();
 
+		LOGGER.exiting("close");
 	}
 
 	public void addHandler(final AcceptEventHandler h){
+		LOGGER.entering("addHandler", h);
 
 		this.handlers.add(h);
 
+		LOGGER.exiting("addHandler");
 	}
 
 	public void removeHandler(final AcceptEventHandler h){
+		LOGGER.entering("removeHandler", h);
 
 		this.handlers.remove(h);
 
+		LOGGER.exiting("removeHandler");
 	}
 
 	@Override
 	public String toString(){
+		LOGGER.entering("toString");
 
-		return String.format("%s(key = %s)", this.getClass().getSimpleName(), this.key);
+		final String res = String.format("%s(key = %s)", this.getClass().getSimpleName(), this.key);
 
+		LOGGER.exiting("toString", res);
+		return res;
 	}
 
 	//============================================================================

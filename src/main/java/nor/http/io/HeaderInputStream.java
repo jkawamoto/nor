@@ -45,10 +45,12 @@ public class HeaderInputStream extends InputStream{
 	 *  ただし、いきなり改行がくる可能性もある（ヘッダが空の場合）従って初期状態は SecondCR から始まる．
 	 */
 	private enum State{
-		Default, FirstCR, FirstLF, SecondCR, SecondLF, NULL
+		Default, FirstCR, FirstLF, SecondCR, SecondLF
 	}
 	private State state = State.SecondCR;
-	private int nullCount = 0;
+
+	private int nilCount = 0;
+	private static int MAX_NIL = 128;
 
 	// ロガー
 	private static final Logger LOGGER = Logger.getLogger(HeaderInputStream.class);
@@ -88,11 +90,6 @@ public class HeaderInputStream extends InputStream{
 				this.state = State.FirstCR;
 				break;
 
-			case 0:
-
-				this.state = State.NULL;
-				break;
-
 			}
 			break;
 
@@ -102,11 +99,6 @@ public class HeaderInputStream extends InputStream{
 			case LF:
 
 				this.state = State.FirstLF;
-				break;
-
-			case 0:
-
-				this.state = State.NULL;
 				break;
 
 			default:
@@ -125,11 +117,6 @@ public class HeaderInputStream extends InputStream{
 				this.state = State.SecondCR;
 				break;
 
-			case 0:
-
-				this.state = State.NULL;
-				break;
-
 			default:
 
 				this.state = State.Default;
@@ -146,11 +133,6 @@ public class HeaderInputStream extends InputStream{
 				this.state = State.SecondLF;
 				break;
 
-			case 0:
-
-				this.state = State.NULL;
-				break;
-
 			default:
 
 				this.state = State.Default;
@@ -159,26 +141,24 @@ public class HeaderInputStream extends InputStream{
 			}
 			break;
 
-		case NULL:
+		}
 
-			switch(ret){
-			case 0:
+		if(ret == 0){
 
-				if(++nullCount > 100){
+			++this.nilCount;
+			LOGGER.fine("read", "{0} continuous zero bits", this.nilCount);
 
-					ret = -1;
+			if(this.nilCount > MAX_NIL){
 
-				}
-
-			default:
-
-				nullCount = 0;
-				this.state = State.Default;
-				break;
+				ret = -1;
 
 			}
+		}else{
+
+			this.nilCount = 0;
 
 		}
+
 		if(ret == -1){
 
 			this.state = State.SecondLF;
@@ -186,7 +166,6 @@ public class HeaderInputStream extends InputStream{
 		}
 
 		LOGGER.exiting("read", ret);
-		if(ret == 0 && nullCount > 0) System.out.println(Thread.currentThread().getName() + " recieve null packet:" + nullCount);
 		return ret;
 
 	}
@@ -196,6 +175,7 @@ public class HeaderInputStream extends InputStream{
 	}
 
 	public long skip(long n) throws IOException {
+		LOGGER.entering("skip", n);
 
 		long i = 0;
 		for(; i != n; ++i){
@@ -208,8 +188,8 @@ public class HeaderInputStream extends InputStream{
 
 		}
 
+		LOGGER.exiting("skip", i);
 		return i;
-
 	}
 
 	/**

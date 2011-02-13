@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 package nor.http.server.tserver;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -33,7 +32,7 @@ import nor.util.log.Logger;
 /**
  * ポートリスンを行うスレッドクラス．
  */
-final class ListenWorker implements Runnable, Closeable{
+final class ListenWorker implements Runnable{
 
 	/**
 	 * Httpサーバが利用するソケット
@@ -89,11 +88,15 @@ final class ListenWorker implements Runnable, Closeable{
 		try{
 
 			// 接続要求を待つ
-			for (Socket socket = this.socket.accept(); socket != null; socket = this.socket.accept()) {
+			Socket socket;
+			while((socket = this.socket.accept()) != null && !Thread.currentThread().isInterrupted()){
 
 				this.pool.execute(new ServiceWorker(socket, this.handler));
 
 			}
+
+			// 終了処理
+			this.socket.close();
 
 		}catch(final SocketException e){
 
@@ -102,34 +105,24 @@ final class ListenWorker implements Runnable, Closeable{
 		}catch(final IOException e){
 
 			LOGGER.severe("run", e.getMessage());
-		}
-
-		LOGGER.exiting("run");
-	}
-
-	/**
-	 * ソケットを閉じて待ち受けを終了する．
-	 * @throws IOException IOエラーが発生した場合
-	 */
-	public void close() throws IOException{
-		LOGGER.entering("close");
-
-		this.pool.shutdownNow();
-		try {
-
-			this.pool.awaitTermination(60, TimeUnit.SECONDS);
-
-		} catch (final InterruptedException e) {
-
-			throw new IOException(e.getMessage());
 
 		}finally{
 
-			this.socket.close();
+			this.pool.shutdownNow();
+			try{
+
+				this.pool.awaitTermination(60, TimeUnit.SECONDS);
+
+			}catch(final InterruptedException e) {
+
+				this.pool.shutdownNow();
+				Thread.currentThread().interrupt();
+
+			}
 
 		}
 
-		LOGGER.exiting("close");
+		LOGGER.exiting("run");
 	}
 
 }

@@ -17,9 +17,25 @@
  */
  function FindProxyForURL(url, host){
 
-	var proxy = "PROXY {PROXY_URL}";
-	{FILTERING_RULE}
-	{ROUTING_RULE}
+	var proxy = "PROXY ${host}:${port}";
+
+	/* Filtering rules */
+	#if (!$ssh)
+	if(url.substr(0, 5) !== "https"){
+	#end
+
+	#foreach($regex in $filters)
+	if(url.match(new RegExp("${regex.replace("\","\\")}")) !== null){ return proxy; }
+	#end
+
+	#if (!$ssh)
+	}
+	#end
+
+	/* Routing rules */
+	#foreach($item in $routings)
+	if(url.match(new RegExp("${item[0].replace("\","\\")}")) !== null){ return ${item[1]}:${item[2]}; }
+	#end
 
 	return "DIRECT";
 

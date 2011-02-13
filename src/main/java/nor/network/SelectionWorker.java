@@ -29,7 +29,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.Properties;
 import java.util.logging.Level;
 
 import nor.util.log.Logger;
@@ -41,41 +40,14 @@ public class SelectionWorker implements Runnable{
 	private static final Logger LOGGER = Logger.getLogger(SelectionWorker.class);
 
 	//============================================================================
-	// Constants
-	//============================================================================
-	private static final int Timeout;
-
-	//============================================================================
-	// Class constructor
-	//============================================================================
-	static{
-
-		final String classname = SelectionWorker.class.getName();
-		final Properties defaults = new Properties();
-		try {
-
-			defaults.load(SelectionWorker.class.getResourceAsStream("res/default.conf"));
-
-		} catch (final IOException e) {
-
-			LOGGER.severe("<class init>", "Cannot load default configs ({0})", e);
-
-		}
-
-		final String tout = String.format("%s.Timeout", classname);
-		Timeout = Integer.valueOf(System.getProperty(tout, defaults.getProperty(tout)));
-
-		LOGGER.config("<class init>", "Load a constant: Timeout = {0}", Timeout);
-
-	}
-
-	//============================================================================
 	// Constructor
 	//============================================================================
 	public SelectionWorker() throws IOException{
+		LOGGER.entering("<init>");
 
 		this.selector = Selector.open();
 
+		LOGGER.exiting("<init>");
 	}
 
 	//============================================================================
@@ -83,15 +55,14 @@ public class SelectionWorker implements Runnable{
 	//============================================================================
 	@Override
 	public void run(){
+		LOGGER.entering("run");
 
 		Thread.currentThread().setName("Selection Thread");
-		LOGGER.finer("run", "Starts listening");
-
 		while(!Thread.currentThread().isInterrupted()){
 
 			try{
 
-				final int nc = this.selector.select(Timeout);
+				final int nc = this.selector.select(Network.Timeout);
 				LOGGER.finest("run", "Begin a selection ({0} selected keys, {1} registrated keys)", nc, this.selector.keys().size());
 				if(nc == 0){
 					this.onIdle();
@@ -156,13 +127,13 @@ public class SelectionWorker implements Runnable{
 
 			this.selector.close();
 
-		} catch (IOException e) {
+		} catch (final IOException e) {
 
-			// TODO 自動生成された catch ブロック
-			e.printStackTrace();
+			LOGGER.catched(Level.WARNING, "run", e);
 
 		}
 
+		LOGGER.exiting("run");
 	}
 
 	/**
@@ -174,12 +145,16 @@ public class SelectionWorker implements Runnable{
 	 * @throws IOException
 	 */
 	public SelectionKey register(final SelectableChannel channel, final int ops, final SelectionEventHandler handler) throws IOException{
+		LOGGER.entering("register", channel, ops, handler);
+		assert channel != null;
+		assert ops >= 0;
+		assert handler != null;
 
 		channel.configureBlocking(false);
 		final SelectionKey key = channel.register(this.selector, ops, handler);
 
+		LOGGER.exiting("register", key);
 		return key;
-
 	}
 
 	public PortListener createPortListener(final String host, final int port) throws IOException{
@@ -189,9 +164,13 @@ public class SelectionWorker implements Runnable{
 	}
 
 	public PortListener createPortListener(final SocketAddress addr) throws IOException{
+		LOGGER.entering("createPortListener", addr);
+		assert addr != null;
 
-		return new PortListener(addr, this);
+		final PortListener res = new PortListener(addr, this);
 
+		LOGGER.exiting("createPortListener", res);
+		return res;
 	}
 
 	//============================================================================

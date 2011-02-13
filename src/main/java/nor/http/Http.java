@@ -53,7 +53,7 @@ public class Http {
 		final Properties prop = new Properties();
 		try {
 
-			prop.load(Http.class.getResourceAsStream("res/constant.conf"));
+			prop.load(Http.class.getResourceAsStream("constant.conf"));
 
 		} catch (IOException e) {
 

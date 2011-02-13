@@ -29,6 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import nor.util.Querable;
+import nor.util.log.Logger;
 
 /**
  * 外部プロキシ用のルーティングテーブル．
@@ -40,29 +41,37 @@ import nor.util.Querable;
 public class Router implements Map<Pattern, Proxy>, Querable<Proxy>{
 
 	private final Map<Pattern, Proxy> routs = new HashMap<Pattern, Proxy>();
+	private static final Logger LOGGER = Logger.getLogger(Router.class);
 
 	@Override
 	public Proxy query(final String url){
+		LOGGER.entering("query", url);
+		assert url != null;
 
+		Proxy res = Proxy.NO_PROXY;
 		for(final Pattern p : this.routs.keySet()){
 
 			final Matcher m = p.matcher(url);
 			if(m.find()){
 
-				return this.routs.get(p);
+				res = this.routs.get(p);
 
 			}
 		}
 
-		return Proxy.NO_PROXY;
-
+		LOGGER.exiting("query", res);
+		return res;
 	}
 
 	public void put(final Pattern pat, final URL url){
+		LOGGER.entering("put", pat, url);
+		assert pat != null;
+		assert url != null;
 
 		final InetSocketAddress extProxyAddr = new InetSocketAddress(url.getHost(), url.getPort());
 		this.put(pat, new Proxy(Type.HTTP, extProxyAddr));
 
+		LOGGER.exiting("put");
 	}
 
 	public void put(final String regex, final URL url){

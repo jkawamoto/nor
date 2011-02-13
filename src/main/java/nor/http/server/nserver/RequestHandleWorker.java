@@ -24,8 +24,6 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.SelectableChannel;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 
 import nor.http.HeaderName;
@@ -53,30 +51,20 @@ class RequestHandleWorker implements Runnable{
 	private final Connection con;
 	private final HttpRequestHandler handler;
 
-	private final List<ServiceEventListener> listeners = new ArrayList<ServiceEventListener>();
-
 	private static final Logger LOGGER = Logger.getLogger(RequestHandleWorker.class);
 
 	//============================================================================
 	// Constractor
 	//============================================================================
 	public RequestHandleWorker(final Connection con, final HttpRequestHandler handler){
+		LOGGER.entering("<init>", con, handler);
+		assert con != null;
+		assert handler != null;
 
 		this.con = con;
 		this.handler = handler;
 
-	}
-
-	public void addListener(final ServiceEventListener listener){
-
-		this.listeners.add(listener);
-
-	}
-
-	public void removeListener(final ServiceEventListener listener){
-
-		this.listeners.remove(listener);
-
+		LOGGER.exiting("<init>");
 	}
 
 	//============================================================================
@@ -171,38 +159,30 @@ class RequestHandleWorker implements Runnable{
 
 					keepAlive = false;
 
+					LOGGER.catched(Level.WARNING, "run", e);
+
 				}
 
 			}
 
 		}catch(final IOException e){
 
-			LOGGER.warning("run", e.toString());
-			LOGGER.catched(Level.FINE, "run", e);
+			LOGGER.catched(Level.WARNING, "run", e);
 
 		}catch(final VirtualMachineError e){
 
-			LOGGER.warning("run", e.toString());
-			LOGGER.catched(Level.FINE, "run", e);
-
-		}
-
-		LOGGER.finer("run", "Finish to handle and closes the connection; {0}", con);
-		try {
-
-			con.close();
-
-		} catch (final IOException e) {
-
-			LOGGER.warning("run", e.getMessage());
-			LOGGER.catched(Level.FINE, "run", e);
+			LOGGER.catched(Level.WARNING, "run", e);
 
 		}finally{
 
-			// Notify the end event to all listeners
-			for(final ServiceEventListener listener : this.listeners){
+			LOGGER.finer("run", "Finish to handle and closes the connection; {0}", con);
+			try {
 
-				listener.onEnd(this);
+				con.close();
+
+			} catch (final IOException e) {
+
+				LOGGER.catched(Level.WARNING, "run", e);
 
 			}
 
@@ -217,15 +197,6 @@ class RequestHandleWorker implements Runnable{
 	private boolean isKeepingAlive(final HttpMessage msg){
 
 		return !msg.getHeader().containsValue(Connection, "close");
-
-	}
-
-	//============================================================================
-	// Public interface
-	//============================================================================
-	public interface ServiceEventListener{
-
-		public void onEnd(final RequestHandleWorker from);
 
 	}
 

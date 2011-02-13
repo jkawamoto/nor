@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,9 +31,7 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 	private static final Logger LOGGER = Logger.getLogger(NoExceptionOutputStreamFilter.class);
 
 	public NoExceptionOutputStreamFilter(final OutputStream out) {
-
 		super(out);
-
 	}
 
 	/* (非 Javadoc)
@@ -41,6 +39,7 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 	 */
 	@Override
 	public void flush() throws IOException {
+		LOGGER.entering("flush");
 
 		if(this.alive){
 
@@ -52,10 +51,13 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 				LOGGER.catched(Level.FINE, "flush", e);
 				this.alive = false;
+				this.out.close();
 
 			}
 
 		}
+
+		LOGGER.exiting("flush");
 	}
 
 	/* (非 Javadoc)
@@ -63,6 +65,7 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 	 */
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
+		LOGGER.entering("write", b, off, len);
 
 		if(this.alive){
 
@@ -74,10 +77,13 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 				LOGGER.catched(Level.FINE, "write", e);
 				this.alive = false;
+				this.out.close();
 
 			}
 
 		}
+
+		LOGGER.exiting("write");
 	}
 
 	/* (非 Javadoc)
@@ -85,6 +91,7 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 	 */
 	@Override
 	public void write(byte[] b) throws IOException {
+		LOGGER.entering("write", b);
 
 		if(this.alive){
 
@@ -96,10 +103,13 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 				LOGGER.catched(Level.FINE, "write", e);
 				this.alive = false;
+				this.out.close();
 
 			}
 
 		}
+
+		LOGGER.exiting("write");
 	}
 
 	/* (非 Javadoc)
@@ -107,6 +117,7 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 	 */
 	@Override
 	public void write(int b) throws IOException {
+		LOGGER.entering("write", b);
 
 		if(this.alive){
 
@@ -118,10 +129,13 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 
 				LOGGER.catched(Level.FINE, "write", e);
 				this.alive = false;
+				this.close();
 
 			}
 
 		}
+
+		LOGGER.exiting("write");
 	}
 
 	/**
@@ -130,9 +144,10 @@ public class NoExceptionOutputStreamFilter extends FilterOutputStream{
 	 * @return If this stream is still alive, return true
 	 */
 	public boolean alive(){
+		LOGGER.entering("alive");
 
+		LOGGER.exiting("alive", this.alive);
 		return this.alive;
-
 	}
 
 }

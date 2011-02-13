@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,20 +19,21 @@ package nor.core.plugin;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 
 import nor.core.proxy.filter.MessageHandler;
 import nor.core.proxy.filter.RequestFilter;
 import nor.core.proxy.filter.ResponseFilter;
 
 /**
- * すべてのプラグインの基底クラス．
+ * プラグインが実装すべきインターフェイス
  *
  * プラグインは，メッセージハンドラ，リクエストフィルタそしてレスポンスフィルタの三機能を提供することができます．
  *
  * @author Junpei Kawamoto
  * @since 0.1
  */
-public abstract class Plugin implements Closeable{
+public interface Plugin extends Closeable{
 
 	/**
 	 * 与えられた設定ファイルを元に初期化する．
@@ -40,11 +41,10 @@ public abstract class Plugin implements Closeable{
 	 * nor では，ユーザが使用しているネットワーク環境ごとに別々の設定ファイルを使用します．
 	 * そのため，設定を保存するためにはこのメソッドに渡されるファイルを使用して下さい．
 	 *
-	 * @param conf 設定ファイル
+	 * @param common ネットワーク環境に依らない共通設定ファイル
+	 * @param local 現在使用しているネットワーク毎に異なる設定ファイル
 	 */
-	public void init(final File conf){
-
-	}
+	public void init(File common, File local) throws IOException;
 
 	/**
 	 * プラグインの終了処理を行う．
@@ -54,42 +54,27 @@ public abstract class Plugin implements Closeable{
 	 *
 	 */
 	@Override
-	public void close(){
-
-	}
+	public void close() throws IOException;
 
 	/**
 	 * プラグインが提供する，{@link nor.core.proxy.filter.MessageHandler メッセージハンドラ}の配列を返す．
 	 *
 	 * @return {@link nor.core.proxy.filter.MessageHandler メッセージハンドラ}の配列，メッセージハンドラを提供しない場合は null．
 	 */
-	public MessageHandler[] messageHandlers(){
-
-		return null;
-
-	}
+	public MessageHandler[] messageHandlers();
 
 	/**
 	 * プラグインが提供する，{@link nor.core.proxy.filter.RequestFilter リクエストフィルタ}の配列を返す．
 	 *
 	 * @return {@link nor.core.proxy.filter.RequestFilter リクエストフィルタ}の配列，リクエストフィルタを提供しない場合は null．
 	 */
-	public RequestFilter[] requestFilters(){
-
-		return null;
-
-	}
+	public RequestFilter[] requestFilters();
 
 	/**
 	 * プラグインが提供する，{@link nor.core.proxy.filter.ResponseFilter レスポンスフィルタ}の配列を返す．
 	 *
 	 * @return {@link nor.core.proxy.filter.ResponseFilter レスポンスフィルタ}の配列，レスポンスフィルタを提供しない場合は null．
 	 */
-	public ResponseFilter[] responseFilters(){
-
-		return null;
-
-	}
-
+	public ResponseFilter[] responseFilters();
 
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -41,12 +41,7 @@ public class HttpTServer implements HttpServer{
 	/**
 	 * ポートリスニング用スレッド
 	 */
-	private Thread listenThread;
-
-	/**
-	 * ポートリスニング用スレッドワーカー
-	 */
-	private ListenWorker listener = null;
+	private Thread listeningThread;
 
 	private static final Logger LOGGER = Logger.getLogger(HttpTServer.class);
 
@@ -97,12 +92,10 @@ public class HttpTServer implements HttpServer{
 		socket.bind(new InetSocketAddress(hostname, port));
 		LOGGER.info("start", "Bind the socket to port {0}", port);
 
-		this.listener = new ListenWorker(socket, this.handler, 0);
 		LOGGER.info("start", "Start listening.");
-
-		this.listenThread = new Thread(this.listener);
-		this.listenThread.setName("ListenWorker");
-		this.listenThread.start();
+		this.listeningThread = new Thread(new ListenWorker(socket, this.handler, TServer.MaxThreads));
+		this.listeningThread.setName("ListenWorker");
+		this.listeningThread.start();
 
 		LOGGER.exiting("service");
 	}
@@ -118,17 +111,16 @@ public class HttpTServer implements HttpServer{
 	public void close() throws IOException{
 		LOGGER.entering("close");
 
-		if(this.listener != null){
+		if(this.listeningThread != null){
 
-			this.listener.close();
-			try {
+			this.listeningThread.interrupt();
+			try{
 
-				this.listenThread.join();
+				this.listeningThread.join();
 
-			} catch (InterruptedException e) {
+			}catch(final InterruptedException e) {
 
-				// TODO 自動生成された catch ブロック
-				e.printStackTrace();
+				Thread.currentThread().interrupt();
 
 			}
 

@@ -21,6 +21,7 @@ import java.io.Closeable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import nor.http.server.HttpRequestHandler;
 import nor.network.Connection;
@@ -41,7 +42,9 @@ class ConnectionManager implements Closeable{
 	//============================================================================
 	// Constructor
 	//============================================================================
-	public ConnectionManager(final HttpRequestHandler handler, final int maxThreads, final int timeout){
+	public ConnectionManager(final HttpRequestHandler handler, final int maxThreads){
+		LOGGER.entering("<init>", handler, maxThreads);
+		assert handler != null;
 
 		if(maxThreads == 0){
 
@@ -54,17 +57,20 @@ class ConnectionManager implements Closeable{
 		}
 		this.handler = handler;
 
+		LOGGER.exiting("<init>");
 	}
 
 	//============================================================================
 	// Public methods
 	//============================================================================
 	public boolean offer(final Connection e) {
+		LOGGER.entering("offer", e);
 		assert e != null;
 
+		boolean res;
 		if(e.closed()){
 
-			return false;
+			res = false;
 
 		}else{
 
@@ -72,14 +78,20 @@ class ConnectionManager implements Closeable{
 			this.pool.execute(worker);
 
 			LOGGER.finer("offer", "Offer a new connection and send notify message.");
-			return true;
+			res = true;
 
 		}
 
+		LOGGER.exiting("offer", res);
+		return res;
 	}
 
+	/* (非 Javadoc)
+	 * @see java.io.Closeable#close()
+	 */
 	@Override
 	public void close(){
+		LOGGER.entering("close");
 
 		this.pool.shutdownNow();
 		try {
@@ -90,13 +102,15 @@ class ConnectionManager implements Closeable{
 
 			}
 
-		} catch (final InterruptedException ie) {
+		} catch (final InterruptedException e) {
 
+			LOGGER.catched(Level.WARNING, "close", e);
 			this.pool.shutdownNow();
 			Thread.currentThread().interrupt();
 
 		}
 
+		LOGGER.exiting("close");
 	}
 
 }

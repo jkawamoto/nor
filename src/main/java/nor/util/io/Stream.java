@@ -26,9 +26,12 @@ import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
+import nor.util.log.Logger;
+
 public class Stream {
 
 	public static final int DefaultBufferSize = 65536;
+	private static final Logger LOGGER = Logger.getLogger(Stream.class);
 
 	public static void copy(final InputStream in, final OutputStream out) throws IOException{
 
@@ -59,12 +62,14 @@ public class Stream {
 	}
 
 	public static void copy(final ReadableByteChannel in, final WritableByteChannel out, final int bufSize) throws IOException{
-
-		final ByteBuffer buf = ByteBuffer.allocate(bufSize);
+		LOGGER.entering("copy", in, out, bufSize);
+		assert in != null;
+		assert out != null;
+		assert bufSize > 0;
 
 		long c = 0;
-
-		while(true){
+		final ByteBuffer buf = ByteBuffer.allocate(bufSize);
+		while(true && !Thread.currentThread().isInterrupted()){
 
 			buf.clear();
 			if(in.read(buf) < 0){
@@ -76,20 +81,15 @@ public class Stream {
 
 			int len = buf.limit() - buf.position();
 			c += len;
-			while(len != 0){
+			while(len != 0 && !Thread.currentThread().isInterrupted()){
 
 				len -= out.write(buf);
 
 			}
 
-			if(Thread.interrupted()){
-
-				throw new IOException();
-
-			}
-
 		}
 
+		LOGGER.exiting("copy");
 	}
 
 }

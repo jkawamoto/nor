@@ -21,12 +21,14 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import nor.util.log.Logger;
+
 public class NoCloseOutputStream extends FilterOutputStream{
 
+	private static final Logger LOGGER = Logger.getLogger(NoCloseOutputStream.class);
+
 	public NoCloseOutputStream(final OutputStream out){
-
 		super(out);
-
 	}
 
 	@Override
@@ -35,9 +37,11 @@ public class NoCloseOutputStream extends FilterOutputStream{
 	}
 
 	public void reallyClose() throws IOException{
+		LOGGER.entering("reallyClose");
 
 		this.out.close();
 
+		LOGGER.exiting("reallyClose");
 	}
 
 

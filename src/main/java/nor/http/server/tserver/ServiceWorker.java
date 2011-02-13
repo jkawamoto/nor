@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.logging.Logger;
 
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
@@ -34,6 +33,7 @@ import nor.http.error.HttpException;
 import nor.http.server.HttpRequestHandler;
 import nor.util.io.NoCloseInputStream;
 import nor.util.io.NoCloseOutputStream;
+import nor.util.log.Logger;
 
 
 /**
@@ -55,15 +55,7 @@ final class ServiceWorker implements Runnable{
 	private final HttpRequestHandler handler;
 
 	// ロガー
-	private static final Logger LOGGER = Logger.getLogger(ServiceWorker.class.getName());
-
-
-	/**
-	 * デフォルトのタイムアウト時間
-	 */
-	private static final int DEFAULT_TIMEOUT = 6000;
-
-	private static int Timeout = DEFAULT_TIMEOUT;
+	private static final Logger LOGGER = Logger.getLogger(ServiceWorker.class);
 
 	/**
 	 * スレッドを作成する．
@@ -71,14 +63,14 @@ final class ServiceWorker implements Runnable{
 	 * @param socket このクラスが答えるべき要求ソケット
 	 */
 	ServiceWorker(final Socket socket, final HttpRequestHandler handler){
-		LOGGER.entering(ServiceWorker.class.getName(), "<init>", new Object[]{socket, handler});
+		LOGGER.entering("<init>", socket, handler);
 		assert socket != null;
 		assert handler != null;
 
 		this.socket = socket;
 		this.handler = handler;
 
-		LOGGER.exiting(ServiceWorker.class.getName(), "<init>");
+		LOGGER.exiting("<init>");
 	}
 
 	/**
@@ -86,9 +78,8 @@ final class ServiceWorker implements Runnable{
 	 */
 	@Override
 	public void run() {
-		LOGGER.entering(ServiceWorker.class.getName(), "run");
+		LOGGER.entering("run");
 
-		LOGGER.fine("ソケットが新しい要求を受理");
 		try{
 
 			// KeepAliveの設定
@@ -101,10 +92,10 @@ final class ServiceWorker implements Runnable{
 
 			// 切断要求が来るまで持続接続する
 			boolean keepAlive = true;
-			while(keepAlive){
+			while(keepAlive && !Thread.currentThread().isInterrupted()){
 
 				// リクエストオブジェクト
-				this.socket.setSoTimeout(ServiceWorker.Timeout);
+				this.socket.setSoTimeout(TServer.Timeout);
 				// リクエストオブジェクト
 				final HttpRequest request = HttpRequest.create(input);
 				if(request == null){
@@ -129,7 +120,6 @@ final class ServiceWorker implements Runnable{
 					keepAlive &= this.isKeepingAlive(response);
 
 					// レスポンスの書き出し
-					this.socket.setSoTimeout(5000);
 					response.writeTo(output);
 
 				}catch(final HttpException e){
@@ -147,11 +137,11 @@ final class ServiceWorker implements Runnable{
 
 		}catch(final SocketTimeoutException e){
 
-			LOGGER.fine(e.getMessage());
+			LOGGER.fine("run", e.getMessage());
 
 		}catch(final IOException e){
 
-			LOGGER.warning(e.getMessage());
+			LOGGER.warning("run", e.getMessage());
 
 		}finally{
 
@@ -165,7 +155,7 @@ final class ServiceWorker implements Runnable{
 
 				} catch (IOException e) {
 
-					LOGGER.warning("ソケットのクローズエラー");
+					LOGGER.warning("run", "Cannot close the socket.");
 
 				}
 
@@ -176,8 +166,7 @@ final class ServiceWorker implements Runnable{
 
 		}
 
-		LOGGER.fine("要求を完了しました");
-		LOGGER.exiting(ServiceWorker.class.getName(), "run");
+		LOGGER.exiting("run");
 	}
 
 	private boolean isKeepingAlive(final HttpRequest request){
@@ -189,16 +178,6 @@ final class ServiceWorker implements Runnable{
 	private boolean isKeepingAlive(final HttpResponse response){
 
 		return !response.getHeader().containsValue(Connection, "close");
-
-	}
-
-	/**
-	 *
-	 * @param timeout
-	 */
-	static void setTimeout(final int timeout){
-
-		ServiceWorker.Timeout = timeout;
 
 	}
 

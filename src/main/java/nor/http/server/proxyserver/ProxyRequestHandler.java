@@ -263,22 +263,23 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 		}catch(final SocketTimeoutException e){
 
-			LOGGER.warning("sendRequest", e.getMessage());
+			LOGGER.catched(Level.WARNING, "sendRequest", e);
 			throw new HttpException(Status.GatewayTimeout, e);
 
 		}catch(final ConnectException e){
 
-			LOGGER.warning("sendRequest", e.getMessage());
+			LOGGER.catched(Level.WARNING, "sendRequest", e);
 			throw new HttpException(Status.GatewayTimeout, e);
 
 		}catch(final UnknownHostException e){
 
+			LOGGER.catched(Level.WARNING, "sendRequest", e);
 			throw new HttpException(Status.NotFound, e);
 
 		}catch(final IOException e){
 
+			LOGGER.catched(Level.WARNING, "sendRequest", e);
 			throw new InternalServerErrorException(e);
-
 
 		}
 
@@ -298,7 +299,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		HttpResponse ret = null;
 		try {
 
-			LOGGER.info("receiveResponse", "{0}: {1} : {2}", con, con.getResponseMessage(), con.getHeaderFields());
+			LOGGER.fine("receiveResponse", "{0}: {1} : {2}", con, con.getResponseMessage(), con.getHeaderFields());
 
 			final int code = con.getResponseCode();
 			InputStream resStream = null;
@@ -310,30 +311,30 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 				resStream = con.getInputStream();
 
-				// ContentLength も TransferEncoding も指定していない場合は内容コーディングを無視する．
-				if(con.getHeaderField(HeaderName.ContentLength.toString()) != null || con.getHeaderField(HeaderName.TransferEncoding.toString()) != null){
+			}else{
 
-					// 内容エンコーディングの解決
-					final String encode = con.getHeaderField(HeaderName.ContentEncoding.toString());
-					if(encode != null){
+				resStream = con.getErrorStream();
 
-						if(Http.GZIP.equalsIgnoreCase(encode)){
+			}
 
-							resStream = new GZIPInputStream(resStream);
+			// ContentLength も TransferEncoding も指定していない場合は内容コーディングを無視する．
+			if(con.getHeaderField(HeaderName.ContentLength.toString()) != null || con.getHeaderField(HeaderName.TransferEncoding.toString()) != null){
 
-						}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
+				// 内容エンコーディングの解決
+				final String encode = con.getHeaderField(HeaderName.ContentEncoding.toString());
+				if(encode != null){
 
-							resStream = new DeflaterInputStream(resStream);
+					if(Http.GZIP.equalsIgnoreCase(encode)){
 
-						}
+						resStream = new GZIPInputStream(resStream);
+
+					}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
+
+						resStream = new DeflaterInputStream(resStream);
 
 					}
 
 				}
-
-			}else{
-
-				resStream = con.getErrorStream();
 
 			}
 
@@ -503,7 +504,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 		final Properties defaults = new Properties();
 		try {
 
-			defaults.load(ProxyRequestHandler.class.getResourceAsStream("res/default.conf"));
+			defaults.load(ProxyRequestHandler.class.getResourceAsStream("default.conf"));
 
 		} catch (final IOException e) {
 

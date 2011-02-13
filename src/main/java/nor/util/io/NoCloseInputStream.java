@@ -21,7 +21,11 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import nor.util.log.Logger;
+
 public class NoCloseInputStream extends FilterInputStream{
+
+	private static final Logger LOGGER = Logger.getLogger(NoCloseInputStream.class);
 
 	public NoCloseInputStream(final InputStream in){
 
@@ -35,9 +39,11 @@ public class NoCloseInputStream extends FilterInputStream{
 	}
 
 	public void reallyClose() throws IOException{
+		LOGGER.entering("reallyClose");
 
 		this.in.close();
 
+		LOGGER.exiting("reallyClose");
 	}
 
 }

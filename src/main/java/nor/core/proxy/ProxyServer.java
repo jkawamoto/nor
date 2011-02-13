@@ -22,9 +22,15 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
+
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 
 import nor.core.plugin.Plugin;
 import nor.core.proxy.filter.MessageHandler;
@@ -235,57 +241,34 @@ public class ProxyServer implements Closeable{
 	 * @throws IOException When some I/O exception happens.
 	 */
 	public String getPAC(final String host, final int port, final boolean ssh) throws IOException{
+		LOGGER.entering("getPAC", host, port, ssh);
 
-		final Class<?> c = this.getClass();
-		InputStream in;
-		if(ssh){
-
-			in = c.getResourceAsStream("res/proxy.pac.template");
-
-		}else{
-
-			in = c.getResourceAsStream("res/no-ssh-proxy.pac.template");
-
-		}
-		final BufferedReader rin = new BufferedReader(new InputStreamReader(in));
-		final StringBuilder pac_template = new StringBuilder();
-		for(String buf = rin.readLine(); buf != null; buf = rin.readLine()){
-
-			pac_template.append(buf);
-			pac_template.append("\n");
-
-		}
-
-		final String proxy = String.format("%s:%d", host, port);
-
-		final StringBuilder filtering_rule = new StringBuilder();
-		for(final String pat : this.remoteHandler.getHandlingURLPatterns()){
-
-			filtering_rule.append("if(url.match(new RegExp(\"");
-			filtering_rule.append(pat.replace("\\", "\\\\"));
-			filtering_rule.append("\")) !== null){return proxy;}\n");
-
-		}
-
-		final StringBuilder routing_rule = new StringBuilder();
+		final List<Object[]> routings = new ArrayList<Object[]>();
 		for(final Pattern pat : this.router.keySet()){
 
 			final InetSocketAddress addr = (InetSocketAddress)this.router.get(pat).address();
-			routing_rule.append("if(url.match(new RegExp(\"");
-			routing_rule.append(pat.pattern());
-			routing_rule.append("\")) !== null){return \"PROXY ");
-			routing_rule.append(addr.getHostName());
-			routing_rule.append(":");
-			routing_rule.append(addr.getPort());
-			routing_rule.append("\";}\n");
+			routings.add(new Object[]{pat.pattern(), addr.getHostName(), addr.getPort()});
 
 		}
 
-		final String ret =  pac_template.toString().replace("{PROXY_URL}", proxy).replace("{FILTERING_RULE}", filtering_rule.toString()).replace("{ROUTING_RULE}", routing_rule.toString());
-		LOGGER.fine("getPAC", ret);
+		final VelocityEngine velocity = new VelocityEngine();
+		velocity.init();
 
-		return ret;
+		final VelocityContext context = new VelocityContext();
+		context.put("ssh", ssh);
+		context.put("host", host);
+		context.put("port", port);
+		context.put("filters", this.remoteHandler.getHandlingURLPatterns());
+		context.put("routings", routings);
 
+		final Class<?> c = this.getClass();
+		final InputStream in = c.getResourceAsStream("proxy.pac.vm");
+		final StringWriter out = new StringWriter();
+		velocity.evaluate(context, out, "", new BufferedReader(new InputStreamReader(in)));
+
+		final String res = out.toString();
+		LOGGER.exiting("getPAC", res);
+		return res;
 	}
 
 	//====================================================================

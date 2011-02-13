@@ -97,7 +97,7 @@ public class HttpNServer implements HttpServer{
 		}
 
 		this.selecter = new SelectionWorker();
-		this.workerThreadManager = new ConnectionManager(this.handler, NServer.MaxThreads, NServer.Timeout);
+		this.workerThreadManager = new ConnectionManager(this.handler, NServer.MaxThreads);
 
 		this.listener = this.selecter.createPortListener(hostname, port);
 		this.listener.addHandler(new PortListener.AcceptEventHandler() {
