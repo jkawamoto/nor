@@ -100,12 +100,12 @@ class RequestHandleWorker implements Runnable{
 
 				}
 
-				try{
 
-					if(request.getMethod() == Method.CONNECT){
+				if(request.getMethod() == Method.CONNECT){
 
-						LOGGER.fine("run", "Receive a connect request: {0}", request);
+					LOGGER.fine("run", "Receive a connect request: {0}", request);
 
+					try{
 						final SelectableChannel ch = this.handler.doConnectRequest(request);
 
 						/*
@@ -121,45 +121,46 @@ class RequestHandleWorker implements Runnable{
 
 						break;
 
-					}else{
+					}catch(final HttpException e){
 
-						LOGGER.fine("run", "Receive a {0}", request);
-
-						// リクエストの実行
-						final HttpResponse response = handler.doRequest(request);
-
-						final HttpHeader header = response.getHeader();
-
-						// レスポンスの書き出し
-						LOGGER.fine("run", "Return the {0}", response);
+						final HttpResponse response = e.createResponse(request);
 						response.writeTo(output);
-						response.close();
 						output.flush();
 
-						if(header.containsKey(HeaderName.ContentLength)){
+						keepAlive = false;
 
-							LOGGER.info("run", "{0} > {1} ({2} bytes)", request.getHeadLine(), response.getHeadLine(), header.get(HeaderName.ContentLength));
-
-						}else{
-
-							LOGGER.info("run", "{0} > {1} (unknown length)", request.getHeadLine(), response.getHeadLine());
-
-						}
-
-						keepAlive = output.alive() && this.isKeepingAlive(request) && this.isKeepingAlive(response);
-
+						LOGGER.catched(Level.WARNING, "run", e);
 
 					}
 
-				}catch(final HttpException e){
 
-					final HttpResponse response = e.createResponse(request);
+				}else{
+
+					LOGGER.fine("run", "Receive a {0}", request);
+
+					// リクエストの実行
+					final HttpResponse response = handler.doRequest(request);
+
+					final HttpHeader header = response.getHeader();
+
+					// レスポンスの書き出し
+					LOGGER.fine("run", "Return the {0}", response);
 					response.writeTo(output);
+					response.close();
 					output.flush();
 
-					keepAlive = false;
+					if(header.containsKey(HeaderName.ContentLength)){
 
-					LOGGER.catched(Level.WARNING, "run", e);
+						LOGGER.info("run", "{0} > {1} ({2} bytes)", request.getHeadLine(), response.getHeadLine(), header.get(HeaderName.ContentLength));
+
+					}else{
+
+						LOGGER.info("run", "{0} > {1} (unknown length)", request.getHeadLine(), response.getHeadLine());
+
+					}
+
+					keepAlive = output.alive() && this.isKeepingAlive(request) && this.isKeepingAlive(response);
+
 
 				}
 
@@ -171,7 +172,7 @@ class RequestHandleWorker implements Runnable{
 
 		}catch(final VirtualMachineError e){
 
-			LOGGER.catched(Level.WARNING, "run", e);
+			LOGGER.catched(Level.SEVERE, "run", e);
 
 		}finally{
 

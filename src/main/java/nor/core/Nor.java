@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -40,9 +40,7 @@ import java.util.logging.Level;
 
 import nor.core.plugin.Plugin;
 import nor.core.proxy.ProxyServer;
-import nor.http.HttpRequest;
-import nor.http.HttpResponse;
-import nor.http.error.HttpException;
+import nor.http.server.HttpRequestHandler;
 import nor.http.server.local.TextResource;
 import nor.http.server.proxyserver.ProxyRequestHandler;
 import nor.http.server.proxyserver.Router;
@@ -228,19 +226,24 @@ public class Nor{
 		/*
 		 * Load installed plugins
 		 */
-		for(final Plugin p : ServiceLoader.load(Plugin.class, new URLClassLoader(jarUrls.toArray(new URL[0])))){
+		for(final URL url : jarUrls){
 
-			final String name = p.getClass().getName();
-			if(this.enable(p)){
+			final URLClassLoader loader = new URLClassLoader(new URL[]{url});
+			for(final Plugin p : ServiceLoader.load(Plugin.class, loader)){
 
-				final File common = new File(this.rootConfDir, String.format(ConfigFileTemplate, name));
-				final File local = new File(this.localConfDir, String.format(ConfigFileTemplate, name));
-				p.init(common, local);
+				final String name = p.getClass().getName();
+				if(this.enable(p)){
 
-				this.server.attach(p);
-				this.plugins.add(p);
+					final File common = new File(this.rootConfDir, String.format(ConfigFileTemplate, name));
+					final File local = new File(this.localConfDir, String.format(ConfigFileTemplate, name));
+					p.init(common, local);
 
-				LOGGER.info("init", "Loading a plugin {0}", p.getClass().getName());
+					this.server.attach(p);
+					this.plugins.add(p);
+
+					LOGGER.info("init", "Loading a plugin {0}", p.getClass().getName());
+
+				}
 
 			}
 
@@ -274,7 +277,7 @@ public class Nor{
 		for(final Object key : routings.keySet()){
 
 			final String skey = (String)key;
-			this.router.put(skey, new URL(routings.getProperty(skey)));
+			this.router.put(skey, routings.getProperty(skey));
 
 		}
 
@@ -298,7 +301,7 @@ public class Nor{
 		 * Register the PAC file.
 		 */
 		this.server.localResourceRoot().add(new TextResource("/nor/core/proxy.pac",
-				this.server.getPAC(addr, port, true), "application/x-javascript-config"));
+				this.server.getPAC(addr, port, Boolean.valueOf(System.getProperty("nor.https", "false"))), "application/x-javascript-config"));
 
 		/*
 		 * Start the web server.
@@ -343,17 +346,15 @@ public class Nor{
 	//============================================================================
 	//  Class methods
 	//============================================================================
-	public static HttpResponse request(final HttpRequest request){
+	public static HttpRequestHandler getRequestHandler(){
 
-		try {
+		return nor.handler;
 
-			return nor.handler.doRequest(request);
+	}
 
-		} catch (HttpException e) {
+	public static Router getRouter(){
 
-			return e.createResponse(request);
-
-		}
+		return nor.router;
 
 	}
 
@@ -446,7 +447,7 @@ public class Nor{
 
 						for(final String filename : dir.list()){
 
-							final File f = new File(filename);
+							final File f = new File(dir, filename);
 							pluginJar.add(f.toURI().toURL());
 
 						}

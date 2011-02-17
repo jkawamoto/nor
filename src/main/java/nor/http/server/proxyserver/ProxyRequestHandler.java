@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -118,7 +118,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 	 * @see nor.http.server.HttpRequestHandler#doRequest(nor.http.HttpRequest)
 	 */
 	@Override
-	public HttpResponse doRequest(final HttpRequest request) throws HttpException{
+	public HttpResponse doRequest(final HttpRequest request){
 		LOGGER.entering("doRequest", request);
 		assert request != null;
 
@@ -146,7 +146,7 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 			}
 
-			LOGGER.fine("doRequest", "Send the {0}", request);
+			LOGGER.fine("doRequest", "Send a response {0}", request);
 
 			// リクエストの送信とレスポンスの作成
 			final HttpURLConnection con = (HttpURLConnection)url.openConnection(proxy);
@@ -154,14 +154,20 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 			this.sendRequest(con, request);
 			response = this.receiveResponse(con, request);
 
-			LOGGER.fine("doRequest", "Receive the {0}", response);
+			LOGGER.fine("doRequest", "Receive a response {0}", response);
 
 		} catch (final IOException e) {
 
 			LOGGER.warning("doRequest", "Catch a IOException({0})", e.getMessage());
 			LOGGER.catched(Level.FINE, "doRequest", e);
 
-			throw new HttpException(Status.InternalServerError, e);
+			response = HttpException.createResponse(request, Status.InternalServerError, e);
+			LOGGER.fine("doRequest", "Receive an error response {0}", response);
+
+		} catch (final HttpException e) {
+
+			response = e.createResponse(request);
+			LOGGER.fine("doRequest", "Receive an error response {0}", response);
 
 		}
 
@@ -317,22 +323,17 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 			}
 
-			// ContentLength も TransferEncoding も指定していない場合は内容コーディングを無視する．
-			if(con.getHeaderField(HeaderName.ContentLength.toString()) != null || con.getHeaderField(HeaderName.TransferEncoding.toString()) != null){
+			// 内容エンコーディングの解決
+			final String encode = con.getHeaderField(HeaderName.ContentEncoding.toString());
+			if(encode != null){
 
-				// 内容エンコーディングの解決
-				final String encode = con.getHeaderField(HeaderName.ContentEncoding.toString());
-				if(encode != null){
+				if(Http.GZIP.equalsIgnoreCase(encode)){
 
-					if(Http.GZIP.equalsIgnoreCase(encode)){
+					resStream = new GZIPInputStream(resStream);
 
-						resStream = new GZIPInputStream(resStream);
+				}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
 
-					}else if(Http.DEFLATE.equalsIgnoreCase(encode)){
-
-						resStream = new DeflaterInputStream(resStream);
-
-					}
+					resStream = new DeflaterInputStream(resStream);
 
 				}
 

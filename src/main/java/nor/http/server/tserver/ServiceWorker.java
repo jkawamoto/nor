@@ -29,7 +29,6 @@ import java.net.SocketTimeoutException;
 
 import nor.http.HttpRequest;
 import nor.http.HttpResponse;
-import nor.http.error.HttpException;
 import nor.http.server.HttpRequestHandler;
 import nor.util.io.NoCloseInputStream;
 import nor.util.io.NoCloseOutputStream;
@@ -111,24 +110,15 @@ final class ServiceWorker implements Runnable{
 				// リクエストに切断要求が含まれているか
 				keepAlive &= this.isKeepingAlive(request);
 
-				try{
+				// リクエストの実行
+				final HttpResponse response = this.handler.doRequest(request);
 
-					// リクエストの実行
-					final HttpResponse response = this.handler.doRequest(request);
+				// レスポンスに切断要求が含まれているか
+				keepAlive &= this.isKeepingAlive(response);
 
-					// レスポンスに切断要求が含まれているか
-					keepAlive &= this.isKeepingAlive(response);
-
-					// レスポンスの書き出し
-					response.writeTo(output);
-
-				}catch(final HttpException e){
-
-					final HttpResponse response = e.createResponse(request);
-					response.writeTo(output);
-					output.flush();
-
-				}
+				// レスポンスの書き出し
+				response.writeTo(output);
+				output.flush();
 
 				this.socket.setSoTimeout(0);
 				this.socket.getOutputStream().flush();

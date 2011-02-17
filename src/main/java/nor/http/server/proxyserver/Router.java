@@ -19,7 +19,6 @@ package nor.http.server.proxyserver;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.net.URL;
 import java.net.Proxy.Type;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,6 +40,8 @@ import nor.util.log.Logger;
 public class Router implements Map<Pattern, Proxy>, Querable<Proxy>{
 
 	private final Map<Pattern, Proxy> routs = new HashMap<Pattern, Proxy>();
+
+	private static final Pattern AddressPat = Pattern.compile("([^:]+):(\\d+)");
 	private static final Logger LOGGER = Logger.getLogger(Router.class);
 
 	@Override
@@ -63,19 +64,54 @@ public class Router implements Map<Pattern, Proxy>, Querable<Proxy>{
 		return res;
 	}
 
-	public void put(final Pattern pat, final URL url){
-		LOGGER.entering("put", pat, url);
+	public void put(final Pattern pat, final InetSocketAddress addr){
+		LOGGER.entering("put", pat, addr);
 		assert pat != null;
-		assert url != null;
+		assert addr != null;
 
-		final InetSocketAddress extProxyAddr = new InetSocketAddress(url.getHost(), url.getPort());
-		this.put(pat, new Proxy(Type.HTTP, extProxyAddr));
+		this.put(pat, new Proxy(Type.HTTP, addr));
 
 		LOGGER.exiting("put");
 	}
 
-	public void put(final String regex, final URL url){
+	public void put(final String regex, final InetSocketAddress addr){
+		this.put(Pattern.compile(regex), addr);
+	}
+
+	public void put(final Pattern pat, final String url){
+		LOGGER.entering("pur", pat, url);
+
+		final Matcher m = AddressPat.matcher(url);
+		if(m.matches()){
+
+			final String host = m.group(1);
+			final int port = Integer.valueOf(m.group(2));
+
+			this.put(pat, host, port);
+
+		}else{
+
+			LOGGER.warning("put", "Invalid parameter: {0}", url);
+
+		}
+
+		LOGGER.exiting("put");
+	}
+
+	public void put(final String regex, final String url){
 		this.put(Pattern.compile(regex), url);
+	}
+
+	public void put(final String regex, final String host, final int port){
+		this.put(Pattern.compile(regex), host, port);
+	}
+
+	public void put(final Pattern pat, final String host, final int port){
+		LOGGER.entering("pur", pat, host, port);
+
+		this.put(pat, new InetSocketAddress(host, port));
+
+		LOGGER.exiting("put");
 	}
 
 	//--------------------------------------------------------------------

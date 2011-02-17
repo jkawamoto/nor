@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,13 +24,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.InetSocketAddress;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.VelocityEngine;
 
 import nor.core.plugin.Plugin;
 import nor.core.proxy.filter.MessageHandler;
@@ -43,6 +39,9 @@ import nor.http.server.proxyserver.ProxyRequestHandler;
 import nor.http.server.proxyserver.Router;
 import nor.http.server.tserver.HttpTServer;
 import nor.util.log.Logger;
+
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 
 /**
  * LocalProxyサブシステム．
@@ -237,6 +236,7 @@ public class ProxyServer implements Closeable{
 	 *
 	 * @param host The address of this server.
 	 * @param port The listening port.
+	 * @param ssh Whether does this server provide ssh proxy service.
 	 * @return A string of the PAC file.
 	 * @throws IOException When some I/O exception happens.
 	 */
@@ -288,7 +288,7 @@ public class ProxyServer implements Closeable{
 			}
 			if(args.length >= 3){
 
-				router.put(".*", new URL(args[2]));
+				router.put(".*", args[2]);
 
 			}
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@ public class Stream {
 	public static void copy(final InputStream in, final OutputStream out) throws IOException{
 
 		copy(in, out, DefaultBufferSize);
+		out.flush();
 
 	}
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -262,6 +262,12 @@ public class HttpResponse extends HttpMessage{
 
 	}
 
+	public void setStatus(final Status status){
+
+		this.code = status.getCode();
+		this.message = status.getMessage();
+
+	}
 
 	//--------------------------------------------------------------------
 	//	HttpMessage インタフェースの実装

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009, 2010 KAWAMOTO Junpei
+ *  Copyright (C) 2009, 2010, 2011 KAWAMOTO Junpei
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -109,9 +109,7 @@ public class HttpException extends Exception{
 	 */
 	public HttpResponse createResponse(final HttpRequest request){
 
-		// TODO: Throwableからスタックトレースをメッセージに追加する
 		final HttpResponse ret = request.createResponse(Status.valueOf(this.status.getCode()));
-
 		final HttpHeader header = ret.getHeader();
 
 		if(this.message != null){
@@ -120,13 +118,28 @@ public class HttpException extends Exception{
 
 			header.set(HeaderName.ContentLength, Integer.toString(msg.length));
 			header.set(HeaderName.Server, Http.ServerName);
+			header.set(HeaderName.Connection, "close");
 
 			ret.setBody(new ByteArrayInputStream(msg));
+
+//		}else if(this.cause != null){
+//
+//			final StringWriter strace = new StringWriter();
+//			this.cause.printStackTrace(new PrintWriter(strace));
+//
+//			final byte[] msg = strace.toString().getBytes();
+//
+//			header.set(HeaderName.ContentLength, Integer.toString(msg.length));
+//			header.set(HeaderName.Server, Http.ServerName);
+//			header.set(HeaderName.Connection, "close");
+//
+//			ret.setBody(new ByteArrayInputStream(msg));
 
 		}else{
 
 			header.set(HeaderName.ContentLength, "0");
 			header.set(HeaderName.Server, Http.ServerName);
+			header.set(HeaderName.Connection, "close");
 
 		}
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -103,7 +103,7 @@ class RequestHandler implements HttpRequestHandler{
 	/* (非 Javadoc)
 	 * @see nor.http.server.HttpRequestHandler#doRequest(nor.http.HttpRequest)
 	 */
-	public HttpResponse doRequest(final HttpRequest request) throws HttpException {
+	public HttpResponse doRequest(final HttpRequest request) {
 		LOGGER.entering("doRequest", request);
 		assert request != null;
 
@@ -295,7 +295,8 @@ class RequestHandler implements HttpRequestHandler{
 	//====================================================================
 	// Private methods
 	//====================================================================
-	private <Message extends HttpMessage, Filter extends MessageFilter<Message>> void doFiltering(final Message msg, final Collection<Filter> filters){
+	private <Message extends HttpMessage, Filter extends MessageFilter<Message>>
+	void doFiltering(final Message msg, final Collection<Filter> filters){
 
 		// 文字コードの取得
 		Charset charset = null;

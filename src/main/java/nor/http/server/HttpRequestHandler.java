@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Junpei Kawamoto
+ *  Copyright (C) 2010, 2011 Junpei Kawamoto
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,9 +36,8 @@ public interface HttpRequestHandler {
 	 *
 	 * @param request Http リクエストインスタンス
 	 * @return 与えられたリクエストに対するレスポンス
-	 * @throws HttpException If some IO error happens.
 	 */
-	public HttpResponse doRequest(final HttpRequest request) throws HttpException;
+	public HttpResponse doRequest(final HttpRequest request);
 
 
 	/**
