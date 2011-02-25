@@ -269,22 +269,22 @@ public class ProxyRequestHandler implements HttpRequestHandler{
 
 		}catch(final SocketTimeoutException e){
 
-			LOGGER.catched(Level.WARNING, "sendRequest", e);
+			LOGGER.catched(Level.FINE, "sendRequest", e);
 			throw new HttpException(Status.GatewayTimeout, e);
 
 		}catch(final ConnectException e){
 
-			LOGGER.catched(Level.WARNING, "sendRequest", e);
+			LOGGER.catched(Level.FINE, "sendRequest", e);
 			throw new HttpException(Status.GatewayTimeout, e);
 
 		}catch(final UnknownHostException e){
 
-			LOGGER.catched(Level.WARNING, "sendRequest", e);
+			LOGGER.catched(Level.FINE, "sendRequest", e);
 			throw new HttpException(Status.NotFound, e);
 
 		}catch(final IOException e){
 
-			LOGGER.catched(Level.WARNING, "sendRequest", e);
+			LOGGER.catched(Level.FINE, "sendRequest", e);
 			throw new InternalServerErrorException(e);
 
 		}

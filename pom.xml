@@ -32,7 +32,7 @@
 					<generateRepository>false</generateRepository>
 					<repositoryLayout>flat</repositoryLayout>
 					<repositoryName>lib</repositoryName>
-					<extraJvmArguments>-server -Dnor.config=./../config
+					<extraJvmArguments>-Dnor.config=./../config
 						-Dnor.plugin=./../plugin</extraJvmArguments>
 				</configuration>
 				<executions>
